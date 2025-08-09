@@ -146,7 +146,7 @@ const BookChef = () => {
     const fetchAndSortChefs = async () => {
       try {
         setLoading(true);
-        const res = await fetch('http://localhost:5000/api/chefs');
+        const res = await fetch('https://chefhub.onrender.com/api/chefs');
         const response = await res.json();
         const chefsData = response.data || response || [];
         let chefList = Array.isArray(chefsData) ? chefsData : [];
@@ -400,7 +400,7 @@ const BookChef = () => {
       console.log('Creating booking with payload:', bookingPayload);
 
       // Create booking
-      const bookingRes = await fetch('http://localhost:5000/api/bookings', {
+      const bookingRes = await fetch('https://chefhub.onrender.com/api/bookings', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -428,7 +428,7 @@ const BookChef = () => {
 
       console.log('Creating payment order with payload:', paymentPayload);
 
-      const paymentRes = await fetch('http://localhost:5000/api/payments/create-order', {
+      const paymentRes = await fetch('https://chefhub.onrender.com/api/payments/create-order', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -529,7 +529,7 @@ const BookChef = () => {
         bookingId: bookingId
       };
 
-      const verifyRes = await fetch('http://localhost:5000/api/payments/verify', {
+      const verifyRes = await fetch('https://chefhub.onrender.com/api/payments/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(verificationPayload)
@@ -559,7 +559,7 @@ const BookChef = () => {
         error: error
       };
 
-      await fetch('http://localhost:5000/api/payments/failure', {
+      await fetch('https://chefhub.onrender.com/api/payments/failure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(failurePayload)

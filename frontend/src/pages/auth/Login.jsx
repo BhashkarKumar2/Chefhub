@@ -25,7 +25,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', credentials);
+      const response = await axios.post('https://chefhub.onrender.com/api/auth/login', credentials);
       const { token, user } = response.data;
 
       // Use AuthContext login method
@@ -47,7 +47,7 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = 'https://chefhub.onrender.com/api/auth/google';
   };
 
   const handleFacebookLogin = () => {

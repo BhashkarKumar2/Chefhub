@@ -166,8 +166,8 @@ npm run dev
 
 5. **Access the application**
 - Frontend: http://localhost:5173
-- Backend API: http://localhost:5000
-- Health Check: http://localhost:5000/api/health
+- Backend API: https://chefhub.onrender.com
+- Health Check: https://chefhub.onrender.com/api/health
 
 ## ⚙️ Environment Configuration
 
@@ -258,7 +258,7 @@ VITE_ORS_API_KEY=your_ors_api_key
 ## 📡 API Documentation
 
 ### Base URL
-- Development: `http://localhost:5000/api`
+- Development: `https://chefhub.onrender.com/api`
 - Production: `https://your-domain.com/api`
 
 ### Authentication Endpoints
@@ -455,10 +455,10 @@ npm run test
 ### API Testing
 ```bash
 # Health check
-curl http://localhost:5000/api/health
+curl https://chefhub.onrender.com/api/health
 
 # Test AI recommendations
-curl -X POST http://localhost:5000/api/ai/chef-recommendations \
+curl -X POST https://chefhub.onrender.com/api/ai/chef-recommendations \
   -H "Content-Type: application/json" \
   -d '{"userPreferences": {"cuisine": "Italian", "budget": "3000"}}'
 ```
@@ -509,7 +509,7 @@ server {
     }
 
     location /api {
-        proxy_pass http://localhost:5000;
+        proxy_pass https://chefhub.onrender.com;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -517,7 +517,7 @@ server {
     }
 
     location /socket.io {
-        proxy_pass http://localhost:5000;
+        proxy_pass https://chefhub.onrender.com;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";

@@ -14,7 +14,7 @@ const Profile = () => {
         const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6'; // Test user ID
         console.log('🔍 Loading user profile for ID:', userId);
         
-        const response = await fetch(`http://localhost:5000/api/user/profile/${userId}`);
+        const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`);
         if (response.ok) {
           const user = await response.json();
           console.log('✅ User data loaded:', user);

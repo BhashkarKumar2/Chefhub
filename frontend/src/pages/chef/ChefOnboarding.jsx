@@ -52,7 +52,7 @@ const ChefOnboarding = () => {
       setLocationLoading(true);
       console.log('🌍 Geocoding address:', address);
       
-      const res = await fetch('http://localhost:5000/api/geocode', {
+      const res = await fetch('https://chefhub.onrender.com/api/geocode', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ const ChefOnboarding = () => {
       }
 
       console.log('🌐 Sending request to backend...');
-      const response = await fetch('http://localhost:5000/api/chefs', {
+      const response = await fetch('https://chefhub.onrender.com/api/chefs', {
         method: 'POST',
         body: formDataToSend, // Don't set Content-Type header when using FormData
       });

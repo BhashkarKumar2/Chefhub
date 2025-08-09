@@ -43,7 +43,7 @@ const SignupNew = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('https://chefhub.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -65,7 +65,7 @@ const SignupNew = () => {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = 'http://localhost:5000/api/auth/google';
+    window.location.href = 'https://chefhub.onrender.com/api/auth/google';
   };
 
   const handleFacebookSignup = () => {

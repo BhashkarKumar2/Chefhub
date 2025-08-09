@@ -47,7 +47,7 @@ const EditProfile = () => {
         const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6'; // Test user ID
         console.log('🔍 Loading user data for editing...');
         
-        const response = await fetch(`http://localhost:5000/api/user/profile/${userId}`);
+        const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`);
         if (response.ok) {
           const userData = await response.json();
           console.log('✅ User data loaded for editing:', userData);
@@ -148,7 +148,7 @@ const EditProfile = () => {
       imageFormData.append('profileImage', imageFile);
 
       console.log('🖼️ Uploading profile image...');
-      const response = await fetch(`http://localhost:5000/api/user/upload-profile-image/${userId}`, {
+      const response = await fetch(`https://chefhub.onrender.com/api/user/upload-profile-image/${userId}`, {
         method: 'POST',
         body: imageFormData,
       });
@@ -195,7 +195,7 @@ const EditProfile = () => {
       
       console.log('🆔 Using User ID:', userId);
       console.log('🌐 Sending update request to backend...');
-      const response = await fetch(`http://localhost:5000/api/user/profile/${userId}`, {
+      const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

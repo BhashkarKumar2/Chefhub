@@ -24,7 +24,7 @@ const ViewBookings = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('https://chefhub.onrender.com/api/bookings', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,7 +60,7 @@ const ViewBookings = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+      const response = await fetch(`https://chefhub.onrender.com/api/bookings/${bookingId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -87,7 +87,7 @@ const ViewBookings = () => {
   const handleUpdateBooking = async (bookingId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}`, {
+      const response = await fetch(`https://chefhub.onrender.com/api/bookings/${bookingId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

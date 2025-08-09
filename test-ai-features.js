@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Test configuration
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'https://chefhub.onrender.com';
 const TEST_TOKEN = 'your_jwt_token_here'; // Replace with actual token
 
 // Test data
