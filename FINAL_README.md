@@ -165,7 +165,7 @@ npm run dev
 ```
 
 5. **Access the application**
-- Frontend: http://localhost:5173
+- Frontend: http://chefhub-poou.vercel.app
 - Backend API: https://chefhub.onrender.com
 - Health Check: https://chefhub.onrender.com/api/health
 

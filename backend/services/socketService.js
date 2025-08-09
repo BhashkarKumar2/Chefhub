@@ -10,7 +10,7 @@ class SocketService {
   init(server) {
     this.io = new Server(server, {
       cors: {
-        origin: ["http://localhost:5173", "http://localhost:3000","https://chefhub-poou.vercel.app"],
+        origin: ["http://chefhub-poou.vercel.app", "http://localhost:3000","https://chefhub-poou.vercel.app"],
         credentials: true
       }
     });

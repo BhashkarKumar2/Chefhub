@@ -25,7 +25,7 @@ router.get('/google',
 );
 
 router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: 'http://localhost:5173/login' }),
+  passport.authenticate('google', { failureRedirect: 'http://chefhub-poou.vercel.app/login' }),
   (req, res) => {
     try {
       console.log('🔄 Google OAuth callback triggered');
@@ -33,7 +33,7 @@ router.get('/google/callback',
       
       if (!req.user) {
         console.error('❌ No user found in request');
-        return res.redirect('http://localhost:5173/login?error=no_user');
+        return res.redirect('http://chefhub-poou.vercel.app/login?error=no_user');
       }
       
       // Create JWT token for the authenticated user
@@ -41,13 +41,13 @@ router.get('/google/callback',
       console.log('🔑 Generated JWT token for user:', req.user.email);
       
       // Redirect to frontend with token as query parameter
-      const redirectUrl = `http://localhost:5173/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
+      const redirectUrl = `http://chefhub-poou.vercel.app/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
       console.log('🚀 Redirecting to:', redirectUrl);
       
       res.redirect(redirectUrl);
     } catch (error) {
       console.error('❌ Google OAuth callback error:', error);
-      res.redirect('http://localhost:5173/login?error=oauth_failed');
+      res.redirect('http://chefhub-poou.vercel.app/login?error=oauth_failed');
     }
   }
 );
