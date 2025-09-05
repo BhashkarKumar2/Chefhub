@@ -1,6 +1,5 @@
 // JWT utility functions for frontend authentication
-
-const API_BASE_URL = 'https://chefhub.onrender.com/api';
+import { buildApiEndpoint, API_BASE_URL } from './apiConfig.js';
 
 // Check if token exists in localStorage
 export const getToken = () => {
@@ -54,7 +53,7 @@ export const validateToken = async () => {
 
   try {
     console.log('🔄 Sending validation request to backend...');
-    const response = await fetch(`${API_BASE_URL}/auth/validate-token`, {
+    const response = await fetch(buildApiEndpoint('/auth/validate-token'), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -90,7 +89,7 @@ export const getCurrentUser = async () => {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    const response = await fetch(buildApiEndpoint('/auth/me'), {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -153,7 +152,7 @@ export const authenticatedFetch = async (url, options = {}) => {
 export const authAPI = {
   // Verify Firebase OTP token
   verifyFirebaseOTP: async (idToken, name = '') => {
-    const response = await fetch(`${API_BASE_URL}/auth/verify-firebase-otp`, {
+    const response = await fetch(buildApiEndpoint('/auth/verify-firebase-otp'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -172,7 +171,7 @@ export const authAPI = {
 
   // Regular email login
   login: async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(buildApiEndpoint('/auth/login'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -191,7 +190,7 @@ export const authAPI = {
 
   // Register
   register: async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(buildApiEndpoint('/auth/register'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

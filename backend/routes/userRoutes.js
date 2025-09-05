@@ -78,8 +78,8 @@ router.post('/login', async (req, res) => {
 
 // @route   PUT /api/users/profile/:id
 // @desc    Update user profile
-// @access  Private (should be protected with auth middleware)
-router.put('/profile/:id', async (req, res) => {
+// @access  Private (protected with auth middleware)
+router.put('/profile/:id', verifyToken, async (req, res) => {
   console.log('\n🔥 === USER PROFILE UPDATE STARTED ===');
   console.log('📝 User ID:', req.params.id);
   console.log('📝 Update Data:', JSON.stringify(req.body, null, 2));

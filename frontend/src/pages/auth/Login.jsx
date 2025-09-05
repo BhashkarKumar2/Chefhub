@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { buildApiEndpoint, API_BASE_URL } from '../../utils/apiConfig';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -25,7 +26,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('https://chefhub.onrender.com/api/auth/login', credentials);
+      const response = await axios.post(buildApiEndpoint('auth/login'), credentials);
       const { token, user } = response.data;
 
       // Use AuthContext login method
@@ -47,11 +48,11 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'https://chefhub.onrender.com/api/auth/google';
+    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   const handleFacebookLogin = () => {
-    alert('Facebook login will be implemented soon');
+    window.location.href = `${API_BASE_URL}/api/auth/facebook`;
   };
 
   return (
@@ -142,7 +143,7 @@ const Login = () => {
           className="w-full p-3 border border-blue-500 text-blue-600 font-semibold rounded-lg bg-white hover:bg-blue-50 flex items-center justify-center gap-2 mb-4"
         >
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17 2H7c-1.1 0-2 .9..." />
+            <path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 4h10v12H7V4zm5 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/>
           </svg>
           Sign in with Mobile Number
         </Link>

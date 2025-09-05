@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../utils/apiConfig';
 
 const SocketContext = createContext();
 
@@ -19,7 +20,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     
-    const newSocket = io('https://chefhub.onrender.com', {
+    const newSocket = io(SOCKET_URL, {
       auth: {
         token
       }

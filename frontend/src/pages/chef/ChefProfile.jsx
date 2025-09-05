@@ -1,63 +1,100 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-
-const sampleChef = {
-  fullName: 'Chef Ananya Rao',
-  bio: 'Experienced fusion chef with a flair for seasonal ingredients and innovative cooking techniques. Passionate about creating memorable dining experiences that blend traditional flavors with modern presentations.',
-  specialties: ['Indian Fusion', 'Vegan Cuisine', 'Gluten-Free', 'Molecular Gastronomy'],
-  hourlyRate: 1200,
-  experienceYears: 8,
-  location: 'Mumbai, Maharashtra',
-  availability: 'Full-time',
-  rating: 4.8,
-  reviewsCount: 156,
-  completedBookings: 342,
-  menu: [
-    { category: 'Appetizers', items: ['Tandoori Mushroom Skewers', 'Quinoa Bhel Puri', 'Deconstructed Samosa'] },
-    { category: 'Main Course', items: ['Jackfruit Biryani', 'Cauliflower Tikka Masala', 'Fusion Ramen Bowl'] },
-    { category: 'Desserts', items: ['Coconut Vegan Ladoo', 'Cardamom Panna Cotta', 'Rose Kulfi Shots'] }
-  ],
-  certificates: [
-    'Certified Food Safety Level 2',
-    'Advanced Culinary Arts Diploma',
-    'Vegan Cooking Specialist',
-    'Wine Pairing Certificate'
-  ],
-  photo: 'https://images.unsplash.com/photo-1559847844-d963b5de7901?w=500&auto=format&fit=crop&q=60',
-  gallery: [
-    'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=60',
-    'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&auto=format&fit=crop&q=60',
-    'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&auto=format&fit=crop&q=60'
-  ],
-  reviews: [
-    { name: 'Priya Sharma', rating: 5, comment: 'Amazing fusion dishes! Chef Ananya exceeded our expectations.', date: '2 weeks ago' },
-    { name: 'Rajesh Kumar', rating: 4, comment: 'Great vegan options and professional service.', date: '1 month ago' },
-    { name: 'Sarah Johnson', rating: 5, comment: 'Best private chef experience we\'ve had!', date: '2 months ago' }
-  ]
-};
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const ChefProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('about');
   const [isBookmarked, setIsBookmarked] = useState(false);
-  
+  const [chef, setChef] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadChefProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        
+        if (!id) {
+          setError('Chef ID not provided');
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔍 Loading chef profile for ID:', id);
+        
+        const response = await fetch(buildApiEndpoint(`/chefs/${id}`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const chefData = await response.json();
+          console.log('✅ Chef data loaded:', chefData);
+          setChef(chefData);
+        } else {
+          const errorData = await response.json();
+          setError(errorData.message || 'Failed to load chef profile');
+        }
+      } catch (error) {
+        console.error('Error loading chef profile:', error);
+        setError('Failed to load chef profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadChefProfile();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading chef profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !chef) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+          </svg>
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">Chef Not Found</h3>
+          <p className="text-gray-500 mb-6">{error || 'The chef profile you are looking for does not exist.'}</p>
+          <Link to="/chefs" className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300">
+            Browse All Chefs
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const {
-    fullName,
+    name: fullName,
     bio,
-    specialties,
+    specialties = [],
     hourlyRate,
-    experienceYears,
+    experience: experienceYears,
     location,
     availability,
     rating,
-    reviewsCount,
-    completedBookings,
-    menu,
-    certificates,
-    photo,
-    gallery,
-    reviews
-  } = sampleChef;
+    reviewsCount = 0,
+    completedBookings = 0,
+    menu = [],
+    certificates = [],
+    profileImage: photo,
+    gallery = [],
+    reviews = []
+  } = chef;
 
   const tabs = [
     { id: 'about', label: 'About', icon: '👨‍🍳' },

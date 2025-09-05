@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const Dashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -43,7 +44,7 @@ const Dashboard = () => {
         console.log('🔍 Loading dashboard data...');
         
         // Load user profile
-        const userResponse = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`, {
+        const userResponse = await fetch(buildApiEndpoint(`user/profile/${userId}`), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -84,7 +85,7 @@ const Dashboard = () => {
 
     const loadBookingsData = async (token) => {
       try {
-        const response = await fetch('https://chefhub.onrender.com/api/bookings', {
+        const response = await fetch(buildApiEndpoint('bookings'), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -124,7 +125,7 @@ const Dashboard = () => {
       try {
         // This would ideally come from an activity log API endpoint
         // For now, we'll derive it from recent bookings
-        const response = await fetch('https://chefhub.onrender.com/api/bookings', {
+        const response = await fetch(buildApiEndpoint('bookings'), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -162,7 +163,7 @@ const Dashboard = () => {
 
     const loadStats = async (token) => {
       try {
-        const response = await fetch('https://chefhub.onrender.com/api/bookings', {
+        const response = await fetch(buildApiEndpoint('bookings'), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

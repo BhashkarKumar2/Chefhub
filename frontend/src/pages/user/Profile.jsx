@@ -1,91 +1,118 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const Profile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [userData, setUserData] = useState(null);
+  const [userStats, setUserStats] = useState({
+    totalBookings: 0,
+    favoriteChefs: 0,
+    reviewsGiven: 0,
+    memberSince: new Date().getFullYear()
+  });
+  const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Load user data from backend
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6'; // Test user ID
-        console.log('🔍 Loading user profile for ID:', userId);
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
         
-        const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`);
-        if (response.ok) {
-          const user = await response.json();
+        if (!userId || !token) {
+          console.log('❌ No user ID or token found, redirecting to login');
+          navigate('/login');
+          return;
+        }
+        
+        console.log('🔍 Loading user profile for ID:', userId);
+        console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+        
+        // Load user profile data
+        const profileResponse = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (profileResponse.ok) {
+          const user = await profileResponse.json();
           console.log('✅ User data loaded:', user);
+          console.log('🖼️ Profile image URL:', user.profileImage);
           setUserData(user);
+          setUserStats({
+            totalBookings: user.totalBookings || 0,
+            favoriteChefs: user.favoriteChefs || 0,
+            reviewsGiven: user.reviewsGiven || 0,
+            memberSince: user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()
+          });
         } else {
           console.error('❌ Failed to load user data');
-          // Fallback to default data with consistent naming, checking localStorage first
-          const storedUserName = localStorage.getItem('userName');
-          const storedUserEmail = localStorage.getItem('userEmail');
-          setUserData({
-            name: storedUserName || 'User',
-            email: storedUserEmail || 'user@example.com',
-            phone: '+91-9876543210',
-            profileImage: 'https://i.pravatar.cc/150?img=3',
-            joinDate: 'January 2024',
-            location: 'Mumbai, India',
-            bio: 'Food enthusiast who loves exploring new cuisines and hosting dinner parties.',
-            preferences: ['Italian', 'Mexican', 'Asian', 'Mediterranean']
-          });
+          navigate('/login');
+          return;
         }
+
+        // Load user's recent bookings
+        try {
+          const bookingsResponse = await fetch(buildApiEndpoint(`/bookings/user/${userId}`), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (bookingsResponse.ok) {
+            const bookings = await bookingsResponse.json();
+            console.log('✅ Bookings data loaded:', bookings);
+            setRecentBookings(bookings.slice(0, 3)); // Show only 3 most recent
+          } else {
+            console.log('ℹ️ No bookings found or failed to load bookings');
+            setRecentBookings([]);
+          }
+        } catch (bookingError) {
+          console.log('ℹ️ Error loading bookings:', bookingError.message);
+          setRecentBookings([]);
+        }
+
       } catch (error) {
         console.error('Error loading user data:', error);
-        // Fallback to default data with consistent naming, checking localStorage first
-        const storedUserName = localStorage.getItem('userName');
-        const storedUserEmail = localStorage.getItem('userEmail');
-        setUserData({
-          name: storedUserName || 'User',
-          email: storedUserEmail || 'user@example.com',
-          phone: '+91-9876543210',
-          profileImage: 'https://i.pravatar.cc/150?img=3',
-          joinDate: 'January 2024', 
-          location: 'Mumbai, India',
-          bio: 'Food enthusiast who loves exploring new cuisines and hosting dinner parties.',
-          preferences: ['Italian', 'Mexican', 'Asian', 'Mediterranean']
-        });
+        navigate('/login');
       } finally {
         setLoading(false);
       }
     };
 
     loadUserData();
-  }, []);
+  }, [navigate]);
 
   const user = userData || {
     name: 'Loading...',
     email: 'Loading...',
     phone: 'Loading...',
-    profileImage: 'https://i.pravatar.cc/150?img=3',
-    joinDate: 'Loading...',
-    location: 'Loading...',
+    profileImage: null,
     bio: 'Loading...',
     preferences: [],
     cuisinePreferences: []
   };
 
   const stats = [
-    { label: 'Total Bookings', value: '12', icon: '📅' },
-    { label: 'Favorite Chefs', value: '8', icon: '❤️' },
-    { label: 'Reviews Given', value: '9', icon: '⭐' },
-    { label: 'Member Since', value: '2024', icon: '🏆' }
-  ];
-
-  const recentBookings = [
-    { chef: 'Chef Mario Rossi', date: 'Jan 15, 2024', status: 'Completed', rating: 5 },
-    { chef: 'Chef Sarah Kim', date: 'Jan 10, 2024', status: 'Completed', rating: 4 },
-    { chef: 'Chef Alex Chen', date: 'Dec 28, 2023', status: 'Completed', rating: 5 }
+    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: '📅' },
+    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: '❤️' },
+    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: '⭐' },
+    { label: 'Member Since', value: userStats.memberSince.toString(), icon: '🏆' }
   ];
 
   const handleLogout = () => {
-    // Add logout logic here
-    console.log('Logging out...');
+    // Clear all authentication data
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    console.log('✅ User logged out successfully');
     navigate('/login');
   };
 
@@ -95,6 +122,17 @@ const Profile = () => {
     { id: 'favorites', name: 'Favorites', icon: '❤️' },
     { id: 'settings', name: 'Settings', icon: '⚙️' }
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
@@ -107,11 +145,12 @@ const Profile = () => {
           <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
             <div className="relative">
               <img
-                src={user.profileImage || 'https://i.pravatar.cc/150?img=3'}
+                src={user.profileImage || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&size=150&background=6366f1&color=ffffff'}
                 alt="Profile"
                 className="w-32 h-32 rounded-full shadow-xl border-4 border-white/30 backdrop-blur-sm object-cover"
                 onError={(e) => {
-                  e.target.src = 'https://i.pravatar.cc/150?img=3';
+                  console.log('❌ Profile image failed to load:', e.target.src);
+                  e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&size=150&background=6366f1&color=ffffff';
                 }}
               />
               <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
@@ -135,7 +174,7 @@ const Profile = () => {
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                   </svg>
-                  Member since {user.createdAt ? new Date(user.createdAt).getFullYear() : (user.joinDate || '2024')}
+                  Member since {user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()}
                 </div>
                 <div className="flex items-center">
                   <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -199,7 +238,9 @@ const Profile = () => {
                 {/* Bio Section */}
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">About Me</h3>
-                  <p className="text-gray-600 leading-relaxed text-lg">{user.bio}</p>
+                  <p className="text-gray-600 leading-relaxed text-lg">
+                    {user.bio || 'No bio available. Edit your profile to add a bio.'}
+                  </p>
                 </div>
 
                 {/* Preferences */}
@@ -223,26 +264,49 @@ const Profile = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">Recent Bookings</h3>
                   <div className="space-y-4">
-                    {recentBookings.map((booking, index) => (
-                      <div key={index} className="bg-gray-50 rounded-xl p-6 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{booking.chef}</h4>
-                          <p className="text-gray-600 text-sm">{booking.date}</p>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
-                            {booking.status}
-                          </span>
-                          <div className="flex items-center">
-                            {[...Array(booking.rating)].map((_, i) => (
-                              <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                              </svg>
-                            ))}
+                    {recentBookings.length > 0 ? (
+                      recentBookings.map((booking, index) => (
+                        <div key={booking._id || index} className="bg-gray-50 rounded-xl p-6 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+                          <div>
+                            <h4 className="font-semibold text-gray-800">
+                              {booking.chefId?.name || booking.chefName || 'Chef Name Not Available'}
+                            </h4>
+                            <p className="text-gray-600 text-sm">
+                              {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : 'Date Not Available'}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              booking.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                              booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Unknown'}
+                            </span>
+                            {booking.rating && (
+                              <div className="flex items-center">
+                                {[...Array(booking.rating)].map((_, i) => (
+                                  <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                  </svg>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                        </svg>
+                        <p className="text-gray-500">No bookings yet. Start exploring chefs!</p>
+                        <Link to="/chefs" className="inline-block mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-300">
+                          Browse Chefs
+                        </Link>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </div>

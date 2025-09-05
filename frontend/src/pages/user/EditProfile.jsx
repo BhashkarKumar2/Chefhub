@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -44,10 +45,24 @@ const EditProfile = () => {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6'; // Test user ID
-        console.log('🔍 Loading user data for editing...');
+        const userId = localStorage.getItem('userId');
+        const token = localStorage.getItem('token');
         
-        const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`);
+        if (!userId || !token) {
+          console.log('❌ No user ID or token found, redirecting to login');
+          navigate('/login');
+          return;
+        }
+        
+        console.log('🔍 Loading user data for editing...');
+        console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+        
+        const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         if (response.ok) {
           const userData = await response.json();
           console.log('✅ User data loaded for editing:', userData);
@@ -67,7 +82,7 @@ const EditProfile = () => {
             dietaryPreferences: userData.dietaryPreferences || [],
             cuisinePreferences: userData.cuisinePreferences || [],
             allergens: userData.allergens || [],
-            profileImage: null,
+            profileImage: userData.profileImage || null,
             bio: userData.bio || '',
             notifications: userData.notifications || {
               email: true,
@@ -143,22 +158,33 @@ const EditProfile = () => {
 
     setUploadingImage(true);
     try {
-      const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6';
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
+      
       const imageFormData = new FormData();
       imageFormData.append('profileImage', imageFile);
 
       console.log('🖼️ Uploading profile image...');
-      const response = await fetch(`https://chefhub.onrender.com/api/user/upload-profile-image/${userId}`, {
+      const token = localStorage.getItem('token');
+      const response = await fetch(buildApiEndpoint(`/user/upload-profile-image/${userId}`), {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: imageFormData,
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Image uploaded successfully:', result.imageUrl);
+        console.log('✅ Image uploaded successfully:', result);
+        console.log('🔗 Cloudinary URL:', result.imageUrl);
+        console.log('📄 Full response:', result);
         return result.imageUrl;
       } else {
         const error = await response.json();
+        console.error('❌ Image upload response error:', error);
         throw new Error(error.message || 'Failed to upload image');
       }
     } catch (error) {
@@ -183,22 +209,34 @@ const EditProfile = () => {
         imageUrl = await uploadProfileImage();
       }
 
-      // Get user ID (using the test user ID we just created)
-      // In a real app, this would come from login response/localStorage/context
-      const userId = localStorage.getItem('userId') || '688f1698011794190d7203f6'; // Test user ID
+      // Get user ID from localStorage
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        setError('User ID not found. Please log in again.');
+        return;
+      }
       
       // Prepare update data
       const updateData = { ...formData };
       if (imageUrl) {
         updateData.profileImage = imageUrl;
+      } else {
+        // Don't update profileImage field if no new image was uploaded
+        // This preserves the existing image in the database
+        delete updateData.profileImage;
       }
       
       console.log('🆔 Using User ID:', userId);
       console.log('🌐 Sending update request to backend...');
-      const response = await fetch(`https://chefhub.onrender.com/api/user/profile/${userId}`, {
+      
+      const token = localStorage.getItem('token');
+      console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+      
+      const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updateData),
       });

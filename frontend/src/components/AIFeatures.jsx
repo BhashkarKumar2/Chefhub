@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { buildApiEndpoint } from '../utils/apiConfig';
 
 const AIChefRecommendations = ({ userPreferences, onRecommendationsReceived, cuisineOptions, occasionOptions, dietaryOptions }) => {
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const AIChefRecommendations = ({ userPreferences, onRecommendationsReceived, cui
         }
       };
 
-      const response = await axios.post('https://chefhub.onrender.com/api/ai/chef-recommendations', requestData);
+      const response = await axios.post(buildApiEndpoint('ai/chef-recommendations'), requestData);
       
       const responseData = response.data.data;
       setRecommendations(responseData);
@@ -32,7 +33,7 @@ const AIChefRecommendations = ({ userPreferences, onRecommendationsReceived, cui
       } else if (error.response?.status === 500) {
         errorMessage = 'AI service error. Please check if the Gemini API key is configured.';
       } else if (error.code === 'ECONNREFUSED') {
-        errorMessage = 'Cannot connect to server. Please make sure the backend is running on https://chefhub.onrender.com';
+        errorMessage = 'Cannot connect to server. Please make sure the backend is running on localhost:5000 or render.com';
       }
       
       setRecommendations({ 
@@ -111,7 +112,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated, serviceTypes, cuisineO
   const generateMenu = async () => {
     setLoading(true);
     try {
-      const response = await axios.post('https://chefhub.onrender.com/api/ai/generate-menu', {
+      const response = await axios.post(buildApiEndpoint('ai/generate-menu'), {
         eventDetails
       });
       
@@ -127,7 +128,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated, serviceTypes, cuisineO
       } else if (error.response?.status === 500) {
         errorMessage = 'AI service error. Please check if the Gemini API key is configured.';
       } else if (error.code === 'ECONNREFUSED') {
-        errorMessage = 'Cannot connect to server. Please make sure the backend is running on https://chefhub.onrender.com';
+        errorMessage = 'Cannot connect to server. Please make sure the backend is running on localhost:5000 or render.com';
       }
       
       setMenu({ 
@@ -233,10 +234,10 @@ const AIChatAssistant = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('https://chefhub.onrender.com/api/ai/chat', {
-        message: input,
-        context: messages.slice(-5).map(m => `${m.type}: ${m.content}`).join('\n')
-      });
+    const response = await axios.post(buildApiEndpoint('ai/chat'), {
+      message: input,
+      context: messages.slice(-5).map(m => `${m.type}: ${m.content}`).join('\n')
+    });
 
       const aiMessage = { 
         type: 'ai', 
@@ -253,7 +254,7 @@ const AIChatAssistant = () => {
       } else if (error.response?.status === 500) {
         errorText = 'AI service error. Please check if the Gemini API key is configured.';
       } else if (error.code === 'ECONNREFUSED') {
-        errorText = 'Cannot connect to server. Please make sure the backend is running on https://chefhub.onrender.com';
+        errorText = 'Cannot connect to server. Please make sure the backend is running on localhost:5000 or render.com';
       }
       
       const errorMessage = { 

@@ -11,6 +11,12 @@ const FavoriteButton = ({
   const { isFavorite, toggleFavorite } = useFavorites();
   const [isAnimating, setIsAnimating] = useState(false);
   
+  // Guard against undefined chef object
+  if (!chef || !chef._id) {
+    console.warn('FavoriteButton: chef prop is missing or invalid', chef);
+    return null;
+  }
+  
   const isChefFavorited = isFavorite(chef._id);
 
   const handleToggleFavorite = () => {

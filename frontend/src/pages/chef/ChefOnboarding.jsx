@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 import TextInput from '../../components/TextInput';
 import CheckboxGroup from '../../components/CheckboxGroup';
 import TextareaInput from '../../components/TextareaInput';
@@ -52,7 +53,7 @@ const ChefOnboarding = () => {
       setLocationLoading(true);
       console.log('🌍 Geocoding address:', address);
       
-      const res = await fetch('https://chefhub.onrender.com/api/geocode', {
+      const res = await fetch(buildApiEndpoint('geocode'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -288,7 +289,7 @@ const ChefOnboarding = () => {
       }
 
       console.log('🌐 Sending request to backend...');
-      const response = await fetch('https://chefhub.onrender.com/api/chefs', {
+      const response = await fetch(buildApiEndpoint('chefs'), {
         method: 'POST',
         body: formDataToSend, // Don't set Content-Type header when using FormData
       });

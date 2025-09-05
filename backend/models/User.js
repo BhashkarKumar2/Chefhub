@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   
   // OAuth integration fields
   googleId: { type: String, unique: true, sparse: true },
+  facebookId: { type: String, unique: true, sparse: true },
   firebaseUid: { type: String, unique: true, sparse: true },
   phone: { type: String, unique: true, sparse: true },
   

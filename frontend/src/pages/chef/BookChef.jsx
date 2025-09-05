@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FavoriteButton from '../../components/FavoriteButton';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 // OpenRouteService API key (store securely in production)
 const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
@@ -146,10 +147,27 @@ const BookChef = () => {
     const fetchAndSortChefs = async () => {
       try {
         setLoading(true);
-        const res = await fetch('https://chefhub.onrender.com/api/chefs');
+        const token = localStorage.getItem('token');
+        
+        const res = await fetch(buildApiEndpoint('/chefs'), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch chefs: ${res.status}`);
+        }
+        
         const response = await res.json();
-        const chefsData = response.data || response || [];
+        console.log('📋 BookChef - Full API response:', response);
+        
+        const chefsData = response.chefs || response.data || [];
+        console.log('📊 BookChef - Extracted chefs data:', chefsData);
+        
         let chefList = Array.isArray(chefsData) ? chefsData : [];
+        console.log('🔢 BookChef - Chef list length:', chefList.length);
 
         // If user location is set and geocoded, sort chefs by closest serviceable location
         if (userLocation.lat && userLocation.lon) {
@@ -400,7 +418,7 @@ const BookChef = () => {
       console.log('Creating booking with payload:', bookingPayload);
 
       // Create booking
-      const bookingRes = await fetch('https://chefhub.onrender.com/api/bookings', {
+      const bookingRes = await fetch(buildApiEndpoint('bookings'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -428,7 +446,7 @@ const BookChef = () => {
 
       console.log('Creating payment order with payload:', paymentPayload);
 
-      const paymentRes = await fetch('https://chefhub.onrender.com/api/payments/create-order', {
+      const paymentRes = await fetch(buildApiEndpoint('payments/create-order'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -529,7 +547,7 @@ const BookChef = () => {
         bookingId: bookingId
       };
 
-      const verifyRes = await fetch('https://chefhub.onrender.com/api/payments/verify', {
+      const verifyRes = await fetch(buildApiEndpoint('payments/verify'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(verificationPayload)
@@ -559,7 +577,7 @@ const BookChef = () => {
         error: error
       };
 
-      await fetch('https://chefhub.onrender.com/api/payments/failure', {
+      await fetch(buildApiEndpoint('payments/failure'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(failurePayload)

@@ -5,6 +5,7 @@ import MobileLogin from './pages/auth/MobileLogin';
 import Signup from './pages/auth/SignupNew';
 import Dashboard from './pages/user/Dashboard';
 import ChefProfile from './pages/chef/ChefProfile';
+import Chefs from './pages/chef/Chefs';
 import BookChef from './pages/chef/BookChef';
 import MainLayout from './layouts/MainLayout';
 import ChefOnboarding from './pages/chef/ChefOnboarding';
@@ -46,6 +47,11 @@ const App = () => {
                     <Route path="/services" element={<Services />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/search" element={<AdvancedSearch />} />
+                    <Route path="/chefs" element={
+                      <ProtectedRoute>
+                        <Chefs />
+                      </ProtectedRoute>
+                    } />
                     
                     {/* Protected routes - require authentication */}
                     <Route path="/dashboard" element={

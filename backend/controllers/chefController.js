@@ -173,7 +173,7 @@ export const getAllChefs = async (req, res) => {
     console.log('✅ Chefs retrieved successfully:', chefs.length);
     res.status(200).json({ 
       message: 'Chefs retrieved successfully',
-      data: chefs,
+      chefs: chefs,
       success: true
     });
   } catch (err) {
@@ -279,7 +279,7 @@ export const searchChefs = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Search completed successfully',
-      data: chefs,
+      chefs: chefs,
       pagination: {
         currentPage: parseInt(page),
         totalPages,

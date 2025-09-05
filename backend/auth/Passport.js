@@ -1,12 +1,15 @@
 import '../config/loadEnv.js'; // Load environment variables
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as FacebookStrategy } from 'passport-facebook';
 import User from '../models/User.js';
 
 // Debug: Check if environment variables are loaded
 console.log('🔍 Passport.js - Environment variables check:');
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Found' : 'Missing');
 console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Found' : 'Missing');
+console.log('FACEBOOK_APP_ID:', process.env.FACEBOOK_APP_ID ? 'Found' : 'Missing');
+console.log('FACEBOOK_APP_SECRET:', process.env.FACEBOOK_APP_SECRET ? 'Found' : 'Missing');
 
 // Only configure Google OAuth if environment variables are present
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -61,6 +64,62 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 } else {
   console.log('⚠️ Google OAuth not configured - missing environment variables');
   console.log('💡 Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file to enable Google authentication');
+}
+
+// Facebook OAuth Strategy
+if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
+  console.log('✅ Setting up Facebook OAuth strategy');
+  passport.use(new FacebookStrategy({
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: 
+        process.env.NODE_ENV === "production"
+          ? "https://chefhub.onrender.com/api/auth/facebook/callback"
+          : "http://localhost:5000/api/auth/facebook/callback",
+      profileFields: ['id', 'displayName', 'email', 'photos']
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        console.log('Facebook profile received:', profile);
+        
+        // Find a user with this Facebook ID
+        let user = await User.findOne({ facebookId: profile.id });
+
+        if (user) {
+          return done(null, user);
+        } else {
+          // Check if user exists with same email
+          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+          if (email) {
+            user = await User.findOne({ email: email });
+            if (user) {
+              // Link Facebook ID to existing user
+              user.facebookId = profile.id;
+              await user.save();
+              return done(null, user);
+            }
+          }
+
+          // Create new user
+          const newUser = new User({
+            facebookId: profile.id,
+            name: profile.displayName,
+            email: email || `${profile.id}@facebook.temp`, // Fallback email
+            profilePicture: profile.photos && profile.photos[0] ? profile.photos[0].value : null
+          });
+
+          await newUser.save();
+          return done(null, newUser);
+        }
+      } catch (err) {
+        console.error('Facebook strategy error:', err);
+        return done(err, null);
+      }
+    }
+  ));
+} else {
+  console.log('⚠️ Facebook OAuth not configured - missing environment variables');
+  console.log('💡 Add FACEBOOK_APP_ID and FACEBOOK_APP_SECRET to your .env file to enable Facebook authentication');
 }
 
 export default passport;

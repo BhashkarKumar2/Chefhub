@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 import { Link } from 'react-router-dom';
 
 const ViewBookings = () => {
@@ -24,7 +25,7 @@ const ViewBookings = () => {
         return;
       }
 
-      const response = await fetch('https://chefhub.onrender.com/api/bookings', {
+      const response = await fetch(buildApiEndpoint('bookings'), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -60,7 +61,7 @@ const ViewBookings = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://chefhub.onrender.com/api/bookings/${bookingId}`, {
+      const response = await fetch(buildApiEndpoint(`bookings/${bookingId}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -87,7 +88,7 @@ const ViewBookings = () => {
   const handleUpdateBooking = async (bookingId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://chefhub.onrender.com/api/bookings/${bookingId}`, {
+      const response = await fetch(buildApiEndpoint(`bookings/${bookingId}`), {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
