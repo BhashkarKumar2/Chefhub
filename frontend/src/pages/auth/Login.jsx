@@ -144,7 +144,7 @@ const Login = () => {
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path d="M17 2H7c-1.1 0-2 .9..." />
           </svg>
-          Sign in with Mobile Number2
+          Sign in with Mobile Number
         </Link>
         <p className="text-center text-sm text-gray-600">
           Don't have an account?{' '}
