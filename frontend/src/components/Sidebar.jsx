@@ -8,16 +8,21 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true); // Add loading state
+  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if mobile screen
+    // Check if mobile screen and handle responsive behavior
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(true);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      
+      if (mobile) {
+        setIsCollapsed(false); // Always show full sidebar on mobile when open
+        setIsMobileOpen(false); // Close mobile menu on resize
       } else {
-        setIsCollapsed(false);
+        setIsMobileOpen(false); // Ensure mobile menu is closed on desktop
       }
     };
 
@@ -234,112 +239,149 @@ const Sidebar = () => {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gradient-to-br from-blue-700 to-blue-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all backdrop-blur-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-gradient-to-br from-blue-700 to-blue-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all backdrop-blur-md min-h-[48px] min-w-[48px] flex items-center justify-center"
+        aria-label="Toggle navigation menu"
       >
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        {isMobileOpen ? (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        )}
       </button>
 
       {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="lg:hidden fixed inset-0 bg-transparent z-30"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full bg-gradient-to-br from-black/90 via-blue-900/90 to-blue-950/90 backdrop-blur-xl shadow-2xl transition-all duration-300 z-40 border-r border-white/10 ${
-        isCollapsed ? 'w-20' : 'w-64'
+      <div className={`fixed left-0 top-0 h-full bg-gradient-to-br from-black/95 via-blue-900/95 to-blue-950/95 backdrop-blur-xl shadow-2xl transition-all duration-300 z-40 border-r border-white/10 overflow-x-hidden ${
+        // Width logic: mobile gets responsive width that doesn't cause overflow, desktop gets collapsed/expanded
+        isMobile ? 'w-80 max-w-[85vw]' : (isCollapsed ? 'w-20' : 'w-64')
       } ${
-        isMobileOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'
+        // Position logic: mobile slides in/out, desktop always visible
+        isMobile ? 
+          (isMobileOpen ? 'translate-x-0' : '-translate-x-full') :
+          'translate-x-0'
       }`}>
       <div className="flex flex-col h-full">
         {/* Brand */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <Link 
             to="/" 
-            className={`flex items-center gap-2 font-bold text-2xl text-blue-400 hover:text-blue-200 transition-colors ${
-              isCollapsed ? 'justify-center' : ''
+            className={`flex items-center gap-2 font-bold text-xl sm:text-2xl text-blue-400 hover:text-blue-200 transition-colors ${
+              isCollapsed && !isMobile ? 'justify-center' : ''
             }`}
+            onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile menu when navigating
           >
-            <span className="text-3xl">🍳</span>
-            {!isCollapsed && <span>ChefHub</span>}
+            <span className="text-2xl sm:text-3xl">🍳</span>
+            {(!isCollapsed || isMobile) && <span>ChefHub</span>}
           </Link>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:block p-1 rounded-md hover:bg-blue-900/40 transition-colors"
-          >
-            <svg className={`w-5 h-5 text-blue-400 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-          </button>
+          
+          {/* Desktop collapse button */}
+          {!isMobile && (
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-2 rounded-md hover:bg-blue-900/40 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Toggle sidebar"
+            >
+              <svg className={`w-5 h-5 text-blue-400 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          
+          {/* Mobile close button */}
+          {isMobile && (
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="p-2 rounded-md hover:bg-blue-900/40 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center lg:hidden"
+              aria-label="Close menu"
+            >
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2 overflow-y-auto">
           {filteredNavigation.map((item) => (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 font-medium ${
+              onClick={() => isMobile && setIsMobileOpen(false)} // Close mobile menu when navigating
+              className={`flex items-center gap-3 px-3 py-3 sm:py-2 rounded-lg transition-all duration-200 font-medium min-h-[48px] ${
                 isActivePath(item.href)
                   ? 'bg-gradient-to-r from-blue-600 to-blue-400 text-white shadow-lg border-l-4 border-blue-400'
-                  : 'text-white/80 hover:bg-blue-900/60 hover:text-white'
-              } ${isCollapsed ? 'justify-center' : ''}`}
-              title={isCollapsed ? item.name : ''}
+                  : 'text-white/80 hover:bg-blue-900/60 hover:text-white active:bg-blue-800/80'
+              } ${isCollapsed && !isMobile ? 'justify-center' : ''}`}
+              title={(isCollapsed && !isMobile) ? item.name : ''}
             >
               <span className="flex-shrink-0">{item.icon}</span>
-              {!isCollapsed && <span>{item.name}</span>}
+              {(!isCollapsed || isMobile) && <span className="text-sm sm:text-base">{item.name}</span>}
             </Link>
           ))}
         </nav>
 
         {/* User Profile Section */}
         {isLoggedIn && userData && (
-          <div className="border-t border-white/10 p-4 bg-black/30 backdrop-blur-md">
-            <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-              <Link to="/profile" className="flex-shrink-0">
+          <div className="border-t border-white/10 p-3 sm:p-4 bg-black/30 backdrop-blur-md">
+            <div className={`flex items-center gap-3 ${isCollapsed && !isMobile ? 'justify-center' : ''}`}>
+              <Link 
+                to="/profile" 
+                className="flex-shrink-0"
+                onClick={() => isMobile && setIsMobileOpen(false)}
+              >
                 <img
                   src={userData.profileImage || 'https://i.pravatar.cc/150?img=3'}
                   alt="Profile"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-blue-400 hover:border-blue-600 transition-colors shadow"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-blue-400 hover:border-blue-600 transition-colors shadow"
                 />
               </Link>
-              {!isCollapsed && (
+              {(!isCollapsed || isMobile) && (
                 <div className="flex-1 min-w-0">
                   <Link 
                     to="/profile"
-                    className="block text-sm font-semibold text-blue-200 hover:text-blue-100 transition-colors truncate"
+                    onClick={() => isMobile && setIsMobileOpen(false)}
+                    className="block text-sm sm:text-base font-semibold text-blue-200 hover:text-blue-100 transition-colors truncate"
                   >
                     {userData.name || 'User'}
                   </Link>
-                  <p className="text-xs text-blue-100 truncate">{userData.email}</p>
+                  <p className="text-xs sm:text-sm text-blue-100 truncate">{userData.email}</p>
                 </div>
               )}
             </div>
-            {!isCollapsed && (
-              <div className="mt-3 flex gap-2">
+            {(!isCollapsed || isMobile) && (
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
                 <Link
                   to="/profile"
-                  className="flex-1 px-3 py-1 text-xs bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-md hover:from-blue-400 hover:to-blue-700 transition-colors text-center"
+                  onClick={() => isMobile && setIsMobileOpen(false)}
+                  className="flex-1 px-3 py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-md hover:from-blue-400 hover:to-blue-700 transition-colors text-center min-h-[44px] flex items-center justify-center"
                 >
                   Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex-1 px-3 py-1 text-xs bg-gradient-to-r from-blue-900 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-900 transition-colors"
+                  className="flex-1 px-3 py-2 text-xs sm:text-sm bg-gradient-to-r from-blue-900 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-900 transition-colors min-h-[44px] flex items-center justify-center"
                 >
                   Logout
                 </button>
               </div>
             )}
-            {isCollapsed && (
+            {isCollapsed && !isMobile && (
               <div className="mt-2 flex justify-center">
                 <button
                   onClick={handleLogout}
-                  className="p-1 text-blue-300 hover:bg-blue-900/30 rounded-md transition-colors"
+                  className="p-2 text-blue-300 hover:bg-blue-900/30 rounded-md transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="Logout"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -353,18 +395,20 @@ const Sidebar = () => {
 
         {/* Login Section for non-authenticated users */}
         {!authLoading && !isLoggedIn && (
-          <div className="border-t border-white/10 p-4 bg-black/30 backdrop-blur-md">
-            {!isCollapsed ? (
+          <div className="border-t border-white/10 p-3 sm:p-4 bg-black/30 backdrop-blur-md">
+            {(!isCollapsed || isMobile) ? (
               <div className="space-y-2">
                 <Link
                   to="/login"
-                  className="block w-full px-4 py-2 text-center bg-gradient-to-r from-blue-700 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-colors font-semibold shadow"
+                  onClick={() => isMobile && setIsMobileOpen(false)}
+                  className="w-full px-4 py-3 text-center bg-gradient-to-r from-blue-700 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-colors font-semibold shadow text-sm sm:text-base min-h-[48px] flex items-center justify-center"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="block w-full px-4 py-2 text-center border border-blue-400 text-blue-400 rounded-lg hover:bg-blue-900/30 hover:text-white transition-colors font-semibold"
+                  onClick={() => isMobile && setIsMobileOpen(false)}
+                  className="w-full px-4 py-3 text-center border border-blue-400 text-blue-400 rounded-lg hover:bg-blue-900/30 hover:text-white transition-colors font-semibold text-sm sm:text-base min-h-[48px] flex items-center justify-center"
                 >
                   Sign Up
                 </Link>
@@ -373,7 +417,7 @@ const Sidebar = () => {
               <div className="flex flex-col gap-2 items-center">
                 <Link
                   to="/login"
-                  className="p-2 bg-gradient-to-r from-blue-700 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-colors shadow"
+                  className="p-3 bg-gradient-to-r from-blue-700 to-blue-500 text-white rounded-lg hover:from-blue-500 hover:to-blue-700 transition-colors shadow min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="Login"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,7 +426,7 @@ const Sidebar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="p-2 border border-blue-400 text-blue-400 rounded-lg hover:bg-blue-900/30 hover:text-white transition-colors"
+                  className="p-3 border border-blue-400 text-blue-400 rounded-lg hover:bg-blue-900/30 hover:text-white transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   title="Sign Up"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,10 +440,10 @@ const Sidebar = () => {
 
         {/* Loading indicator while checking authentication */}
         {authLoading && (
-          <div className="border-t border-white/10 p-4 bg-black/30 backdrop-blur-md">
-            <div className={`flex items-center justify-center ${isCollapsed ? 'p-2' : 'p-4'}`}>
+          <div className="border-t border-white/10 p-3 sm:p-4 bg-black/30 backdrop-blur-md">
+            <div className={`flex items-center justify-center ${isCollapsed && !isMobile ? 'p-2' : 'p-4'}`}>
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
-              {!isCollapsed && <span className="ml-2 text-sm text-blue-200">Loading...</span>}
+              {(!isCollapsed || isMobile) && <span className="ml-2 text-sm text-blue-200">Loading...</span>}
             </div>
           </div>
         )}

@@ -33,7 +33,7 @@ const App = () => {
       <FavoritesProvider>
         <SocketProvider>
           <Router>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full no-overflow">
               <MainLayout>
                 <main className="flex-1">
                   <Routes>

@@ -620,14 +620,14 @@ const BookChef = () => {
         </div>
 
         {/* User Location Input */}
-        <div className="max-w-3xl mx-auto px-6 py-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-purple-100">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-purple-100">
             <label className="block text-sm font-semibold text-gray-700 mb-4">
               📍 Your Service Location Details
             </label>
             
             {/* City and State Row */}
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">City *</label>
                 <input
@@ -638,7 +638,7 @@ const BookChef = () => {
                     setUserLocation({ ...userLocation, city: e.target.value });
                     setLocationError('');
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                  className="w-full p-3 sm:p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base"
                 />
               </div>
               <div>
@@ -651,7 +651,7 @@ const BookChef = () => {
                     setUserLocation({ ...userLocation, state: e.target.value });
                     setLocationError('');
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                  className="w-full p-3 sm:p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -705,39 +705,39 @@ const BookChef = () => {
         </div>
 
         {/* Chefs Grid */}
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
           {!Array.isArray(chefs) || chefs.length === 0 ? (
-            <div className="text-center py-12">
-              <svg className="w-20 h-20 text-gray-300 mx-auto mb-6" fill="currentColor" viewBox="0 0 20 20">
+            <div className="text-center py-8 sm:py-12">
+              <svg className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4 sm:mb-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zM8 6V5a2 2 0 114 0v1H8zm2 3a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" clipRule="evenodd"></path>
               </svg>
-              <h3 className="text-2xl font-bold text-gray-600 mb-4">No Chefs Available</h3>
-              <p className="text-gray-500 mb-6">We're working to add more amazing chefs to our platform. Please check back soon!</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-3 sm:mb-4">No Chefs Available</h3>
+              <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">We're working to add more amazing chefs to our platform. Please check back soon!</p>
             </div>
           ) : (
-            <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {chefs.map((chef) => (
                 <div key={chef._id} className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-purple-100 overflow-hidden">
                   <div className="relative">
                     <img
                       src={chef.profileImage?.url || chef.photo || 'https://images.unsplash.com/photo-1659354219145-dedd2324698e?w=600&auto=format&fit=crop&q=60'}
                       alt={chef.name || chef.fullName}
-                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1">
-                      <span className="text-purple-600 font-bold text-lg">₹{chef.pricePerHour || chef.rate || 1200}/hr</span>
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1">
+                      <span className="text-purple-600 font-bold text-sm sm:text-lg">₹{chef.pricePerHour || chef.rate || 1200}/hr</span>
                     </div>
-                    <div className="absolute top-2 left-15">
+                    <div className="absolute top-2 left-2 sm:top-2 sm:left-15">
                       <FavoriteButton chef={chef} variant="card" />
                     </div>
                   </div>
                   
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
                       {chef.name || chef.fullName}
                     </h3>
-                    <p className="text-purple-600 font-semibold mb-3">{chef.specialty}</p>
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+                    <p className="text-purple-600 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">{chef.specialty}</p>
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3">
                       {chef.bio || 'Experienced professional chef with expertise in creating exceptional culinary experiences.'}
                     </p>
                     {/* Show address and distance if available */}
@@ -759,7 +759,7 @@ const BookChef = () => {
                       </div>
                       <button
                         onClick={() => setSelectedChef(chef)}
-                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm sm:text-base min-h-[40px]"
                       >
                         Book Now
                       </button>

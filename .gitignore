@@ -10,6 +10,56 @@ node_modules/
 # testing
 /coverage
 *.lcov
+/test-reports/
+/test-results/
+
+# Test files and directories
+test-*.js
+test-*.jsx
+test-*.ts
+test-*.tsx
+**/test-*.js
+**/test-*.jsx
+**/test-*.ts
+**/test-*.tsx
+debug-*.js
+debug-*.jsx
+debug-*.ts
+debug-*.tsx
+**/debug-*.js
+**/debug-*.jsx
+**/debug-*.ts
+**/debug-*.tsx
+
+# Jest and testing framework files
+jest.config.js
+jest.config.ts
+__tests__/
+**/__tests__/
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.jsx
+*.spec.ts
+*.spec.tsx
+**/*.test.js
+**/*.test.jsx
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.js
+**/*.spec.jsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Testing output and snapshots
+__snapshots__/
+**/__snapshots__/
+test-output/
+coverage-reports/
+junit.xml
+test-report.xml
 
 # production
 /build
@@ -159,3 +209,15 @@ Thumbs.db
 # Application specific
 uploads/
 public/uploads/
+
+# Project-specific test and debug files
+test-*.js
+debug-*.js
+frontend-auth-debug.js
+chef-consistency-fix-summary.js
+mongodb-connection-fix.js
+url-update-reference.js
+*-fix-*.js
+*-debug*.js
+*-summary.js
+*-reference.js

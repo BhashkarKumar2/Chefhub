@@ -343,20 +343,20 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-3xl p-8 text-white mb-8 relative overflow-hidden">
-          <div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-5 left-10 w-16 h-16 bg-white/15 rounded-full animate-bounce"></div>
+        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white mb-6 sm:mb-8 relative overflow-hidden">
+          <div className="absolute top-5 right-5 sm:top-10 sm:right-10 w-12 h-12 sm:w-20 sm:h-20 bg-white/10 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-3 left-5 sm:bottom-5 sm:left-10 w-10 h-10 sm:w-16 sm:h-16 bg-white/15 rounded-full animate-bounce"></div>
           
           <div className="relative z-10">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4">
               {getGreeting()}, {userName}! 👋
             </h1>
-            <p className="text-xl opacity-95 mb-4">
+            <p className="text-base sm:text-lg md:text-xl opacity-95 mb-3 sm:mb-4">
               Ready to create amazing culinary experiences?
             </p>
-            <div className="flex items-center text-lg opacity-90">
+            <div className="flex items-center text-sm sm:text-base md:text-lg opacity-90">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
               </svg>
@@ -371,29 +371,29 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions Grid */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-6">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4 sm:mb-6">
             Quick Actions
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 to={action.link}
-                className={`group ${action.bgColor} ${action.borderColor} border-2 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80`}
+                className={`group ${action.bgColor} ${action.borderColor} border-2 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80`}
               >
-                <div className={`w-14 h-14 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   {action.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
                   {action.title}
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
                   {action.description}
                 </p>
-                <div className="mt-4 flex items-center text-purple-600 text-sm font-semibold group-hover:text-purple-700">
+                <div className="mt-3 sm:mt-4 flex items-center text-purple-600 text-xs sm:text-sm font-semibold group-hover:text-purple-700">
                   Explore
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
                   </svg>
                 </div>
@@ -403,14 +403,14 @@ const Dashboard = () => {
         </div>
 
         {/* Dashboard Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Upcoming Bookings */}
-            <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-lg border border-purple-100">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-800">Upcoming Bookings</h3>
-                <Link to="/bookings" className="text-purple-600 hover:text-purple-700 font-semibold text-sm flex items-center">
+            <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-purple-100">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Upcoming Bookings</h3>
+                <Link to="/bookings" className="text-purple-600 hover:text-purple-700 font-semibold text-xs sm:text-sm flex items-center">
                   View All
-                  <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
                   </svg>
                 </Link>
@@ -456,8 +456,8 @@ const Dashboard = () => {
             </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-3xl p-8 shadow-lg border border-purple-100">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">Recent Activity</h3>
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-purple-100">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Recent Activity</h3>
             {dashboardData.recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.recentActivity.map((activity, index) => (
@@ -486,7 +486,7 @@ const Dashboard = () => {
         </div>
 
         {/* Dynamic Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-6 sm:mt-8">
           {[
             { 
               label: "Total Bookings", 
@@ -513,10 +513,10 @@ const Dashboard = () => {
               color: "text-yellow-600" 
             }
           ].map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100 text-center">
-              <div className="text-3xl mb-2">{stat.icon}</div>
-              <div className={`text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
-              <div className="text-gray-600 text-sm">{stat.label}</div>
+            <div key={index} className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 text-center">
+              <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{stat.icon}</div>
+              <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
+              <div className="text-gray-600 text-xs sm:text-sm">{stat.label}</div>
             </div>
           ))}
         </div>

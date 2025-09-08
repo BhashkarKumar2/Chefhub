@@ -1,0 +1,497 @@
+/* Responsive Design Utilities for ChefHub */
+
+/* Touch-friendly tap targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-first responsive grid utilities */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile-optimized form inputs */
+.mobile-input {
+  font-size: 16px; /* Prevents zoom on iOS */
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .mobile-input {
+    font-size: 14px;
+    padding: 16px;
+  }
+}
+
+/* Responsive text scaling */
+.responsive-text-xs { font-size: 0.75rem; }
+.responsive-text-sm { font-size: 0.875rem; }
+.responsive-text-base { font-size: 1rem; }
+
+@media (min-width: 640px) {
+  .responsive-text-xs { font-size: 0.875rem; }
+  .responsive-text-sm { font-size: 1rem; }
+  .responsive-text-base { font-size: 1.125rem; }
+}
+
+/* Container padding */
+.container-padding {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-padding {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-padding {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Mobile navigation */
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Card responsive spacing */
+.card-responsive {
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* Button responsive sizing */
+.btn-responsive {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 640px) {
+  .btn-responsive {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Image responsive aspect ratios */
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.aspect-ratio-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+/* Mobile-first spacing utilities */
+.spacing-mobile {
+  margin: 0.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .spacing-mobile {
+    margin: 1rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .spacing-mobile {
+    margin: 1.5rem 0;
+  }
+}
+
+/* Hide elements responsively */
+.hidden-mobile {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hidden-mobile {
+    display: block;
+  }
+}
+
+.hidden-desktop {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .hidden-desktop {
+    display: none;
+  }
+}
+
+/* Responsive flex utilities */
+.flex-mobile-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .flex-mobile-col {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+/* Mobile-optimized shadows */
+.shadow-mobile {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+  .shadow-mobile {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Scrollable horizontal containers - only when necessary */
+.scroll-x-mobile {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+.scroll-x-mobile::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scroll-x-mobile::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 2px;
+}
+
+/* Prevent common elements from overflowing */
+table {
+  max-width: 100%;
+  table-layout: auto;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Handle long text content */
+h1, h2, h3, h4, h5, h6 {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+p, div, span {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Prevent buttons from overflowing */
+button {
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* Handle input fields */
+input, textarea, select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cards and containers */
+.card, .container {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Touch-friendly hover states */
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Mobile-optimized z-index stack */
+.z-mobile-nav { z-index: 50; }
+.z-mobile-overlay { z-index: 40; }
+.z-mobile-modal { z-index: 60; }
+
+/* Responsive border radius */
+.rounded-mobile {
+  border-radius: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .rounded-mobile {
+    border-radius: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rounded-mobile {
+    border-radius: 1rem;
+  }
+}
+
+/* Safe area padding for mobile devices */
+.safe-area-padding {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Very small screen adaptations */
+@media (max-width: 360px) {
+  .container-padding {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  .card-responsive {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .btn-responsive {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.813rem;
+  }
+  
+  .heading-responsive {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* Prevent horizontal scroll on small screens */
+.mobile-container {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Global overflow prevention */
+.no-horizontal-scroll {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* Responsive containers that prevent overflow */
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent text overflow */
+.text-responsive {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Mobile-specific layout adjustments */
+@media (max-width: 640px) {
+  /* Ensure content doesn't overflow */
+  * {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+  
+  /* Force viewport width compliance */
+  body, html {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+  
+  /* Make all containers responsive */
+  div, section, article, main, header, footer {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Make tables responsive */
+  .responsive-table {
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  
+  /* Responsive image handling */
+  .responsive-image {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Mobile form improvements */
+  .mobile-form {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .mobile-form input,
+  .mobile-form textarea,
+  .mobile-form select {
+    width: 100%;
+    max-width: 100%;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  /* Prevent wide elements from causing horizontal scroll */
+  pre, code {
+    overflow-x: auto;
+    max-width: 100%;
+    white-space: pre-wrap;
+  }
+  
+  /* Handle flex items that might overflow */
+  .flex {
+    flex-wrap: wrap;
+  }
+  
+  /* Handle grid items */
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile-first typography scale */
+.heading-responsive {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+}
+
+@media (min-width: 640px) {
+  .heading-responsive {
+    font-size: 2rem;
+    line-height: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heading-responsive {
+    font-size: 2.5rem;
+    line-height: 3rem;
+  }
+}
+
+/* Mobile loading states */
+.loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #f3f4f6;
+  border-top: 2px solid #8b5cf6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Utility classes for preventing overflow */
+.no-overflow {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.fit-content {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Force all elements to respect viewport width */
+@media (max-width: 100vw) {
+  * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Specific fixes for common overflow elements */
+  .w-screen, .min-w-screen {
+    width: 100vw !important;
+    min-width: 100vw !important;
+  }
+  
+  /* Fix for large margin/padding */
+  .m-auto, .mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* Ensure flex containers don't overflow */
+  .flex-nowrap {
+    flex-wrap: wrap !important;
+  }
+}

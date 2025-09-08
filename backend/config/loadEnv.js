@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Go up from src/config/ to backend root directory where .env is located
-const envPath = path.join(__dirname, '..', '..', '.env');
+// Look for .env in the backend directory
+const envPath = path.join(__dirname, '..', '.env');
 console.log('🔍 Loading environment from:', envPath);
 
 const result = dotenv.config({ path: envPath });

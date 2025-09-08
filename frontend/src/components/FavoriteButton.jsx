@@ -63,6 +63,7 @@ const FavoriteButton = ({
         onClick={handleToggleFavorite}
         className={`
           relative transition-all duration-300 hover:scale-110 focus:outline-none
+          min-h-[44px] min-w-[44px] flex items-center justify-center
           ${isAnimating ? 'animate-pulse' : ''}
           ${className}
         `}
@@ -137,11 +138,12 @@ const FavoriteButton = ({
   // Card variant (for chef cards)
   if (variant === 'card') {
     return (
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
         <button
           onClick={handleToggleFavorite}
           className={`
-            p-2 rounded-full backdrop-blur-sm transition-all duration-300
+            p-2.5 sm:p-2 rounded-full backdrop-blur-sm transition-all duration-300
+            min-h-[44px] min-w-[44px] flex items-center justify-center
             ${isChefFavorited 
               ? 'bg-red-500 text-white shadow-lg' 
               : 'bg-white/80 text-gray-600 hover:bg-red-50 hover:text-red-500'

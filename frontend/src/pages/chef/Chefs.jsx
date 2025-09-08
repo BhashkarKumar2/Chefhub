@@ -103,19 +103,19 @@ const Chefs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
       {/* Header Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-20">
+      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-16 sm:py-20">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-6xl mx-auto px-6">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm mb-6">
-              <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-full backdrop-blur-sm mb-4 sm:mb-6">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
               Our Talented Chefs
             </h1>
-            <p className="text-xl md:text-2xl opacity-95 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl opacity-95 max-w-3xl mx-auto">
               Discover professional chefs ready to create amazing culinary experiences for you
             </p>
           </div>
@@ -127,18 +127,18 @@ const Chefs = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Search Input */}
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Search Chefs</label>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 placeholder="Search by name, specialty, or description..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
               />
             </div>
 
@@ -148,7 +148,7 @@ const Chefs = () => {
               <select
                 value={selectedCuisine}
                 onChange={handleCuisineChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
               >
                 <option value="">All Cuisines</option>
                 {cuisineTypes.map(cuisine => (
@@ -230,11 +230,11 @@ const Chefs = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {chefs.map((chef) => (
               <div key={chef._id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 {/* Chef Image */}
-                <div className="relative h-64 bg-gradient-to-br from-purple-400 to-blue-500">
+                <div className="relative h-48 sm:h-64 bg-gradient-to-br from-purple-400 to-blue-500">
                   {chef.profileImage?.url ? (
                     <img
                       src={chef.profileImage.url}
@@ -252,7 +252,7 @@ const Chefs = () => {
                   )}
                   
                   {/* Favorite Button */}
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
                     <FavoriteButton chef={chef} />
                   </div>
 
@@ -260,8 +260,8 @@ const Chefs = () => {
                 </div>
 
                 {/* Chef Info */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{chef.name}</h3>
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">{chef.name}</h3>
                   
                   {/* Specialties */}
                   {chef.specialty && (
@@ -302,16 +302,16 @@ const Chefs = () => {
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <Link
                       to={`/chef/${chef._id}`}
-                      className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center rounded-xl hover:shadow-lg transition-all duration-300"
+                      className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-center rounded-xl hover:shadow-lg transition-all duration-300 text-sm sm:text-base min-h-[42px] flex items-center justify-center"
                     >
                       View Profile
                     </Link>
                     <Link
                       to={`/book/${chef._id}`}
-                      className="flex-1 px-4 py-2 border-2 border-purple-600 text-purple-600 text-center rounded-xl hover:bg-purple-600 hover:text-white transition-all duration-300"
+                      className="flex-1 px-4 py-2.5 border-2 border-purple-600 text-purple-600 text-center rounded-xl hover:bg-purple-600 hover:text-white transition-all duration-300 text-sm sm:text-base min-h-[42px] flex items-center justify-center"
                     >
                       Book Now
                     </Link>

@@ -73,14 +73,14 @@ const Home = () => {
           style={{ filter: 'brightness(0.7) blur(2px)' }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-blue-900/60 to-black/80 z-0" />
-        <div className="relative z-10 w-full max-w-5xl mx-auto px-6 lg:px-8 flex flex-col items-center justify-center">
-          <div className="backdrop-blur-xl bg-white/20 border border-blue-200/40 rounded-3xl shadow-2xl p-12 mt-20 mb-12 flex flex-col items-center w-full">
-            <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="ChefHub Logo" className="w-20 h-20 mb-6 drop-shadow" />
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold leading-tight mb-6 text-white drop-shadow-lg">
+        <div className="relative z-10 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
+          <div className="backdrop-blur-xl bg-white/20 border border-blue-200/40 rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 mt-16 sm:mt-20 mb-8 sm:mb-12 flex flex-col items-center w-full">
+            <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="ChefHub Logo" className="w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6 drop-shadow" />
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold leading-tight mb-4 sm:mb-6 text-white drop-shadow-lg text-center">
               <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">Book World-Class Chefs</span>
-              <span className="block mt-2">for <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Unforgettable</span> Experiences</span>
+              <span className="block mt-1 sm:mt-2">for <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Unforgettable</span> Experiences</span>
             </h1>
-            <p className="text-lg md:text-xl lg:text-2xl leading-relaxed mb-10 text-white/90 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed mb-6 sm:mb-10 text-white/90 max-w-3xl mx-auto text-center">
               Transform your dining with top chefs who bring restaurant-quality cuisine to your home. Perfect for intimate dinners, celebrations, and special occasions.
             </p>
             
@@ -126,29 +126,29 @@ const Home = () => {
               </p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-              <Link to="/register" className="bg-gradient-to-r from-blue-700 to-blue-400 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-8 sm:mb-12 w-full max-w-md sm:max-w-none mx-auto">
+              <Link to="/register" className="w-full sm:w-auto bg-gradient-to-r from-blue-700 to-blue-400 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-2 min-h-[48px]">
                 <span>Book Your Chef</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
               </Link>
-              <Link to="/services" className="border-2 border-white text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300">
+              <Link to="/services" className="w-full sm:w-auto border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 text-center min-h-[48px] flex items-center justify-center">
                 Learn More
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-2xl mx-auto">
               <div className="text-center">
-                <span className="block text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">500+</span>
-                <span className="text-sm text-white/90 uppercase tracking-wide">Professional Chefs</span>
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-400 mb-1 sm:mb-2">500+</span>
+                <span className="text-xs sm:text-sm text-white/90 uppercase tracking-wide">Professional Chefs</span>
               </div>
               <div className="text-center">
-                <span className="block text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">10k+</span>
-                <span className="text-sm text-white/90 uppercase tracking-wide">Happy Customers</span>
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-400 mb-1 sm:mb-2">10k+</span>
+                <span className="text-xs sm:text-sm text-white/90 uppercase tracking-wide">Happy Customers</span>
               </div>
               <div className="text-center">
-                <span className="block text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">50+</span>
-                <span className="text-sm text-white/90 uppercase tracking-wide">Cuisines Available</span>
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-400 mb-1 sm:mb-2">50+</span>
+                <span className="text-xs sm:text-sm text-white/90 uppercase tracking-wide">Cuisines Available</span>
               </div>
             </div>
           </div>
@@ -156,24 +156,24 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-gradient-to-b from-black/80 via-blue-900/90 to-blue-950/90">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-blue-700 mb-6">Why Choose ChefHub?</h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+      <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-b from-black/80 via-blue-900/90 to-blue-950/90">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-blue-700 mb-4 sm:mb-6">Why Choose ChefHub?</h2>
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
               We connect you with exceptional culinary talent for unforgettable dining experiences
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-black/40 backdrop-blur-md p-8 rounded-2xl border border-white/10 text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
-            <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-700 to-blue-400 rounded-full flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="bg-black/40 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-white/10 text-center hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-blue-700 to-blue-400 rounded-full flex items-center justify-center text-white group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="sm:w-10 sm:h-10">
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">Verified Professionals</h3>
-              <p className="text-white/80 leading-relaxed">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4">Verified Professionals</h3>
+              <p className="text-white/80 leading-relaxed text-sm sm:text-base">
                 All our chefs are thoroughly vetted, certified professionals with extensive culinary experience and stellar reviews.
               </p>
             </div>
