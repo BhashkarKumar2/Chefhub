@@ -49,7 +49,9 @@ const MainLayout = ({ children }) => {
         <main className={`flex-grow w-full overflow-x-hidden max-w-full container-responsive ${
           showSidebar && isMobile 
             ? 'pt-20 px-2 sm:px-4 pb-4' // More top padding for mobile menu button, responsive horizontal padding
-            : 'p-2 sm:p-4 lg:p-6' // Responsive padding for all screen sizes
+            : showSidebar 
+              ? 'p-2 sm:p-4 lg:p-6' // Responsive padding for pages with sidebar
+              : 'p-0' // No padding for login/signup pages to allow full control
         }`}>
           <div className="w-full max-w-full overflow-x-hidden container-responsive">
             {children}
