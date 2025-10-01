@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { buildApiEndpoint, API_BASE_URL } from '../../utils/apiConfig';
+import logo from '../../assets/logo.png';
 
 const SignupNew = () => {
   const [formData, setFormData] = useState({
@@ -74,26 +75,45 @@ const SignupNew = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gray-900 overflow-hidden">
-      {/* Background image with overlay */}
-      <img
-        src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1500&q=80"
-        alt="Chef cooking background"
-        className="absolute inset-0 w-full h-full object-cover object-center z-0"
-        style={{ filter: 'brightness(0.7) blur(2px)' }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/60 to-blue-900/60 z-0" />
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Dynamic Saffron Animated Background - Same as Home page */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.3),rgba(255,255,255,0))]"></div>
+        {/* Floating Saffron Elements */}
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-r from-orange-200/30 to-amber-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-gradient-to-r from-yellow-200/30 to-orange-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-amber-200/30 to-yellow-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '4s'}}></div>
+        <div className="absolute top-1/2 right-1/3 w-96 h-96 bg-gradient-to-r from-orange-100/25 to-amber-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-1/3 left-1/2 w-80 h-80 bg-gradient-to-r from-yellow-100/25 to-orange-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '3s'}}></div>
+      </div>
 
-      {/* Signup card with fixed width to prevent stretching */}
-      <div className="relative z-10 w-156 max-w-sm mx-auto px-4">
-        <div className="rounded-2xl shadow-2xl bg-white/80 backdrop-blur-md border border-blue-200/40 p-6 flex flex-col items-center">
-          <div className="flex flex-col items-center mb-6">
-            <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="ChefHub Logo" className="w-16 h-16 mb-2 drop-shadow" />
-            <h1 className="text-3xl font-extrabold text-blue-700 mb-1 tracking-tight">Join ChefHub</h1>
-            <p className="text-base text-gray-700 font-medium text-center">
-              Create your account to book amazing chefs and culinary experiences
-            </p>
+      {/* Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+        <div className="w-150 max-w-md">
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            <div className="inline-block relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-amber-400 rounded-full blur-lg opacity-60 animate-pulse"></div>
+              <img 
+                src={logo} 
+                alt="ChefHub Logo" 
+                className="w-16 h-16 object-contain relative z-10 mx-auto"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div className="w-16 h-16 flex items-center justify-center rounded-full text-xl font-bold relative z-10 mx-auto bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600" style={{display: 'none'}}>
+                CH
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-orange-900 mt-4 mb-2">Join ChefHub</h1>
+            <p className="text-orange-700">Create your account and start your culinary journey</p>
           </div>
+
+          {/* Signup Form Card */}
+          <div className="bg-white/20 backdrop-blur-md border border-orange-200/30 rounded-2xl p-8 shadow-xl">
 
           <form onSubmit={handleSubmit} className="space-y-4 w-full">
             {/* Full Name */}
@@ -105,7 +125,7 @@ const SignupNew = () => {
                   name="fullName"
                   type="text"
                   required
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Enter your full name"
                   onChange={handleChange}
                   value={formData.fullName}
@@ -126,7 +146,7 @@ const SignupNew = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="you@example.com"
                   onChange={handleChange}
                   value={formData.email}
@@ -147,7 +167,7 @@ const SignupNew = () => {
                   name="password"
                   type={passwordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Create a strong password"
                   onChange={handleChange}
                   value={formData.password}
@@ -170,7 +190,7 @@ const SignupNew = () => {
                   name="confirmPassword"
                   type={confirmPasswordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Confirm your password"
                   onChange={handleChange}
                   value={formData.confirmPassword}
@@ -186,7 +206,7 @@ const SignupNew = () => {
 
             {/* Error */}
             {error && (
-              <div className="bg-blue-100 border border-blue-300 text-blue-700 p-2 rounded mb-3 text-sm">
+              <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded mb-3 text-sm">
                 {error}
               </div>
             )}
@@ -195,7 +215,7 @@ const SignupNew = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full p-3 bg-gradient-to-br from-blue-700 to-blue-400 text-white font-semibold rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center"
+              className="w-full p-3 bg-gradient-to-br from-amber-700 to-amber-400 text-white font-semibold rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -218,18 +238,20 @@ const SignupNew = () => {
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-4 h-4" />
             </button>
             <button onClick={handleFacebookSignup} className="p-2 border border-gray-300 rounded-full bg-white hover:shadow-md transition" title="Sign up with Facebook">
-              <svg fill="#1877F2" height="16px" width="16px" viewBox="0 0 24 24">
+              <svg fill="#FF9800" height="16px" width="16px" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </button>
           </div>
 
           <p className="text-center text-sm text-gray-600 font-medium mt-2">
-            Already have an account? <Link to="/login" className="text-blue-600 font-semibold hover:underline transition-colors duration-200">Sign In</Link>
+            Already have an account? <Link to="/login" className="text-orange-800 font-semibold hover:text-orange-900 transition-colors duration-200">Sign In</Link>
           </p>
         </div>
       </div>
     </div>
+    </div>
+
   );
 };
 

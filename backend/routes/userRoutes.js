@@ -131,14 +131,17 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
 // @desc    Get user profile by ID
 // @access  Public (with optional auth for own profile)
 router.get('/profile/:id', optionalAuth, async (req, res) => {
+  console.log('🔍 Getting user profile for ID:', req.params.id);
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
+      console.log('❌ User not found:', req.params.id);
       return res.status(404).json({ message: 'User not found' });
     }
+    console.log('✅ User profile found:', user.email);
     res.json(user);
   } catch (err) {
-    console.error('Get user error:', err);
+    console.error('❌ Get user error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });

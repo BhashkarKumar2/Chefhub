@@ -12,7 +12,7 @@ const SelectInput = ({ label, name, value, onChange, options, required = false }
         value={value}
         onChange={onChange}
         required={required}
-        className="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        className="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:outline-none">
         <option value="">Select</option>
         {options.map((option, index) => (
           <option key={index} value={option}>{option}</option>

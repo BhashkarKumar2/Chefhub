@@ -177,9 +177,9 @@ export const NotificationCenter = () => {
 
   const getNotificationColor = (type) => {
     switch (type) {
-      case 'booking': return 'bg-blue-50 border-blue-200 text-blue-800';
+      case 'booking': return 'bg-orange-50 border-orange-200 text-orange-800';
       case 'message': return 'bg-green-50 border-green-200 text-green-800';
-      case 'payment': return 'bg-purple-50 border-purple-200 text-purple-800';
+      case 'payment': return 'bg-amber-50 border-amber-200 text-amber-800';
       case 'location': return 'bg-yellow-50 border-yellow-200 text-yellow-800';
       case 'system': return 'bg-red-50 border-red-200 text-red-800';
       default: return 'bg-gray-50 border-gray-200 text-gray-800';
@@ -211,7 +211,7 @@ export const NotificationCenter = () => {
             {notifications.length > 0 && (
               <button
                 onClick={clearAllNotifications}
-                className="text-sm text-purple-600 hover:text-purple-800"
+                className="text-sm text-amber-600 hover:text-amber-800"
               >
                 Clear All
               </button>
@@ -312,7 +312,7 @@ export const RealTimeChat = ({ recipientId, bookingId }) => {
             <div key={msg.id} className={`mb-3 ${msg.sent ? 'text-right' : 'text-left'}`}>
               <div className={`inline-block p-3 rounded-lg max-w-xs ${
                 msg.sent 
-                  ? 'bg-purple-600 text-white' 
+                  ? 'bg-amber-600 text-white' 
                   : 'bg-white border border-gray-200'
               }`}>
                 <p className="text-sm">{msg.message}</p>
@@ -331,12 +331,12 @@ export const RealTimeChat = ({ recipientId, bookingId }) => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
         />
         <button
           type="submit"
           disabled={!message.trim()}
-          className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+          className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
         >
           Send
         </button>

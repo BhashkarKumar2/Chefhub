@@ -1,9 +1,11 @@
 import React from 'react';
+import { useThemeAwareStyle } from '../utils/themeUtils';
 
 const CheckboxGroup = ({ label, options, selectedOptions, onChange }) => {
+  const { getClass, classes } = useThemeAwareStyle();
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <label className={getClass('text-sm font-medium text-gray-700', 'text-sm font-medium text-gray-200')}>{label}</label>
       <div className="flex flex-wrap gap-3">
         {options.map((option, index) => (
           <label key={index} className="flex items-center gap-2">
@@ -12,9 +14,9 @@ const CheckboxGroup = ({ label, options, selectedOptions, onChange }) => {
               value={option}
               checked={selectedOptions.includes(option)}
               onChange={() => onChange(option)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className={`w-4 h-4 rounded focus:ring-amber-500 ${classes.input.bg} ${classes.input.border}`}
             />
-            <span className="text-gray-700 text-sm">{option}</span>
+            <span className={getClass('text-gray-700 text-sm', 'text-gray-200 text-sm')}>{option}</span>
           </label>
         ))}
       </div>

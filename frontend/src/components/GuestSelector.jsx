@@ -9,7 +9,7 @@ const GuestSelector = ({ guests, onChange }) => {
         min={1}
         value={guests}
         onChange={(e) => onChange(parseInt(e.target.value))}
-        className="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        className="px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:outline-none"
       />
     </div>
   );

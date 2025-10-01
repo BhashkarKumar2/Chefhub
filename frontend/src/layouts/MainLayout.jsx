@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
+import { useTheme } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 
 const MainLayout = ({ children }) => {
+  const { theme } = useTheme();
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
 
-  const noSidebarPages = ['/login', '/signup'];
+  const noSidebarPages = ['/login', '/register'];
   const showSidebar = !noSidebarPages.includes(location.pathname);
 
   // Scroll to top on route change
@@ -35,14 +38,19 @@ const MainLayout = ({ children }) => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
+  <div className={`flex min-h-screen overflow-x-hidden max-w-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
+    {/* Floating Theme Toggle Button */}
+    <React.Suspense fallback={null}>
+      {showSidebar && <ThemeToggleButton />}
+    </React.Suspense>
       {/* Sidebar - handles its own responsive behavior */}
       {showSidebar && <Sidebar />}
+{/* import ThemeToggleButton from '../components/ThemeToggleButton'; */}
 
       {/* Page content */}
       <div
         className={`flex flex-col flex-1 transition-all duration-300 overflow-x-hidden max-w-full ${
-          showSidebar ? (isMobile ? 'ml-0' : 'ml-64') : ''
+          showSidebar ? (isMobile ? 'ml-0' : 'ml-20 mr-20') : ''
         }`}
       >
         {/* Main content with responsive padding and overflow handling */}

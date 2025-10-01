@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FavoriteButton from '../../components/FavoriteButton';
 import { buildApiEndpoint } from '../../utils/apiConfig';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 // OpenRouteService API key (store securely in production)
 const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
 
 const BookChef = () => {
+  const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const { id } = useParams();
   const navigate = useNavigate();
   const [chefs, setChefs] = useState([]);
@@ -502,7 +504,7 @@ const BookChef = () => {
         chefName: selectedChef.name || selectedChef.fullName
       },
       theme: {
-        color: "#8B5CF6" // Purple theme
+  color: "#f59e42" // Orange theme
       },
       modal: {
         ondismiss: function() {
@@ -591,10 +593,10 @@ const BookChef = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+  <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'} flex items-center justify-center`}>
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mb-4"></div>
-          <p className="text-xl text-gray-600">Loading chefs...</p>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mb-4"></div>
+          <p className={`text-xl ${isDark ? 'text-orange-300' : 'text-orange-700'}`}>Loading chefs...</p>
         </div>
       </div>
     );
@@ -602,9 +604,9 @@ const BookChef = () => {
 
   if (!selectedChef) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
         {/* Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-20">
+  <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-20">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="relative max-w-6xl mx-auto px-6 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm mb-8">
@@ -621,15 +623,15 @@ const BookChef = () => {
 
         {/* User Location Input */}
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-purple-100">
-            <label className="block text-sm font-semibold text-gray-700 mb-4">
+          <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'} rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border`}>
+            <label className={`block text-sm font-semibold ${isDark ? 'text-orange-300' : 'text-orange-900'} mb-4`}>
               📍 Your Service Location Details
             </label>
             
             {/* City and State Row */}
             <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">City *</label>
+                <label className={`block text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>City *</label>
                 <input
                   type="text"
                   placeholder="e.g., Mumbai, Delhi, Bangalore"
@@ -638,11 +640,11 @@ const BookChef = () => {
                     setUserLocation({ ...userLocation, city: e.target.value });
                     setLocationError('');
                   }}
-                  className="w-full p-3 sm:p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base"
+                  className={`w-full p-3 sm:p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm sm:text-base ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">State *</label>
+                <label className={`block text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-1`}>State *</label>
                 <input
                   type="text"
                   placeholder="e.g., Maharashtra, Delhi, Karnataka"
@@ -651,18 +653,18 @@ const BookChef = () => {
                     setUserLocation({ ...userLocation, state: e.target.value });
                     setLocationError('');
                   }}
-                  className="w-full p-3 sm:p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm sm:text-base"
+                  className={`w-full p-3 sm:p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 text-sm sm:text-base ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
                 />
               </div>
             </div>
 
             {/* Auto-Generated Address Display */}
             <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Complete Address (Auto-generated)</label>
-              <div className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
+              <label className={`block text-xs font-medium ${isDark ? 'text-orange-300' : 'text-orange-700'} mb-1`}>Complete Address (Auto-generated)</label>
+              <div className={`w-full p-3 border rounded-xl ${isDark ? 'border-gray-600 bg-gray-700 text-orange-300' : 'border-orange-200 bg-orange-50 text-orange-700'}`}>
                 {userLocation.address || 'Address will be auto-generated from city and state'}
               </div>
-              <p className="text-xs text-blue-600 mt-1">
+              <p className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-600'} mt-1`}>
                 ✨ Address is automatically created from your city and state for consistency
               </p>
             </div>
@@ -670,7 +672,7 @@ const BookChef = () => {
             {/* Set Location Button */}
             <div className="flex gap-3 items-center">
               <button
-                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold shadow hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold shadow hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!userLocation.city || !userLocation.state || locationLoading}
                 onClick={async () => {
                   if (!userLocation.city || !userLocation.state) {
@@ -689,7 +691,7 @@ const BookChef = () => {
                 {locationLoading ? 'Setting...' : 'Set Location'}
               </button>
               {userLocation.lat && userLocation.lon && (
-                <span className="text-green-600 text-sm flex items-center gap-1">
+                <span className={`text-sm flex items-center gap-1 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                   </svg>
@@ -697,27 +699,27 @@ const BookChef = () => {
                 </span>
               )}
             </div>
-            {locationError && <p className="text-red-500 text-xs mt-2">{locationError}</p>}
-            <p className="text-xs text-purple-600 mt-2">
+            {locationError && <p className={`text-xs mt-2 ${isDark ? 'text-red-400' : 'text-red-500'}`}>{locationError}</p>}
+            <p className={`text-xs mt-2 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
               💡 Enter city and state - we'll automatically create the complete address for precise chef location mapping
             </p>
           </div>
         </div>
 
         {/* Chefs Grid */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+  <div className={`max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 ${isDark ? 'bg-gray-800' : 'bg-orange-50'}`}>
           {!Array.isArray(chefs) || chefs.length === 0 ? (
             <div className="text-center py-8 sm:py-12">
-              <svg className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-4 sm:mb-6" fill="currentColor" viewBox="0 0 20 20">
+              <svg className={`w-16 h-16 sm:w-20 sm:h-20 ${isDark ? 'text-gray-600' : 'text-orange-200'} mx-auto mb-4 sm:mb-6`} fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zM8 6V5a2 2 0 114 0v1H8zm2 3a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1z" clipRule="evenodd"></path>
               </svg>
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-3 sm:mb-4">No Chefs Available</h3>
-              <p className="text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">We're working to add more amazing chefs to our platform. Please check back soon!</p>
+              <h3 className={`text-xl sm:text-2xl font-bold ${isDark ? 'text-orange-300' : 'text-orange-700'} mb-3 sm:mb-4`}>No Chefs Available</h3>
+              <p className={`${isDark ? 'text-orange-400' : 'text-orange-500'} mb-4 sm:mb-6 text-sm sm:text-base`}>We're working to add more amazing chefs to our platform. Please check back soon!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {chefs.map((chef) => (
-                <div key={chef._id} className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-purple-100 overflow-hidden">
+                <div key={chef._id} className={`group rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'}`}>
                   <div className="relative">
                     <img
                       src={chef.profileImage?.url || chef.photo || 'https://images.unsplash.com/photo-1659354219145-dedd2324698e?w=600&auto=format&fit=crop&q=60'}
@@ -725,41 +727,42 @@ const BookChef = () => {
                       className="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1">
-                      <span className="text-purple-600 font-bold text-sm sm:text-lg">₹{chef.pricePerHour || chef.rate || 1200}/hr</span>
+                      <span className="text-orange-600 font-bold text-sm sm:text-lg">₹{chef.pricePerHour || chef.rate || 1200}/hr</span>
                     </div>
-                    <div className="absolute top-2 left-2 sm:top-2 sm:left-15">
+                    <div className="absolute top-2 left-4 sm:top-2 sm:left-15">
                       <FavoriteButton chef={chef} variant="card" />
                     </div>
                   </div>
                   
                   <div className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-2xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                    <h3 className={`text-lg sm:text-2xl font-bold mb-2 group-hover:text-orange-600 transition-colors duration-300 ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>
                       {chef.name || chef.fullName}
                     </h3>
-                    <p className="text-purple-600 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">{chef.specialty}</p>
-                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3">
+                    <p className="text-orange-600 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">{chef.specialty}</p>
+                    <p className={`text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
                       {chef.bio || 'Experienced professional chef with expertise in creating exceptional culinary experiences.'}
                     </p>
                     {/* Show address and distance if available */}
-                    <p className="text-xs text-gray-500 mb-1">
-                      <span role="img" aria-label="address">📍</span> {chef.address || (Array.isArray(chef.serviceableLocations) && chef.serviceableLocations[0]) || 'No address set'}
-                    </p>
-                    {typeof chef.distance === 'number' && isFinite(chef.distance) && (
-                      <p className="text-xs text-blue-600 mb-2">Distance: {(chef.distance / 1000).toFixed(1)} km</p>
-                    )}
+                   {/* // Inside the chef card, after the address: */}
+                  <p className={`text-xs mb-1 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>
+                    <span role="img" aria-label="address">📍</span> {chef.address || (Array.isArray(chef.serviceableLocations) && chef.serviceableLocations[0]) || 'No address set'}
+                  </p>
+                  <p className={`text-xs mb-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
+                    Distance: {typeof chef.distance === 'number' && isFinite(chef.distance) ? (chef.distance / 1000).toFixed(1) + ' km' : 'N/A'}
+                  </p>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-1">
                         {[...Array(5)].map((_, i) => (
-                          <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                           </svg>
                         ))}
-                        <span className="text-sm text-gray-500 ml-2">(4.8)</span>
+                        <span className={`text-sm ml-2 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>(4.8)</span>
                       </div>
                       <button
                         onClick={() => setSelectedChef(chef)}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm sm:text-base min-h-[40px]"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm sm:text-base min-h-[40px]"
                       >
                         Book Now
                       </button>
@@ -776,12 +779,12 @@ const BookChef = () => {
 
   // Booking form for selected chef
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className={`min-h-screen ml-20 ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Back Button */}
         <button
           onClick={() => setSelectedChef(null)}
-          className="mb-6 flex items-center text-purple-600 hover:text-purple-700 font-semibold transition-colors duration-200"
+          className={`mb-6 flex items-center font-semibold transition-colors duration-200 ${isDark ? 'text-orange-400 hover:text-orange-300' : 'text-orange-600 hover:text-orange-700'}`}
         >
           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd"></path>
@@ -789,10 +792,10 @@ const BookChef = () => {
           Back to Chef Selection
         </button>
 
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-purple-100">
+  <div className={`rounded-3xl shadow-xl overflow-hidden border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'}`}>
           <div className="grid lg:grid-cols-2 gap-0">
             {/* Chef Information */}
-            <div className="bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white p-8 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700 text-white p-8 relative overflow-hidden">
               <div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
               <div className="absolute bottom-5 left-10 w-16 h-16 bg-white/15 rounded-full animate-bounce"></div>
               
@@ -807,23 +810,23 @@ const BookChef = () => {
                   <p className="text-xl opacity-95 mb-4">{selectedChef.specialty}</p>
                   <p className="leading-relaxed opacity-90 mb-6">{selectedChef.bio}</p>
                   <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                    <p className="text-2xl font-bold">₹{selectedChef.pricePerHour || selectedChef.rate || 1200}/hour</p>
-                    <p className="text-sm opacity-80">Base rate (excluding add-ons)</p>
+                    <p className="text-2xl font-bold text-orange-600">₹{selectedChef.pricePerHour || selectedChef.rate || 1200}/hour</p>
+                    <p className={`text-sm opacity-80 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>Base rate (excluding add-ons)</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Booking Form */}
-            <div className="p-8">
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-8">
+            <div className={`p-8 ${isDark ? 'bg-gray-800' : ''}`}>
+              <h3 className={`text-3xl font-bold mb-8 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent'}`}> 
                 Book Your Experience
               </h3>
 
               <div className="space-y-6">
                 {/* Service Type Selection */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-4">Select Service Type *</label>
+                  <label className={`block text-sm font-semibold mb-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Service Type *</label>
                   <div className="grid md:grid-cols-3 gap-4">
                     {serviceTypes.map((service) => (
                       <div
@@ -831,22 +834,22 @@ const BookChef = () => {
                         onClick={() => setBookingDetails({ ...bookingDetails, serviceType: service.id, duration: service.minDuration })}
                         className={`cursor-pointer border-2 rounded-xl p-4 transition-all duration-300 ${
                           bookingDetails.serviceType === service.id
-                            ? 'border-purple-500 bg-purple-50'
-                            : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'
+                            ? `border-orange-500 ${isDark ? 'bg-orange-900/30' : 'bg-orange-50'}`
+                            : `${isDark ? 'border-gray-600 hover:border-orange-400 hover:bg-orange-900/20' : 'border-gray-200 hover:border-orange-300 hover:bg-orange-25'}`
                         }`}
                       >
                         <div className="text-center">
                           <span className="text-4xl mb-3 block">{service.icon}</span>
-                          <h4 className="font-bold text-gray-800 mb-2">{service.name}</h4>
-                          <p className="text-sm text-gray-600 mb-3">{service.description}</p>
-                          <div className="text-xs text-purple-600 font-semibold">
+                          <h4 className={`font-bold mb-2 ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>{service.name}</h4>
+                          <p className={`text-sm mb-3 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>{service.description}</p>
+                          <div className={`text-xs font-semibold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                             {service.baseMultiplier}x base rate
                           </div>
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className={`text-xs mt-1 ${isDark ? 'text-orange-500' : 'text-orange-500'}`}>
                             {service.minDuration}-{service.maxDuration} hours
                           </div>
                           {bookingDetails.serviceType === service.id && (
-                            <svg className="w-6 h-6 text-green-500 mx-auto mt-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-6 h-6 text-amber-500 mx-auto mt-2" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
                             </svg>
                           )}
@@ -859,7 +862,7 @@ const BookChef = () => {
                 {/* Duration Selection (if service type is selected) */}
                 {bookingDetails.serviceType && (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Duration (hours) *
                     </label>
                     <div className="flex items-center space-x-4">
@@ -869,13 +872,13 @@ const BookChef = () => {
                         max={serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration || 8}
                         value={bookingDetails.duration}
                         onChange={(e) => setBookingDetails({ ...bookingDetails, duration: parseInt(e.target.value) })}
-                        className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                        className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer slider ${isDark ? 'bg-gray-600' : 'bg-orange-200'}`}
                       />
-                      <div className="text-lg font-semibold text-purple-600 min-w-[60px]">
+                      <div className={`text-lg font-semibold min-w-[60px] ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                         {bookingDetails.duration}h
                       </div>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-500 mt-1">
+                    <div className={`flex justify-between text-sm mt-1 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>
                       <span>{serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration}h min</span>
                       <span>{serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration}h max</span>
                     </div>
@@ -885,55 +888,55 @@ const BookChef = () => {
                 {/* Date and Time */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Select Date *</label>
+                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Date *</label>
                     <input
                       type="date"
                       value={bookingDetails.date}
                       onChange={(e) => setBookingDetails({ ...bookingDetails, date: e.target.value })}
-                      className="w-full p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
                       min={new Date().toISOString().split('T')[0]}
                       required
                     />
                     {!bookingDetails.date && (
-                      <p className="text-red-500 text-xs mt-1">Please select a date</p>
+                      <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please select a date</p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Select Time *</label>
+                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Time *</label>
                     <input
                       type="time"
                       value={bookingDetails.time}
                       onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
-                      className="w-full p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
                       required
                     />
                     {!bookingDetails.time && (
-                      <p className="text-red-500 text-xs mt-1">Please select a time</p>
+                      <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please select a time</p>
                     )}
                   </div>
                 </div>
 
                 {/* Guest Count */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Number of Guests *</label>
+                  <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Number of Guests *</label>
                   <input
                     type="number"
                     placeholder="How many people will be dining?"
                     value={bookingDetails.guestCount}
                     onChange={(e) => setBookingDetails({ ...bookingDetails, guestCount: e.target.value })}
-                    className="w-full p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
                     min="1"
                     max="200"
                     required
                   />
                   {!bookingDetails.guestCount && (
-                    <p className="text-red-500 text-xs mt-1">Please enter the number of guests</p>
+                    <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please enter the number of guests</p>
                   )}
                 </div>
 
                 {/* Add-ons */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-4">Premium Add-ons</label>
+                  <label className={`block text-sm font-semibold mb-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Premium Add-ons</label>
                   {bookingDetails.serviceType ? (
                     <div className="grid md:grid-cols-2 gap-4">
                       {getAddOnsForService(bookingDetails.serviceType).map((addOn) => (
@@ -942,20 +945,20 @@ const BookChef = () => {
                           onClick={() => toggleAddOn(addOn.name)}
                           className={`cursor-pointer border-2 rounded-xl p-4 transition-all duration-300 ${
                             bookingDetails.addOns.includes(addOn.name)
-                              ? 'border-purple-500 bg-purple-50'
-                              : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'
+                              ? `border-amber-500 ${isDark ? 'bg-amber-900/30' : 'bg-amber-50'}`
+                              : `${isDark ? 'border-gray-600 hover:border-amber-400 hover:bg-amber-900/20' : 'border-gray-200 hover:border-amber-300 hover:bg-amber-25'}`
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-center">
                               <span className="text-2xl mr-3">{addOn.icon}</span>
                               <div>
-                                <h4 className="font-semibold text-gray-800">{addOn.name}</h4>
-                                <p className="text-sm text-gray-600">{addOn.description}</p>
+                                <h4 className={`font-semibold ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>{addOn.name}</h4>
+                                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{addOn.description}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="font-bold text-purple-600">+₹{addOn.price}</p>
+                              <p className={`font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>+₹{addOn.price}</p>
                               {bookingDetails.addOns.includes(addOn.name) && (
                                 <svg className="w-5 h-5 text-green-500 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
@@ -967,7 +970,7 @@ const BookChef = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className={`text-center py-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                       <p>Please select a service type first to see available add-ons</p>
                     </div>
                   )}
@@ -975,25 +978,25 @@ const BookChef = () => {
 
                 {/* Special Requests */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Special Requests</label>
+                  <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Special Requests</label>
                   <textarea
                     value={bookingDetails.notes}
                     onChange={(e) => setBookingDetails({ ...bookingDetails, notes: e.target.value })}
                     placeholder="Any dietary restrictions, allergies, or special requests..."
-                    className="w-full p-4 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-none"
+                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
                     rows="4"
                   />
                 </div>
 
                 {/* Total and Book Button */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
+                <div className={`rounded-2xl p-6 border ${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600' : 'bg-gradient-to-r from-orange-50 to-amber-100 border-orange-200'}`}>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-lg font-semibold text-gray-700">Total Amount:</span>
-                    <span className="text-3xl font-bold text-purple-600">₹{calculateTotal()}</span>
+                    <span className={`text-lg font-semibold ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>Total Amount:</span>
+                    <span className={`text-3xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{calculateTotal()}</span>
                   </div>
                   <button
                     onClick={handleBooking}
-                    className="w-full p-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center"
+                    className="w-full p-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] flex items-center justify-center"
                   >
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>

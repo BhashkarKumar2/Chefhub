@@ -16,9 +16,8 @@ import BookChef from '../pages/chef/BookChef'
 import Favorites from '../pages/user/Favorites'
 import ChefOnboarding from '../pages/chef/ChefOnboarding'
 import ViewBookings from '../pages/user/ViewBookings'
-import EnhancedBookChef from '../components/EnhancedBookChef'
 import AdvancedSearch from '../components/AdvancedSearch'
-import AIFeatures from '../components/AIFeatures'
+import UnifiedAIFeatures from '../components/UnifiedAIFeatures'
 
 export default function Router() {
   return (
@@ -35,13 +34,14 @@ export default function Router() {
         <Route path="/services" element={<Services />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/book-chef" element={<BookChef />} />
-        <Route path="/book-chef-ai" element={<EnhancedBookChef />} />
+        <Route path="/book-chef-ai" element={<UnifiedAIFeatures mode="booking" />} />
         <Route path="/search" element={<AdvancedSearch />} />
-        <Route path="/ai-features" element={<AIFeatures />} />
+        <Route path="/ai-features" element={<UnifiedAIFeatures mode="dashboard" />} />
         <Route path="/bookings" element={<ViewBookings />} />
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/chef-onboarding" element={<ChefOnboarding />} />
         <Route path="/auth-debug" element={<AuthDebug />} />
+        <Route path="/bookings" element={<ViewBookings />} />
         <Route path="/auth-success" element={<AuthSuccess />} />
       </Routes>
   )

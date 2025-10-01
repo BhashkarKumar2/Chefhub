@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AIChatAssistant } from '../components/AIFeatures';
+import { AIChatAssistant } from '../components/UnifiedAIFeatures';
 import AdvancedSearch from '../components/AdvancedSearch';
 import axios from 'axios';
 
@@ -68,9 +68,9 @@ const AIAnalyticsDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
         <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-600 mx-auto mb-4"></div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading AI Analytics</h3>
           <p className="text-gray-600">Analyzing platform data...</p>
         </div>
@@ -79,7 +79,7 @@ const AIAnalyticsDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">

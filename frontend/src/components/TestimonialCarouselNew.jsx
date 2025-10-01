@@ -119,15 +119,15 @@ const TestimonialCarousel = () => {
   };
 
   return (
-    <div className="relative max-w-5xl mx-auto px-4 py-8 md:px-8 md:py-12 overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl backdrop-blur-sm">
-      <div className="relative flex items-center w-full overflow-hidden rounded-xl bg-white/95 backdrop-blur-2xl border border-white/20 shadow-2xl" style={{ minHeight: 'clamp(350px, 50vh, 500px)' }}>
+    <div className="relative max-w-5xl mx-auto px-4 py-8 md:px-8 md:py-12 overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl backdrop-blur-sm">
+      <div className="relative flex items-center w-full overflow-hidden rounded-xl bg-white/95 dark:bg-gray-900/70 backdrop-blur-2xl border border-white/20 dark:border-gray-800 shadow-2xl" style={{ minHeight: 'clamp(350px, 50vh, 500px)' }}>
         
         {/* Previous Button */}
         <button
           onClick={goToPrevious}
           aria-label="Previous testimonial"
-          className={`absolute top-1/2 -translate-y-1/2 -left-6 z-10 hidden md:flex items-center justify-center bg-white/90 backdrop-blur-xl border-none rounded-full text-indigo-500 font-bold shadow-lg transition-all duration-300 ease-out hover:bg-gradient-to-br hover:from-indigo-500 hover:to-purple-600 hover:text-white hover:scale-110 hover:shadow-indigo-500/40 hover:shadow-2xl ${
-            hoveredButton === 'prev' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white scale-110' : ''
+          className={`absolute top-1/2 -translate-y-1/2 -left-6 z-10 hidden md:flex items-center justify-center bg-white/90 dark:bg-gray-800/80 backdrop-blur-xl border-none rounded-full text-orange-500 dark:text-orange-300 font-bold shadow-lg transition-all duration-300 ease-out hover:bg-gradient-to-br hover:from-orange-500 hover:to-amber-600 hover:text-white hover:scale-110 hover:shadow-orange-500/40 hover:shadow-2xl ${
+            hoveredButton === 'prev' ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white scale-110' : ''
           }`}
           style={{ width: 'clamp(48px, 5vw, 64px)', height: 'clamp(48px, 5vw, 64px)', fontSize: 'clamp(1.25rem, 2vw, 1.5rem)' }}
           onMouseEnter={() => setHoveredButton('prev')}
@@ -149,12 +149,12 @@ const TestimonialCarousel = () => {
               <div className="w-full text-center flex flex-col" style={{ gap: 'clamp(1rem, 3vw, 3rem)', maxWidth: 'clamp(300px, 80vw, 800px)' }}>
                 
                 {/* Quote Icon */}
-                <div className="text-indigo-500 opacity-30 font-serif leading-none" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', marginBottom: 'clamp(0.5rem, 2vw, 1rem)' }}>
+                <div className="text-orange-500 dark:text-orange-300 opacity-30 font-serif leading-none" style={{ fontSize: 'clamp(2rem, 6vw, 4rem)', marginBottom: 'clamp(0.5rem, 2vw, 1rem)' }}>
                   "
                 </div>
                 
                 {/* Quote Text */}
-                <p className="leading-relaxed text-gray-800 font-light tracking-tight break-words" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.5rem)', padding: '0 clamp(0.5rem, 2vw, 0rem)' }}>
+                <p className="leading-relaxed text-gray-800 dark:text-gray-200 font-light tracking-tight break-words" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.5rem)', padding: '0 clamp(0.5rem, 2vw, 0rem)' }}>
                   "{testimonial.quote}"
                 </p>
                 
@@ -164,18 +164,18 @@ const TestimonialCarousel = () => {
                 </div>
                 
                 {/* Author Info */}
-                <div className="flex flex-col md:flex-row items-center justify-center border-t border-gray-200/50" style={{ gap: 'clamp(1rem, 3vw, 1.5rem)', paddingTop: 'clamp(1rem, 3vw, 2rem)' }}>
+                <div className="flex flex-col md:flex-row items-center justify-center border-t border-gray-200/30 dark:border-gray-800" style={{ gap: 'clamp(1rem, 3vw, 1.5rem)', paddingTop: 'clamp(1rem, 3vw, 2rem)' }}>
                   <img 
                     src={testimonial.image} 
                     alt={testimonial.name} 
-                    className="rounded-full object-cover border-4 border-transparent bg-gradient-to-br from-indigo-500 to-purple-600 p-1 shadow-lg shadow-indigo-500/30 transition-transform duration-300 hover:scale-105"
+                    className="rounded-full object-cover border-4 border-transparent bg-gradient-to-br from-orange-500 to-amber-600 p-1 shadow-lg shadow-orange-500/30 transition-transform duration-300 hover:scale-105"
                     style={{ width: 'clamp(3rem, 8vw, 5rem)', height: 'clamp(3rem, 8vw, 5rem)' }}
                   />
                   <div className="text-center md:text-left">
-                    <h4 className="font-bold tracking-tight bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)' }}>
+                    <h4 className="font-bold tracking-tight bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', marginBottom: 'clamp(0.25rem, 1vw, 0.5rem)' }}>
                       {testimonial.name}
                     </h4>
-                    <p className="text-gray-600 font-medium tracking-wide" style={{ fontSize: 'clamp(0.75rem, 2vw, 1rem)' }}>
+                    <p className="text-gray-600 dark:text-gray-300 font-medium tracking-wide" style={{ fontSize: 'clamp(0.75rem, 2vw, 1rem)' }}>
                       {testimonial.role}
                     </p>
                   </div>
@@ -189,8 +189,8 @@ const TestimonialCarousel = () => {
         <button
           onClick={goToNext}
           aria-label="Next testimonial"
-          className={`absolute top-1/2 -translate-y-1/2 -right-6 z-10 hidden md:flex items-center justify-center bg-white/90 backdrop-blur-xl border-none rounded-full text-indigo-500 font-bold shadow-lg transition-all duration-300 ease-out hover:bg-gradient-to-br hover:from-indigo-500 hover:to-purple-600 hover:text-white hover:scale-110 hover:shadow-indigo-500/40 hover:shadow-2xl ${
-            hoveredButton === 'next' ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white scale-110' : ''
+          className={`absolute top-1/2 -translate-y-1/2 -right-6 z-10 hidden md:flex items-center justify-center bg-white/90 dark:bg-gray-800/80 backdrop-blur-xl border-none rounded-full text-orange-500 dark:text-orange-300 font-bold shadow-lg transition-all duration-300 ease-out hover:bg-gradient-to-br hover:from-orange-500 hover:to-amber-600 hover:text-white hover:scale-110 hover:shadow-orange-500/40 hover:shadow-2xl ${
+            hoveredButton === 'next' ? 'bg-gradient-to-br from-orange-500 to-amber-600 text-white scale-110' : ''
           }`}
           style={{ width: 'clamp(48px, 5vw, 64px)', height: 'clamp(48px, 5vw, 64px)', fontSize: 'clamp(1.25rem, 2vw, 1.5rem)' }}
           onMouseEnter={() => setHoveredButton('next')}
@@ -205,10 +205,10 @@ const TestimonialCarousel = () => {
         {testimonials.map((_, index) => (
           <button
             key={index}
-            className={`rounded-full border-none cursor-pointer transition-all duration-300 ease-out ${
+            className={`rounded-full border-none cursor-pointer transition-all duration-300 ease-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 ${
               index === currentIndex
-                ? 'bg-white shadow-lg shadow-white/40'
-                : 'bg-white/40 hover:bg-white/60 hover:scale-110'
+                ? 'bg-white shadow-lg shadow-white/40 dark:bg-orange-400 dark:shadow-orange-400/30'
+                : 'bg-white/40 hover:bg-white/60 hover:scale-110 dark:bg-white/20 dark:hover:bg-white/40'
             }`}
             style={{ 
               width: 'clamp(10px, 2vw, 16px)', 
@@ -217,6 +217,7 @@ const TestimonialCarousel = () => {
             }}
             onClick={() => goToSlide(index)}
             aria-label={`Go to testimonial ${index + 1}`}
+            aria-current={index === currentIndex}
           />
         ))}
       </div>

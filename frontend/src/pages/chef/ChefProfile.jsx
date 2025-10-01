@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const ChefProfile = () => {
+  const { isDark, getClass } = useThemeAwareStyle();
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('about');
@@ -54,7 +56,7 @@ const ChefProfile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-xl text-gray-600">Loading chef profile...</p>
         </div>
       </div>
@@ -70,7 +72,7 @@ const ChefProfile = () => {
           </svg>
           <h3 className="text-xl font-semibold text-gray-600 mb-2">Chef Not Found</h3>
           <p className="text-gray-500 mb-6">{error || 'The chef profile you are looking for does not exist.'}</p>
-          <Link to="/chefs" className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300">
+          <Link to="/chefs" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300">
             Browse All Chefs
           </Link>
         </div>
@@ -91,10 +93,12 @@ const ChefProfile = () => {
     completedBookings = 0,
     menu = [],
     certificates = [],
-    profileImage: photo,
+  profileImage,
     gallery = [],
     reviews = []
   } = chef;
+
+  console.log("chef data found is :" , chef);
 
   const tabs = [
     { id: 'about', label: 'About', icon: '👨‍🍳' },
@@ -104,45 +108,47 @@ const ChefProfile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <div className='ml-20'>
+  <div className={getClass('min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100', 'min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 ')}>
       {/* Hero Section */}
       <div className="relative">
-        <div className="h-96 bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 relative overflow-hidden">
+      <div className="h-96 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/30"></div>
           <img 
-            src={photo} 
+            src={profileImage?.url}
             alt={fullName}
             className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
+            style={{ opacity: isDark ? 0.5 : 1 }}
           />
           
           {/* Floating elements */}
           <div className="absolute top-20 left-20 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
           <div className="absolute bottom-20 right-20 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
-        </div>
+          </div>
         
         {/* Profile Card */}
-        <div className="relative max-w-6xl mx-auto px-6 -mt-32">
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-purple-100">
-            <div className="p-8 md:p-12">
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32">  
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-orange-100">
+            <div className={getClass('p-8 md:p-12 bg-white', 'p-8 md:p-12 bg-gray-900')}>
               <div className="flex flex-col md:flex-row items-start gap-8">
                 <div className="flex-shrink-0">
                   <img
-                    src={photo}
+                    src={profileImage?.url}
                     alt={fullName}
-                    className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl"
+                    className={getClass('w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-xl', 'w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-gray-800 shadow-xl')}
                   />
                 </div>
                 
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
-                      <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">{fullName}</h1>
-                      <div className="flex items-center gap-4 text-gray-600 mb-4">
+                      <h1 className={getClass('text-4xl md:text-5xl font-bold text-gray-800 mb-2', 'text-4xl md:text-5xl font-bold text-orange-300 mb-2')}>{fullName}</h1>
+                      <div className={getClass('flex items-center gap-4 text-gray-600 mb-4', 'flex items-center gap-4 text-gray-400 mb-4')}>
                         <span className="flex items-center">
                           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
                           </svg>
-                          {location}
+                          {chef.address}
                         </span>
                         <span className="flex items-center">
                           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -151,6 +157,7 @@ const ChefProfile = () => {
                           {experienceYears} years experience
                         </span>
                       </div>
+                    
                     </div>
                     
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -158,8 +165,8 @@ const ChefProfile = () => {
                         onClick={() => setIsBookmarked(!isBookmarked)}
                         className={`px-4 py-2 rounded-xl font-semibold transition-all duration-300 ${
                           isBookmarked 
-                            ? 'bg-red-100 text-red-600 border border-red-200' 
-                            : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                            ? 'bg-orange-100 text-orange-600 border border-orange-200' 
+                            : getClass('bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200', 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700')
                         }`}
                       >
                         <svg className="w-5 h-5 inline mr-2" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +177,7 @@ const ChefProfile = () => {
                       
                       <Link 
                         to={`/book/${id}`}
-                        className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-center"
+                        className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-center"
                       >
                         Book Now
                       </Link>
@@ -180,20 +187,20 @@ const ChefProfile = () => {
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">₹{hourlyRate}</div>
-                      <div className="text-sm text-gray-600">per hour</div>
+                      <div className={getClass('text-2xl font-bold text-orange-600', 'text-2xl font-bold text-orange-300')}>₹{chef.pricePerHour}</div>
+                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>per hour</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-yellow-500">{rating}</div>
-                      <div className="text-sm text-gray-600">{reviewsCount} reviews</div>
+                      <div className={getClass('text-2xl font-bold text-yellow-500', 'text-2xl font-bold text-yellow-400')}>{rating}</div>
+                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>{reviewsCount} reviews</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{completedBookings}</div>
-                      <div className="text-sm text-gray-600">bookings</div>
+                      <div className={getClass('text-2xl font-bold text-amber-600', 'text-2xl font-bold text-amber-300')}>{completedBookings}</div>
+                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>bookings</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{availability}</div>
-                      <div className="text-sm text-gray-600">availability</div>
+                      <div className={getClass('text-2xl font-bold text-orange-600', 'text-2xl font-bold text-orange-300')}>{availability}</div>
+                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>availability</div>
                     </div>
                   </div>
                   
@@ -202,7 +209,7 @@ const ChefProfile = () => {
                     {specialties.map((specialty, index) => (
                       <span 
                         key={index}
-                        className="px-3 py-1 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded-full text-sm font-medium"
+                        className={getClass('px-3 py-1 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 rounded-full text-sm font-medium', 'px-3 py-1 bg-gradient-to-r from-gray-800 to-gray-900 text-orange-300 rounded-full text-sm font-medium')}
                       >
                         {specialty}
                       </span>
@@ -216,9 +223,9 @@ const ChefProfile = () => {
       </div>
 
       {/* Content Tabs */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
+  <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-2xl shadow-lg p-2 mb-8 border border-purple-100">
+  <div className="bg-white rounded-2xl shadow-lg p-2 mb-8 border border-orange-100">
           <div className="flex flex-wrap gap-2">
             {tabs.map((tab) => (
               <button
@@ -226,7 +233,7 @@ const ChefProfile = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -238,7 +245,7 @@ const ChefProfile = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-3xl shadow-lg p-8 md:p-12 border border-purple-100">
+  <div className={getClass('bg-white rounded-3xl shadow-lg p-8 md:p-12 border border-orange-100', 'bg-gray-900 rounded-3xl shadow-lg p-8 md:p-12 border border-gray-800')}>
           {activeTab === 'about' && (
             <div className="space-y-8">
               <div>
@@ -250,8 +257,8 @@ const ChefProfile = () => {
                 <h4 className="text-xl font-semibold text-gray-800 mb-4">Certifications & Qualifications</h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   {certificates.map((cert, index) => (
-                    <div key={index} className="flex items-center p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100">
-                      <svg className="w-6 h-6 text-purple-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <div key={index} className={getClass('flex items-center p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100', 'flex items-center p-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-800')}>
+                      <svg className="w-6 h-6 text-orange-600 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                       </svg>
                       <span className="text-gray-700 font-medium">{cert}</span>
@@ -271,14 +278,14 @@ const ChefProfile = () => {
               
               {menu.map((section, index) => (
                 <div key={index} className="mb-8">
-                  <h4 className="text-2xl font-semibold text-purple-600 mb-4 border-b border-purple-200 pb-2">
+                  <h4 className="text-2xl font-semibold text-orange-600 mb-4 border-b border-orange-200 pb-2">
                     {section.category}
                   </h4>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {section.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100 hover:shadow-md transition-all duration-300">
+                      <div key={itemIndex} className={getClass('p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100 hover:shadow-md transition-all duration-300', 'p-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-800 hover:shadow-md transition-all duration-300')}>
                         <div className="flex items-center">
-                          <span className="w-2 h-2 bg-purple-400 rounded-full mr-3"></span>
+                          <span className="w-2 h-2 bg-orange-400 rounded-full mr-3"></span>
                           <span className="text-gray-700 font-medium">{item}</span>
                         </div>
                       </div>
@@ -308,7 +315,7 @@ const ChefProfile = () => {
               
               <div className="space-y-6">
                 {reviews.map((review, index) => (
-                  <div key={index} className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100">
+                  <div key={index} className={getClass('p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100', 'p-6 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-800')}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h5 className="font-semibold text-gray-800">{review.name}</h5>
@@ -357,13 +364,13 @@ const ChefProfile = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-8 text-white">
+  <div className="text-center mt-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className={getClass('bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-8 text-white', 'bg-gradient-to-r from-orange-900 to-amber-900 rounded-3xl p-8 text-white')}>
             <h3 className="text-3xl font-bold mb-4">Ready to Book Your Experience?</h3>
             <p className="text-xl mb-8 opacity-95">Create unforgettable memories with Chef {fullName.split(' ')[1]}</p>
             <Link 
               to={`/book/${id}`}
-              className="inline-flex items-center px-8 py-3 bg-white text-purple-600 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
+              className="inline-flex items-center px-8 py-3 bg-white text-orange-600 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
             >
               Book Chef {fullName.split(' ')[1]}
               <svg className="w-5 h-5 ml-2" fill="currentColor" viewBox="0 0 20 20">
@@ -373,6 +380,7 @@ const ChefProfile = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

@@ -21,106 +21,108 @@ import AuthSuccess from './pages/auth/AuthSuccess';
 import AuthDebug from './pages/auth/AuthDebug';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { SocketProvider } from './components/RealTimeFeatures';
-import EnhancedBookChef from './pages/EnhancedBookChef';
 import AdvancedSearch from './components/AdvancedSearch';
-import AIFeatures from './components/AIFeatures';
+import UnifiedAIFeatures from './components/UnifiedAIFeatures';
+// import ThemeDebugger from './components/ThemeDebugger';
 
 const App = () => {
   return (
-    <AuthProvider>
-      <FavoritesProvider>
-        <SocketProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full no-overflow">
-              <MainLayout>
-                <main className="flex-1">
-                  <Routes>
-                    {/* Public routes - accessible without authentication */}
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/mobile-login" element={<MobileLogin />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/services" element={<Services />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/search" element={<AdvancedSearch />} />
-                    <Route path="/chefs" element={
-                      <ProtectedRoute>
-                        <Chefs />
-                      </ProtectedRoute>
-                    } />
-                    
-                    {/* Protected routes - require authentication */}
-                    <Route path="/dashboard" element={
-                      <ProtectedRoute>
-                        <Dashboard />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/chef/:id" element={
-                  <ProtectedRoute>
-                    <ChefProfile />
-                  </ProtectedRoute>
-                } />
-                <Route path="/book/:id" element={
-                  <ProtectedRoute>
-                    <BookChef />
-                  </ProtectedRoute>
-                } />
-                    <Route path="/book-chef" element={
-                      <ProtectedRoute>
-                        <BookChef />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/book-chef-ai" element={
-                      <ProtectedRoute>
-                        <EnhancedBookChef />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/ai-features" element={
-                      <ProtectedRoute>
-                        <AIFeatures />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/chef-onboarding" element={
-                      <ProtectedRoute>
-                        <ChefOnboarding />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/favorites" element={
-                      <ProtectedRoute>
-                        <Favorites />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/edit-profile" element={
-                      <ProtectedRoute>
-                        <EditProfile />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/bookings" element={
-                      <ProtectedRoute>
-                        <ViewBookings />
-                      </ProtectedRoute>
-                    } />
-                    
-                    {/* Auth-related routes */}
-                    <Route path="/auth-success" element={<AuthSuccess />} />
-                    <Route path="/auth-debug" element={<AuthDebug />} />
-                  </Routes>
-                </main>
-              </MainLayout>
-            </div>
-          </Router>
-        </SocketProvider>
-      </FavoritesProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <FavoritesProvider>
+          <SocketProvider>
+            <Router>
+              <div className="min-h-screen overflow-x-hidden max-w-full no-overflow">
+                {/* <ThemeDebugger /> */}
+                <MainLayout>
+                  <main className="flex-1">
+                    <Routes>
+                      {/* Public routes - accessible without authentication */}
+                      <Route path="/" element={<Home />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/mobile-login" element={<MobileLogin />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/services" element={<Services />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/search" element={<AdvancedSearch />} />
+                      <Route path="/chefs" element={
+                        <ProtectedRoute>
+                          <Chefs />
+                        </ProtectedRoute>
+                      } />
+                      {/* Protected routes - require authentication */}
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chef/:id" element={
+                        <ProtectedRoute>
+                          <ChefProfile />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/book/:id" element={
+                        <ProtectedRoute>
+                          <BookChef />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/book-chef" element={
+                        <ProtectedRoute>
+                          <BookChef />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/book-chef-ai" element={
+                        <ProtectedRoute>
+                          <UnifiedAIFeatures mode="booking" />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/ai-features" element={
+                        <ProtectedRoute>
+                          <UnifiedAIFeatures mode="dashboard" />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chef-onboarding" element={
+                        <ProtectedRoute>
+                          <ChefOnboarding />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/profile" element={
+                        <ProtectedRoute>
+                          <Profile />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/favorites" element={
+                        <ProtectedRoute>
+                          <Favorites />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/edit-profile" element={
+                        <ProtectedRoute>
+                          <EditProfile />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/bookings" element={
+                        <ProtectedRoute>
+                          <ViewBookings />
+                        </ProtectedRoute>
+                      } />
+                      {/* Auth-related routes */}
+                      <Route path="/auth-success" element={<AuthSuccess />} />
+                      <Route path="/auth-debug" element={<AuthDebug />} />
+                    </Routes>
+                  </main>
+                </MainLayout>
+              </div>
+            </Router>
+          </SocketProvider>
+        </FavoritesProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

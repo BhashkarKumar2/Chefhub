@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 import TextInput from '../../components/TextInput';
 import CheckboxGroup from '../../components/CheckboxGroup';
 import TextareaInput from '../../components/TextareaInput';
 
 const ChefOnboarding = () => {
+  const { getClass, classes, isDark } = useThemeAwareStyle();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -332,17 +334,17 @@ const ChefOnboarding = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className={getClass('min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100', 'min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900')}>'
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-16">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
+  <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-16">
+  <div className="absolute inset-0 bg-black/20"></div>
+  <div className="relative max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full backdrop-blur-sm mb-6">
             <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
             Join Our Chef Community
           </h1>
           <p className="text-lg md:text-xl mb-6 max-w-2xl mx-auto opacity-95">
@@ -351,33 +353,33 @@ const ChefOnboarding = () => {
         </div>
         
         {/* Floating elements */}
-        <div className="absolute top-10 left-10 w-12 h-12 bg-white/10 rounded-full animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-8 h-8 bg-white/15 rounded-full animate-bounce"></div>
+  <div className="absolute top-10 left-10 w-12 h-12 bg-white/10 rounded-full animate-pulse"></div>
+  <div className="absolute bottom-10 right-10 w-8 h-8 bg-white/15 rounded-full animate-bounce"></div>
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-purple-100">
+        <div className={getClass('bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-orange-100', 'bg-gray-900 rounded-3xl shadow-xl p-8 md:p-12 border border-gray-800')}>'
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">
               Chef Registration
             </h2>
-            <p className="text-gray-600 mb-4">Complete your profile to join our chef community</p>
+            <p className={getClass('text-gray-600 mb-4', 'text-gray-300 mb-4')}>Complete your profile to join our chef community</p>
             
             {/* Progress Indicator */}
             <div className="max-w-md mx-auto">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-600">Profile Completion</span>
-                <span className="text-sm font-medium text-purple-600">
+                <span className={getClass('text-sm font-medium text-gray-600', 'text-sm font-medium text-gray-300')}>Profile Completion</span>
+                <span className="text-sm font-medium text-orange-600">
                   {Math.round((getCompletionProgress().completed / getCompletionProgress().total) * 100)}%
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className={getClass('w-full bg-gray-200 rounded-full h-2', 'w-full bg-gray-700 rounded-full h-2')}>'
                 <div 
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-orange-600 to-amber-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.round((getCompletionProgress().completed / getCompletionProgress().total) * 100)}%` }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className={getClass('text-xs text-gray-500 mt-1', 'text-xs text-gray-400 mt-1')}>'
                 {getCompletionProgress().completed} of {getCompletionProgress().total} required fields completed
               </p>
             </div>
@@ -386,7 +388,7 @@ const ChefOnboarding = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Personal Information Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              <h3 className={getClass('text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2', 'text-xl font-semibold text-orange-300 border-b border-gray-700 pb-2')}>
                 Personal Information
               </h3>
               
@@ -418,33 +420,33 @@ const ChefOnboarding = () => {
               </div>
               {/* Location Input */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>'
                   📍 Service Location Details
                 </label>
                 
                 {/* City and State Row */}
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">City <span className="text-red-500">*</span></label>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>City <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
                       placeholder="e.g., Mumbai, Delhi, Bangalore"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">State <span className="text-red-500">*</span></label>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>State <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
                       placeholder="e.g., Maharashtra, Delhi, Karnataka"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -452,13 +454,13 @@ const ChefOnboarding = () => {
 
                 {/* Auto-Generated Address Display */}
                 <div className="mb-4">
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                  <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>
                     Complete Service Address (Auto-generated)
                   </label>
-                  <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
+                  <div className={getClass('w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700', 'w-full px-4 py-3 border border-gray-700 rounded-xl bg-gray-800 text-gray-300')}>'
                     {formData.address || 'Address will be auto-generated from city and state'}
                   </div>
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className={getClass('text-xs text-amber-600 mt-1', 'text-xs text-amber-400 mt-1')}>'
                     ✨ Address is automatically created from your city and state for consistency
                   </p>
                 </div>
@@ -467,7 +469,7 @@ const ChefOnboarding = () => {
                 <div className="flex gap-3 items-center">
                   <button
                     type="button"
-                    className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold shadow hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold shadow hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={!formData.city || !formData.state || locationLoading}
                     onClick={async () => {
                       if (!formData.city || !formData.state) {
@@ -500,7 +502,7 @@ const ChefOnboarding = () => {
                   )}
                 </div>
                 {locationError && <p className="text-red-500 text-xs mt-2">{locationError}</p>}
-                <p className="text-xs text-purple-600 mt-2">
+                <p className={getClass('text-xs text-orange-600 mt-2', 'text-xs text-orange-400 mt-2')}>'
                   💡 Enter city and state - we'll automatically create the complete address for location mapping and geocoding
                 </p>
               </div>
@@ -522,7 +524,7 @@ const ChefOnboarding = () => {
 
             {/* Culinary Expertise Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              <h3 className={getClass('text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2', 'text-xl font-semibold text-orange-300 border-b border-gray-700 pb-2')}>
                 Culinary Expertise
               </h3>
               
@@ -555,7 +557,7 @@ const ChefOnboarding = () => {
                 {formData.bio.length > 1000 && (
                   <p className="text-red-500">Bio is too long (maximum 1000 characters)</p>
                 )}
-                <span className={`text-sm ${formData.bio.length > 1000 ? 'text-red-500' : 'text-gray-500'}`}>
+                <span className={`text-sm ${formData.bio.length > 1000 ? 'text-red-500' : getClass('text-gray-500', 'text-gray-400')}`}>
                   {formData.bio.length}/1000 characters
                 </span>
               </div>
@@ -563,7 +565,7 @@ const ChefOnboarding = () => {
 
             {/* Professional Details Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              <h3 className={getClass('text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2', 'text-xl font-semibold text-orange-300 border-b border-gray-700 pb-2')}>
                 Professional Details
               </h3>
               
@@ -597,14 +599,14 @@ const ChefOnboarding = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={getClass('block text-sm font-medium text-gray-700 mb-2', 'block text-sm font-medium text-gray-200 mb-2')}>
                   Availability
                 </label>
                 <select
                   name="availability"
                   value={formData.availability}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
                 >
                   <option value="full-time">Full-time</option>
                   <option value="part-time">Part-time</option>
@@ -616,7 +618,7 @@ const ChefOnboarding = () => {
 
             {/* Additional Qualifications Section */}
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+              <h3 className={getClass('text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2', 'text-xl font-semibold text-orange-300 border-b border-gray-700 pb-2')}>
                 Additional Qualifications
               </h3>
               
@@ -628,7 +630,7 @@ const ChefOnboarding = () => {
               />
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={getClass('block text-sm font-medium text-gray-700 mb-2', 'block text-sm font-medium text-gray-200 mb-2')}>
                   Profile Picture (Optional)
                 </label>
                 <div className="space-y-4">
@@ -637,18 +639,18 @@ const ChefOnboarding = () => {
                     name="profileImage"
                     onChange={handleFileChange}
                     accept="image/*"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
                   />
                   {formData.profileImage && (
-                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
+                    <div className={getClass('flex items-center gap-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200', 'flex items-center gap-4 p-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-700')}>
                       <img
                         src={URL.createObjectURL(formData.profileImage)}
                         alt="Profile preview"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-purple-300"
+                        className={getClass('w-16 h-16 rounded-full object-cover border-2 border-orange-300', 'w-16 h-16 rounded-full object-cover border-2 border-orange-500')}
                       />
                       <div>
-                        <p className="font-medium text-gray-800">{formData.profileImage.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className={getClass('font-medium text-gray-800', 'font-medium text-gray-200')}>{formData.profileImage.name}</p>
+                        <p className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>
                           Size: {(formData.profileImage.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
@@ -664,22 +666,22 @@ const ChefOnboarding = () => {
                     </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Upload a professional photo (JPG, PNG up to 5MB)</p>
+                <p className={getClass('text-sm text-gray-500 mt-2', 'text-sm text-gray-400 mt-2')}>Upload a professional photo (JPG, PNG up to 5MB)</p>
               </div>
             </div>
 
             {/* Validation Status Section */}
             {!validateForm() && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+              <div className={getClass('bg-yellow-50 border border-yellow-200 rounded-xl p-6', 'bg-yellow-900/20 border border-yellow-700 rounded-xl p-6')}>
                 <div className="flex items-center mb-4">
                   <svg className="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
                   </svg>
-                  <h4 className="text-lg font-semibold text-yellow-800">Please complete the following to enable registration:</h4>
+                  <h4 className={getClass('text-lg font-semibold text-yellow-800', 'text-lg font-semibold text-yellow-300')}>Please complete the following to enable registration:</h4>
                 </div>
                 <div className="grid md:grid-cols-2 gap-2">
                   {getValidationErrors().map((error, index) => (
-                    <div key={index} className="flex items-center text-sm text-yellow-700">
+                    <div key={index} className={getClass('flex items-center text-sm text-yellow-700', 'flex items-center text-sm text-yellow-300')}>
                       <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
                       </svg>
@@ -691,14 +693,14 @@ const ChefOnboarding = () => {
             )}
 
             {/* Submit Button */}
-            <div className="flex justify-center pt-8 border-t border-gray-200">
+            <div className={getClass('flex justify-center pt-8 border-t border-gray-200', 'flex justify-center pt-8 border-t border-gray-700')}>
               <button
                 type="submit"
                 disabled={isSubmitting || !validateForm()}
                 className={`px-12 py-4 rounded-xl font-semibold text-lg transition-all duration-300 ${
                   isSubmitting || !validateForm()
                     ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:scale-105'
+                    : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-lg hover:scale-105'
                 }`}
               >
                 {isSubmitting ? (

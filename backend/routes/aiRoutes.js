@@ -181,6 +181,23 @@ router.post('/chat', async (req, res) => {
   try {
     const { message, context = '' } = req.body;
 
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Message is required',
+        error: 'Invalid message input'
+      });
+    }
+
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        message: 'AI service is not configured',
+        error: 'GEMINI_API_KEY not found'
+      });
+    }
+
     const prompt = `
     You are a professional chef assistant. Help users with cooking questions.
     
@@ -202,9 +219,25 @@ router.post('/chat', async (req, res) => {
     });
   } catch (error) {
     console.error('AI chat error:', error);
-    res.status(500).json({
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to process chat message';
+    let statusCode = 500;
+    
+    if (error.message && error.message.includes('API_KEY')) {
+      errorMessage = 'AI service configuration error';
+      statusCode = 503;
+    } else if (error.message && error.message.includes('404')) {
+      errorMessage = 'AI model not available. Please try again later.';
+      statusCode = 503;
+    } else if (error.message && error.message.includes('quota')) {
+      errorMessage = 'AI service quota exceeded. Please try again later.';
+      statusCode = 429;
+    }
+    
+    res.status(statusCode).json({
       success: false,
-      message: 'Failed to process chat message',
+      message: errorMessage,
       error: error.message
     });
   }

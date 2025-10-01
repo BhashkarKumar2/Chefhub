@@ -279,9 +279,9 @@ const EditProfile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white py-16">
+  <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-16">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative max-w-6xl mx-auto px-6">
           <div className="flex items-center gap-4 mb-6">
@@ -302,7 +302,7 @@ const EditProfile = () => {
                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
               </svg>
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
               Edit Your Profile
             </h1>
             <p className="text-lg md:text-xl opacity-95 max-w-2xl mx-auto">
@@ -317,10 +317,10 @@ const EditProfile = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-purple-100">
+  <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-orange-100">
           <div className="flex flex-col lg:flex-row">
             {/* Sidebar Navigation */}
-            <div className="lg:w-1/4 bg-gradient-to-b from-purple-50 to-blue-50 p-6 border-r border-purple-100">
+            <div className="lg:w-1/4 bg-gradient-to-b from-orange-50 to-amber-50 p-6 border-r border-orange-100">
               <h3 className="text-xl font-bold text-gray-800 mb-6">Profile Sections</h3>
               <nav className="space-y-2">
                 {sections.map((section) => (
@@ -329,7 +329,7 @@ const EditProfile = () => {
                     onClick={() => setActiveSection(section.id)}
                     className={`w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       activeSection === section.id
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                        ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
                         : 'text-gray-600 hover:bg-white hover:shadow-md'
                     }`}
                   >
@@ -346,7 +346,7 @@ const EditProfile = () => {
                 {activeSection === 'personal' && (
                   <div className="space-y-6">
                     <div className="text-center mb-8">
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                      <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">
                         Personal Information
                       </h2>
                       <p className="text-gray-600">Update your basic profile details</p>

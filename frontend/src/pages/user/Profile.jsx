@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user: authUser, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [userData, setUserData] = useState(null);
   const [userStats, setUserStats] = useState({
@@ -17,22 +19,50 @@ const Profile = () => {
 
   // Load user data from backend
   useEffect(() => {
+    // Don't run if auth is still loading
+    if (isLoading) {
+      console.log('⏳ Auth still loading, waiting...');
+      return;
+    }
+    
     const loadUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId');
-        const token = localStorage.getItem('token');
+        // Check if user is authenticated
+        console.log('🔍 Profile auth check:', {
+          isAuthenticated,
+          authUser,
+          hasUserId: authUser?.id,
+          authUserObject: authUser
+        });
         
-        if (!userId || !token) {
-          console.log('❌ No user ID or token found, redirecting to login');
+        if (!isAuthenticated || !authUser || !authUser.id) {
+          console.log('❌ User not authenticated, redirecting to login');
+          console.log('Debug info:', {
+            isAuthenticated,
+            authUser,
+            authUserId: authUser?.id,
+            localStorage: {
+              token: localStorage.getItem('token'),
+              userId: localStorage.getItem('userId'),
+              userEmail: localStorage.getItem('userEmail')
+            }
+          });
           navigate('/login');
           return;
         }
         
-        console.log('🔍 Loading user profile for ID:', userId);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('❌ No token found, redirecting to login');
+          navigate('/login');
+          return;
+        }
+        
+        console.log('🔍 Loading user profile for ID:', authUser.id);
         console.log('🔑 Token exists:', token ? 'Yes' : 'No');
         
         // Load user profile data
-        const profileResponse = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
+        const profileResponse = await fetch(buildApiEndpoint(`/user/profile/${authUser.id}`), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -87,7 +117,7 @@ const Profile = () => {
     };
 
     loadUserData();
-  }, [navigate]);
+  }, [navigate, isAuthenticated, authUser, isLoading]);
 
   const user = userData || {
     name: 'Loading...',
@@ -123,11 +153,24 @@ const Profile = () => {
     { id: 'settings', name: 'Settings', icon: '⚙️' }
   ];
 
+  // Show loading while authentication is being checked
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading while profile data is being fetched
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
           <p className="text-xl text-gray-600">Loading your profile...</p>
         </div>
       </div>
@@ -135,10 +178,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Profile Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-3xl p-8 text-white mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-yellow-500 rounded-3xl p-8 text-white mb-8 relative overflow-hidden">
           <div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
           <div className="absolute bottom-5 left-10 w-16 h-16 bg-white/15 rounded-full animate-bounce"></div>
           
@@ -205,16 +248,16 @@ const Profile = () => {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-purple-100 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-amber-100 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <div className="text-3xl mb-3">{stat.icon}</div>
-              <div className="text-3xl font-bold text-purple-600 mb-1">{stat.value}</div>
+              <div className="text-3xl font-bold text-amber-600 mb-1">{stat.value}</div>
               <div className="text-gray-600 text-sm font-medium">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-3xl shadow-lg border border-purple-100 overflow-hidden">
+  <div className="bg-white rounded-3xl shadow-lg border border-amber-100 overflow-hidden">
           <div className="flex border-b border-gray-200">
             {tabs.map((tab) => (
               <button
@@ -222,8 +265,8 @@ const Profile = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 px-6 py-4 text-center font-semibold transition-all duration-300 ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+                    ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white'
+                    : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
@@ -248,7 +291,7 @@ const Profile = () => {
                   <h3 className="text-2xl font-bold text-gray-800 mb-4">Cuisine Preferences</h3>
                   <div className="flex flex-wrap gap-3">
                     {(user.preferences || user.cuisinePreferences || []).map((pref, index) => (
-                      <span key={index} className="px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded-full font-semibold border border-purple-200">
+                      <span key={index} className="px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 rounded-full font-semibold border border-amber-200">
                         {pref}
                       </span>
                     ))}
@@ -302,7 +345,7 @@ const Profile = () => {
                           <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                         </svg>
                         <p className="text-gray-500">No bookings yet. Start exploring chefs!</p>
-                        <Link to="/chefs" className="inline-block mt-4 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-300">
+                        <Link to="/chefs" className="inline-block mt-4 px-6 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg transition-all duration-300">
                           Browse Chefs
                         </Link>
                       </div>
@@ -319,7 +362,7 @@ const Profile = () => {
                 </svg>
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">All Bookings</h3>
                 <p className="text-gray-500 mb-6">View and manage all your bookings here</p>
-                <Link to="/bookings" className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
+                <Link to="/bookings" className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   View All Bookings
                 </Link>
               </div>
@@ -332,7 +375,7 @@ const Profile = () => {
                 </svg>
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">Favorite Chefs</h3>
                 <p className="text-gray-500 mb-6">Your saved chefs will appear here</p>
-                <Link to="/favorites" className="px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
+                <Link to="/favorites" className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   View Favorites
                 </Link>
               </div>
@@ -345,7 +388,7 @@ const Profile = () => {
                 </svg>
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">Account Settings</h3>
                 <p className="text-gray-500 mb-6">Manage your account preferences and settings</p>
-                <Link to="/edit-profile" className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
+                <Link to="/edit-profile" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   Edit Settings
                 </Link>
               </div>

@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
+import { useAuth } from '../../context/AuthContext';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const Dashboard = () => {
+  const { user, isAuthenticated, loading: authLoading, token } = useAuth();
+  const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,13 +30,23 @@ const Dashboard = () => {
 
   // Load user data and dashboard data from backend
   useEffect(() => {
+    // Wait for auth to complete
+    if (authLoading) {
+      console.log('🔄 Dashboard: Waiting for authentication to complete...');
+      return;
+    }
+
     const loadDashboardData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
+        console.log('🔍 Dashboard: Loading dashboard data...');
+        console.log('🔍 Dashboard auth state:', { 
+          isAuthenticated, 
+          user: user ? { id: user.id, email: user.email, name: user.name } : null,
+          hasToken: !!token 
+        });
         
-        if (!token || !userId) {
-          console.log('🔍 No authentication found, using guest mode...');
+        if (!isAuthenticated || !user || !token) {
+          console.log('🔍 Dashboard: No authentication found, using guest mode...');
           setUserData({
             name: 'Guest User',
             email: null
@@ -41,10 +55,10 @@ const Dashboard = () => {
           return;
         }
 
-        console.log('🔍 Loading dashboard data...');
+        console.log(`🔍 Dashboard: Making API call to user/profile/${user.id}`);
         
         // Load user profile
-        const userResponse = await fetch(buildApiEndpoint(`user/profile/${userId}`), {
+        const userResponse = await fetch(buildApiEndpoint(`user/profile/${user.id}`), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -52,15 +66,15 @@ const Dashboard = () => {
         });
         
         if (userResponse.ok) {
-          const user = await userResponse.json();
-          console.log('✅ User data loaded for dashboard:', user);
-          setUserData(user);
+          const userData = await userResponse.json();
+          console.log('✅ Dashboard: User data loaded:', userData);
+          setUserData(userData);
         } else {
-          console.error('❌ Failed to load user data');
-          const storedUserName = localStorage.getItem('userName');
+          console.error('❌ Dashboard: Failed to load user data from API');
+          // Fall back to AuthContext user data
           setUserData({
-            name: storedUserName || 'User',
-            email: null
+            name: user.name || 'User',
+            email: user.email
           });
         }
 
@@ -72,12 +86,14 @@ const Dashboard = () => {
         ]);
 
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        const storedUserName = localStorage.getItem('userName');
-        setUserData({
-          name: storedUserName || 'User',
-          email: null
-        });
+        console.error('❌ Dashboard: Error loading dashboard data:', error);
+        // Fall back to AuthContext user data
+        if (user) {
+          setUserData({
+            name: user.name || 'User',
+            email: user.email
+          });
+        }
       } finally {
         setLoading(false);
       }
@@ -201,7 +217,7 @@ const Dashboard = () => {
     };
 
     loadDashboardData();
-  }, []);
+  }, [authLoading, isAuthenticated, user, token]);
 
   // Helper functions
   const formatBookingDate = (date, time) => {
@@ -250,17 +266,17 @@ const Dashboard = () => {
 
   const quickActions = [
     {
-      title: "🤖 AI Book Chef",
-      description: "Get AI-powered chef recommendations and custom menus",
+      title: "🤖 AI Features",
+      description: "AI-powered chef booking, recommendations & menu generation",
       icon: (
         <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
         </svg>
       ),
-      link: "/book-chef-ai",
-      gradient: "from-cyan-600 to-blue-600",
-      bgColor: "bg-cyan-50",
-      borderColor: "border-cyan-200"
+      link: "/ai-features",
+  gradient: "from-orange-600 to-amber-600",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+        borderColor: "border-orange-200 dark:border-gray-700",
     },
     {
       title: "Book a Chef",
@@ -271,22 +287,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/book-chef",
-      gradient: "from-purple-600 to-blue-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200"
-    },
-    {
-      title: "✨ AI Features",
-      description: "Explore AI-powered recommendations and menu generation",
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-      ),
-      link: "/ai-features",
-      gradient: "from-amber-600 to-orange-600",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-200"
+  gradient: "from-orange-600 to-amber-600",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+      borderColor: "border-orange-200 dark:border-gray-700"
     },
     {
       title: "Become a Chef",
@@ -297,9 +300,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/chef-onboarding",
-      gradient: "from-green-600 to-teal-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200"
+  gradient: "from-orange-600 to-amber-600",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+      borderColor: "border-orange-200 dark:border-gray-700"
     },
     {
       title: "My Favorites",
@@ -310,9 +313,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/favorites",
-      gradient: "from-pink-600 to-rose-600",
-      bgColor: "bg-pink-50",
-      borderColor: "border-pink-200"
+  gradient: "from-orange-600 to-amber-600",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+      borderColor: "border-orange-200 dark:border-gray-700"
     },
     {
       title: "My Profile",
@@ -323,29 +326,29 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/profile",
-      gradient: "from-indigo-600 to-purple-600",
-      bgColor: "bg-indigo-50",
-      borderColor: "border-indigo-200"
+      gradient: "from-orange-600 to-amber-600",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+      borderColor: "border-orange-200 dark:border-gray-700"
     }
   ];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Loading Dashboard</h3>
-          <p className="text-gray-600">Please wait while we fetch your data...</p>
+  if (authLoading || loading) {
+  return (
+      <div className={`min-h-screen flex items-center justify-center ${getClass('bgPrimary')}`}>
+        <div className={`rounded-3xl shadow-xl p-8 text-center ${getClass('bgSecondary')}`}>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h3 className={`text-xl font-semibold mb-2 ${getClass('textPrimary')}`}>Loading Dashboard</h3>
+          <p className={`${getClass('textSecondary')}`}>Please wait while we fetch your data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
+    <div className={`min-h-screen ${getClass('bgPrimary')}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white mb-6 sm:mb-8 relative overflow-hidden">
+  <div className={`bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 rounded-2xl sm:rounded-3xl p-6 sm:p-8 text-white mb-6 sm:mb-8 relative overflow-hidden`}>
           <div className="absolute top-5 right-5 sm:top-10 sm:right-10 w-12 h-12 sm:w-20 sm:h-20 bg-white/10 rounded-full animate-pulse"></div>
           <div className="absolute bottom-3 left-5 sm:bottom-5 sm:left-10 w-10 h-10 sm:w-16 sm:h-16 bg-white/15 rounded-full animate-bounce"></div>
           
@@ -372,26 +375,26 @@ const Dashboard = () => {
 
         {/* Quick Actions Grid */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-4 sm:mb-6">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 sm:gap-6">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 to={action.link}
-                className={`group ${action.bgColor} ${action.borderColor} border-2 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80`}
+                className={`group border-2 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80 ${isDark ? 'bg-gray-900' : 'bg-gray-200'} ${action.borderColor}`}
               >
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   {action.icon}
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2 group-hover:text-purple-600 transition-colors duration-300">
+                <h3 className={`text-lg sm:text-xl font-bold mb-2 group-hover:text-orange-600 transition-colors duration-300 ${getClass('textPrimary')}`}>
                   {action.title}
                 </h3>
-                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+                <p className={`text-xs sm:text-sm leading-relaxed ${getClass('textSecondary')}`}>
                   {action.description}
                 </p>
-                <div className="mt-3 sm:mt-4 flex items-center text-purple-600 text-xs sm:text-sm font-semibold group-hover:text-purple-700">
+                <div className="mt-3 sm:mt-4 flex items-center text-orange-600 text-xs sm:text-sm font-semibold group-hover:text-orange-700">
                   Explore
                   <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
@@ -405,10 +408,10 @@ const Dashboard = () => {
         {/* Dashboard Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Upcoming Bookings */}
-            <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-purple-100">
+            <div className={`lg:col-span-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-orange-200 ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : ''}`}>
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Upcoming Bookings</h3>
-                <Link to="/bookings" className="text-purple-600 hover:text-purple-700 font-semibold text-xs sm:text-sm flex items-center">
+                <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${getClass('textPrimary')}`}>Upcoming Bookings</h3>
+                <Link to="/bookings" className="text-orange-600 hover:text-orange-700 font-semibold text-xs sm:text-sm flex items-center">
                   View All
                   <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>
@@ -419,12 +422,12 @@ const Dashboard = () => {
               {dashboardData.upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {dashboardData.upcomingBookings.map((booking, index) => (
-                    <div key={index} className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-300">
+                    <div key={index} className={`border rounded-xl p-6 hover:shadow-md transition-shadow duration-300 ${isDark ? 'bg-gray-50 dark:bg-gray-900' : 'bg-gray-50'} ${isDark ? 'border-gray-700' : 'border-gray-200'}`}> 
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-800 mb-1">{booking.chef}</h4>
-                          <p className="text-gray-600 mb-2">{booking.event}</p>
-                          <div className="flex items-center text-sm text-gray-500">
+                          <h4 className={`text-lg font-semibold mb-1 ${getClass('textPrimary')}`}>{booking.chef}</h4>
+                          <p className={`mb-2 ${getClass('textSecondary')}`}>{booking.event}</p>
+                          <div className={`flex items-center text-sm ${getClass('textMuted')}`}>
                             <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
                             </svg>
@@ -433,8 +436,8 @@ const Dashboard = () => {
                         </div>
                         <div className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                           booking.status?.toLowerCase() === 'confirmed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
+                            ? `bg-green-100 text-green-800 ${isDark ? 'bg-green-900 text-green-200' : ''}` 
+                            : `bg-yellow-100 text-yellow-800 ${isDark ? 'bg-yellow-900 text-yellow-200' : ''}`
                         }`}>
                           {booking.status}
                         </div>
@@ -447,8 +450,8 @@ const Dashboard = () => {
                   <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                   </svg>
-                  <p className="text-gray-500 mb-4">No upcoming bookings</p>
-                  <Link to="/book-chef" className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
+                  <p className={`mb-4 ${getClass('textMuted')}`}>No upcoming bookings</p>
+                  <Link to="/book-chef" className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                     Book Your First Chef
                   </Link>
                 </div>
@@ -456,21 +459,21 @@ const Dashboard = () => {
             </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-purple-100">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Recent Activity</h3>
+          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-orange-200 ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : ''}`}>
+            <h3 className={`text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 ${getClass('textPrimary')}`}>Recent Activity</h3>
             {dashboardData.recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-b-0">
+                  <div key={index} className={`flex items-start space-x-3 pb-4 border-b last:border-b-0 ${isDark ? 'bg-gray-50 dark:bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-100'}`}> 
                     <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                      activity.type === 'booking' ? 'bg-purple-500' :
-                      activity.type === 'favorite' ? 'bg-pink-500' :
-                      activity.type === 'completed' ? 'bg-green-500' :
-                      'bg-blue-500'
+                      activity.type === 'booking' ? `bg-orange-500 ${isDark ? 'bg-orange-300' : ''}` :
+                      activity.type === 'favorite' ? `bg-amber-500 ${isDark ? 'bg-amber-300' : ''}` :
+                      activity.type === 'completed' ? `bg-green-500 ${isDark ? 'bg-green-300' : ''}` :
+                      `bg-orange-400 ${isDark ? 'bg-orange-300' : ''}`
                     }`}></div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800">{activity.action}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+                      <p className={`text-sm font-medium ${getClass('textPrimary')}`}>{activity.action}</p>
+                      <p className={`text-xs ${getClass('textMuted')}`}>{activity.time}</p>
                     </div>
                   </div>
                 ))}
@@ -478,8 +481,8 @@ const Dashboard = () => {
             ) : (
               <div className="text-center py-8">
                 <div className="text-4xl mb-3">📝</div>
-                <p className="text-gray-500 text-sm">No recent activity</p>
-                <p className="text-gray-400 text-xs mt-1">Your activity will appear here</p>
+                <p className={`text-sm ${getClass('textMuted')}`}>No recent activity</p>
+                <p className={`text-xs mt-1 ${getClass('textMuted')} opacity-70`}>Your activity will appear here</p>
               </div>
             )}
           </div>
@@ -492,31 +495,31 @@ const Dashboard = () => {
               label: "Total Bookings", 
               value: dashboardData.stats.totalBookings.toString(), 
               icon: "📅", 
-              color: "text-purple-600" 
+              color: "text-orange-600" 
             },
             { 
               label: "Favorite Chefs", 
               value: dashboardData.stats.favoriteChefs.toString(), 
               icon: "❤️", 
-              color: "text-pink-600" 
+              color: "text-amber-600" 
             },
             { 
               label: "Total Spent", 
               value: `₹${dashboardData.stats.totalSpent.toLocaleString()}`, 
               icon: "💰", 
-              color: "text-green-600" 
+              color: "text-orange-600" 
             },
             { 
               label: "Reviews Given", 
               value: dashboardData.stats.reviewsGiven.toString(), 
               icon: "⭐", 
-              color: "text-yellow-600" 
+              color: "text-amber-600" 
             }
           ].map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg border border-purple-100 text-center">
+            <div key={index} className={`rounded-2xl p-4 sm:p-6 shadow-lg border border-orange-200 text-center ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50'} ${isDark ? 'border-gray-700' : ''}`}> 
               <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{stat.icon}</div>
               <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
-              <div className="text-gray-600 text-xs sm:text-sm">{stat.label}</div>
+              <div className={`text-xs sm:text-sm ${getClass('textSecondary')}`}>{stat.label}</div>
             </div>
           ))}
         </div>

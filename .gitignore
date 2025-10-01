@@ -221,3 +221,4 @@ url-update-reference.js
 *-debug*.js
 *-summary.js
 *-reference.js
+*.md
