@@ -274,9 +274,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/ai-features",
-  gradient: "from-orange-600 to-amber-600",
-        bgColor: "bg-gray-50 dark:bg-gray-900",
-        borderColor: "border-orange-200 dark:border-gray-700",
+      gradient: "from-orange-600 to-amber-600",
+      bgColor: "bg-stone-100 dark:bg-gray-900",
+      borderColor: "border-stone-300 dark:border-orange-700",
     },
     {
       title: "Book a Chef",
@@ -287,9 +287,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/book-chef",
-  gradient: "from-orange-600 to-amber-600",
-        bgColor: "bg-gray-50 dark:bg-gray-900",
-      borderColor: "border-orange-200 dark:border-gray-700"
+      gradient: "from-orange-600 to-amber-600",
+      bgColor: "bg-stone-100 dark:bg-gray-900",
+      borderColor: "border-stone-300 dark:border-orange-700"
     },
     {
       title: "Become a Chef",
@@ -300,9 +300,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/chef-onboarding",
-  gradient: "from-orange-600 to-amber-600",
-        bgColor: "bg-gray-50 dark:bg-gray-900",
-      borderColor: "border-orange-200 dark:border-gray-700"
+      gradient: "from-orange-600 to-amber-600",
+      bgColor: "bg-stone-100 dark:bg-gray-900",
+      borderColor: "border-stone-300 dark:border-orange-700"
     },
     {
       title: "My Favorites",
@@ -313,9 +313,9 @@ const Dashboard = () => {
         </svg>
       ),
       link: "/favorites",
-  gradient: "from-orange-600 to-amber-600",
-        bgColor: "bg-gray-50 dark:bg-gray-900",
-      borderColor: "border-orange-200 dark:border-gray-700"
+      gradient: "from-orange-600 to-amber-600",
+      bgColor: "bg-stone-100 dark:bg-gray-900",
+      borderColor: "border-stone-300 dark:border-orange-700"
     },
     {
       title: "My Profile",
@@ -327,8 +327,8 @@ const Dashboard = () => {
       ),
       link: "/profile",
       gradient: "from-orange-600 to-amber-600",
-        bgColor: "bg-gray-50 dark:bg-gray-900",
-      borderColor: "border-orange-200 dark:border-gray-700"
+      bgColor: "bg-stone-100 dark:bg-gray-900",
+      borderColor: "border-stone-300 dark:border-orange-700"
     }
   ];
 
@@ -383,7 +383,7 @@ const Dashboard = () => {
               <Link
                 key={index}
                 to={action.link}
-                className={`group border-2 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80 ${isDark ? 'bg-gray-900' : 'bg-gray-200'} ${action.borderColor}`}
+                className={`group border-2 rounded-2xl p-4 sm:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-opacity-80 ${isDark ? 'bg-gray-900 border-orange-700' : 'bg-stone-100 border-stone-300'}`}
               >
                 <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-orange-600 to-amber-600 rounded-xl flex items-center justify-center text-white mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
                   {action.icon}
@@ -408,7 +408,7 @@ const Dashboard = () => {
         {/* Dashboard Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Upcoming Bookings */}
-            <div className={`lg:col-span-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-orange-200 ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : ''}`}>
+            <div className={`lg:col-span-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : 'border-stone-200'}`}>
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${getClass('textPrimary')}`}>Upcoming Bookings</h3>
                 <Link to="/bookings" className="text-orange-600 hover:text-orange-700 font-semibold text-xs sm:text-sm flex items-center">
@@ -422,7 +422,7 @@ const Dashboard = () => {
               {dashboardData.upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {dashboardData.upcomingBookings.map((booking, index) => (
-                    <div key={index} className={`border rounded-xl p-6 hover:shadow-md transition-shadow duration-300 ${isDark ? 'bg-gray-50 dark:bg-gray-900' : 'bg-gray-50'} ${isDark ? 'border-gray-700' : 'border-gray-200'}`}> 
+                    <div key={index} className={`border rounded-xl p-6 hover:shadow-md transition-shadow duration-300 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-stone-50 border-stone-200'}`}> 
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className={`text-lg font-semibold mb-1 ${getClass('textPrimary')}`}>{booking.chef}</h4>
@@ -447,7 +447,7 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-gray-500' : 'text-stone-300'}`} fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                   </svg>
                   <p className={`mb-4 ${getClass('textMuted')}`}>No upcoming bookings</p>
@@ -459,12 +459,12 @@ const Dashboard = () => {
             </div>
 
           {/* Recent Activity */}
-          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-orange-200 ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : ''}`}>
+          <div className={`rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : 'border-stone-200'}`}>
             <h3 className={`text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6 ${getClass('textPrimary')}`}>Recent Activity</h3>
             {dashboardData.recentActivity.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.recentActivity.map((activity, index) => (
-                  <div key={index} className={`flex items-start space-x-3 pb-4 border-b last:border-b-0 ${isDark ? 'bg-gray-50 dark:bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-100'}`}> 
+                  <div key={index} className={`flex items-start space-x-3 pb-4 border-b last:border-b-0 ${isDark ? 'border-gray-700' : 'border-stone-200'}`}> 
                     <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                       activity.type === 'booking' ? `bg-orange-500 ${isDark ? 'bg-orange-300' : ''}` :
                       activity.type === 'favorite' ? `bg-amber-500 ${isDark ? 'bg-amber-300' : ''}` :
@@ -516,7 +516,7 @@ const Dashboard = () => {
               color: "text-amber-600" 
             }
           ].map((stat, index) => (
-            <div key={index} className={`rounded-2xl p-4 sm:p-6 shadow-lg border border-orange-200 text-center ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50'} ${isDark ? 'border-gray-700' : ''}`}> 
+            <div key={index} className={`rounded-2xl p-4 sm:p-6 shadow-lg border text-center ${isDark ? 'bg-gray-900 text-white border-gray-700' : 'bg-stone-50 border-stone-200'}`}> 
               <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{stat.icon}</div>
               <div className={`text-xl sm:text-2xl md:text-3xl font-bold ${stat.color} mb-1`}>{stat.value}</div>
               <div className={`text-xs sm:text-sm ${getClass('textSecondary')}`}>{stat.label}</div>

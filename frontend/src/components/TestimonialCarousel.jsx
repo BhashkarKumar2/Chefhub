@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useThemeAwareStyle } from '../utils/themeUtils';
 
 const testimonials = [
 	{
@@ -57,6 +58,7 @@ const renderStars = (rating) => (
 );
 
 const TestimonialCarousel = () => {
+	const { theme, classes, isDark, getClass } = useThemeAwareStyle();
 	const [currentSlide, setCurrentSlide] = useState(0);
 
 	// Auto-advance the carousel
@@ -82,11 +84,11 @@ const TestimonialCarousel = () => {
 	return (
 		<div className="max-w-4xl mx-auto px-6 py-12">
 			{/* Carousel Container */}
-			<div className="relative bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100 rounded-3xl p-8 shadow-xl">
+			<div className={`relative ${isDark ? 'bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800' : 'bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100'} rounded-3xl p-8 shadow-xl`}>
 				{/* Navigation Arrows */}
 				<button
 					onClick={prevSlide}
-					className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-orange-500 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-orange-600 z-10"
+					className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${isDark ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'} rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 z-10 text-white`}
 				>
 					<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -95,7 +97,7 @@ const TestimonialCarousel = () => {
 				
 				<button
 					onClick={nextSlide}
-					className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-orange-500 rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-orange-600 z-10"
+					className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${isDark ? 'bg-orange-600 hover:bg-orange-700' : 'bg-orange-500 hover:bg-orange-600'} rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 z-10 text-white`}
 				>
 					<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -104,9 +106,9 @@ const TestimonialCarousel = () => {
 
 				{/* Testimonial Card */}
 				<div className="mx-auto max-w-2xl">
-					<div className="bg-gradient-to-br from-orange-100 via-amber-200 to-orange-50 rounded-2xl p-8 text-center border border-amber-200 shadow-lg min-h-[400px] flex flex-col justify-center">
+					<div className={`${isDark ? 'bg-gradient-to-br from-gray-700 via-gray-600 to-gray-700 border-gray-600' : 'bg-gradient-to-br from-orange-100 via-amber-200 to-orange-50 border-amber-200'} rounded-2xl p-8 text-center border shadow-lg min-h-[400px] flex flex-col justify-center`}>
 						{/* Client Image */}
-						<div className="w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden border-4 border-orange-300 shadow-lg">
+						<div className={`w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden border-4 ${isDark ? 'border-orange-500' : 'border-orange-300'} shadow-lg`}>
 							<img 
 								src={testimonials[currentSlide].image} 
 								alt={testimonials[currentSlide].name} 
@@ -118,7 +120,7 @@ const TestimonialCarousel = () => {
 						</div>
 
 						{/* Quote */}
-						<blockquote className="text-lg text-orange-900 font-medium mb-6 italic leading-relaxed">
+						<blockquote className={`text-lg ${isDark ? 'text-gray-100' : 'text-orange-900'} font-medium mb-6 italic leading-relaxed`}>
 							"{testimonials[currentSlide].quote}"
 						</blockquote>
 
@@ -127,8 +129,8 @@ const TestimonialCarousel = () => {
 
 						{/* Client Info */}
 						<div className="mt-4">
-							<h4 className="text-amber-700 font-bold text-xl">{testimonials[currentSlide].name}</h4>
-							<p className="text-orange-600 font-medium">{testimonials[currentSlide].role}</p>
+							<h4 className={`${isDark ? 'text-orange-400' : 'text-amber-700'} font-bold text-xl`}>{testimonials[currentSlide].name}</h4>
+							<p className={`${isDark ? 'text-orange-300' : 'text-orange-600'} font-medium`}>{testimonials[currentSlide].role}</p>
 						</div>
 					</div>
 				</div>
@@ -141,8 +143,8 @@ const TestimonialCarousel = () => {
 							onClick={() => goToSlide(index)}
 							className={`w-3 h-3 rounded-full transition-all duration-300 ${
 								index === currentSlide 
-									? 'bg-orange-500 w-8' 
-									: 'bg-orange-200 hover:bg-orange-300'
+									? `${isDark ? 'bg-orange-500' : 'bg-orange-500'} w-8` 
+									: `${isDark ? 'bg-gray-500 hover:bg-gray-400' : 'bg-orange-200 hover:bg-orange-300'}`
 							}`}
 						/>
 					))}

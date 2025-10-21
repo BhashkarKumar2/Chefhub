@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png'
+
 
 const Sidebar = () => {
   // Use global theme context
@@ -165,6 +167,16 @@ const Sidebar = () => {
     setIsMobileOpen(false);
   };
 
+  // Format name to show "FirstName L." format
+  const formatName = (fullName) => {
+    if (!fullName) return 'Profile';
+    const nameParts = fullName.trim().split(/\s+/);
+    if (nameParts.length === 1) return nameParts[0]; // Only first name
+    const firstName = nameParts[0];
+    const secondInitial = nameParts[1][0].toUpperCase(); // Use second word (middle/last name)
+    return `${firstName} ${secondInitial}.`;
+  };
+
   useEffect(() => {
     setIsMobileOpen(false);
   }, [location]);
@@ -232,8 +244,16 @@ const Sidebar = () => {
               className="flex items-center space-x-3"
               onClick={() => setIsMobileOpen(false)}
             >
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0">
-                🍳
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0">
+                <img 
+                                  src={logo} 
+                                  alt="ChefHub Logo" 
+                                  className="w-20 h-30 object-contain relative z-10"
+                                  onError={(e) => {
+                                    e.target.style.display = 'none';
+                                    e.target.nextSibling.style.display = 'flex';
+                                  }}
+                                />
               </div>
               <span className="text-xl font-bold text-orange-800 whitespace-nowrap">
                 ChefHub
@@ -289,13 +309,13 @@ const Sidebar = () => {
                   }}
                 >
                   <img
-                    src={userData?.profileImage || 'https://i.pravatar.cc/150?img=3'}
+                    src={userData?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'User')}&size=150&background=f97316&color=ffffff&bold=true`}
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border-2 border-white dark:border-gray-800 flex-shrink-0"
                   />
                   {!isCollapsed && (
                     <span className="ml-3 font-medium whitespace-nowrap">
-                      {userData?.name || 'Profile'}
+                      {formatName(userData?.name)}
                     </span>
                   )}
                 </button>

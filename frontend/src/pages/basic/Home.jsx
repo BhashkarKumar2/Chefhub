@@ -179,11 +179,10 @@ const Home = () => {
             {/* Animated Logo */}
             <div className="mb-8 flex justify-center">
               <div className={`relative transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <div className={`absolute inset-0 bg-gradient-to-r ${isDark ? 'from-orange-500/50 to-amber-600/50' : 'from-orange-300 to-amber-400'} rounded-full blur-lg opacity-60 animate-pulse`}></div>
                 <img 
                   src={logo} 
                   alt="ChefHub Logo" 
-                  className="w-20 h-20 object-contain relative z-10"
+                  className="w-20 h-30 object-contain relative z-10"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';
@@ -321,9 +320,9 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
             {/* Feature Card 1 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-700 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-400 to-amber-600 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -332,16 +331,16 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>Verified Professionals</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   All our chefs are thoroughly vetted, certified professionals with extensive culinary experience and stellar reviews.
                 </p>
               </div>
             </div>
 
             {/* Feature Card 2 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-800 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -351,16 +350,16 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>In-Home Service</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   Enjoy restaurant-quality meals in the comfort of your own home. Our chefs bring everything needed for your perfect meal.
                 </p>
               </div>
             </div>
 
             {/* Feature Card 3 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-800 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -372,16 +371,16 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>Personalized Menus</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   Custom menus tailored to your preferences, dietary restrictions, and special occasions. Every meal is uniquely yours.
                 </p>
               </div>
             </div>
 
             {/* Feature Card 4 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-800 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -391,16 +390,16 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>Flexible Scheduling</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   Book chefs for lunch, dinner, or special events. Same-day bookings available with 24/7 customer support.
                 </p>
               </div>
             </div>
 
             {/* Feature Card 5 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-800 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -409,16 +408,16 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>Satisfaction Guaranteed</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   100% satisfaction guarantee with transparent pricing and no hidden fees. Your perfect meal is our commitment.
                 </p>
               </div>
             </div>
 
             {/* Feature Card 6 */}
-            <div className="group relative">
+            <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-amber-800 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105">
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 h-full flex flex-col">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
@@ -427,7 +426,7 @@ const Home = () => {
                   </div>
                 </div>
                 <h3 className={`text-2xl font-bold text-white mb-4 text-center ${isDark ? 'text-yellow-200' : ''}`}>Safe & Secure</h3>
-                <p className={`leading-relaxed text-center ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
+                <p className={`leading-relaxed text-center flex-grow ${isDark ? 'text-yellow-100' : 'text-white/70'}`}>
                   All payments are secure, chefs are insured, and we follow strict health and safety protocols for your peace of mind.
                 </p>
               </div>

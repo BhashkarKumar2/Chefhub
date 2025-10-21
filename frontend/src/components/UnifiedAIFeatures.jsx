@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { buildApiEndpoint } from '../utils/apiConfig';
 import { useThemeAwareStyle } from '../utils/themeUtils';
+import { useAuth } from '../context/AuthContext';
 
 // AI Component: Chef Recommendations
 const AIChefRecommendations = ({ userPreferences, onRecommendationsReceived }) => {
@@ -225,13 +226,6 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
                   )) || <li className={classes.text.muted}>No desserts available</li>}
                 </ul>
               </div>
-
-              {menu.estimatedCost && (
-                <div className={`${isDark ? 'bg-orange-900/20 border-orange-800/30' : 'bg-orange-50 border-orange-200'} border rounded-lg p-4`}>
-                  <h4 className={`font-semibold ${isDark ? 'text-orange-300' : 'text-orange-800'} mb-2`}>💰 Cost Estimate</h4>
-                  <p className={`${isDark ? 'text-orange-400' : 'text-orange-700'}`}>₹{menu.estimatedCost} per person</p>
-                </div>
-              )}
             </>
           )}
         </div>
@@ -243,6 +237,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 // AI Component: Chat Assistant
 const AIChatAssistant = () => {
   const { getClass, classes, isDark } = useThemeAwareStyle();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -292,62 +287,159 @@ const AIChatAssistant = () => {
   };
 
   return (
-    <div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
-      <h3 className={`text-2xl font-bold ${classes.text.heading} mb-4`}>
-        👨‍🍳 AI Chef Assistant
-      </h3>
+    <div className={`${classes.bg.card} rounded-lg shadow-lg border ${classes.border.default} flex flex-col h-[600px]`}>
+      {/* Header */}
+      <div className={`p-6 border-b ${classes.border.default} ${isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20' : 'bg-gradient-to-r from-amber-50 to-orange-50'}`}>
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white text-2xl shadow-lg">
+            👨‍🍳
+          </div>
+          <div>
+            <h3 className={`text-xl font-bold ${classes.text.heading}`}>
+              AI Chef Assistant
+            </h3>
+            <p className={`text-sm ${classes.text.muted}`}>
+              Ask me anything about cooking & recipes
+            </p>
+          </div>
+        </div>
+      </div>
       
-      <div className={`h-32 overflow-y-auto border ${classes.border.default} rounded-lg p-4 mb-4 ${classes.bg.secondary}`}>
+      {/* Messages Area */}
+      <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${isDark ? 'bg-gray-900/50' : 'bg-stone-50/50'}`}>
         {messages.length === 0 && (
-          <p className={`${classes.text.muted} text-center`}>
-            Ask me anything about cooking, recipes, or food preparation!
-          </p>
+          <div className="flex flex-col items-center justify-center h-full">
+            <div className="text-6xl mb-4">🍳</div>
+            <p className={`${classes.text.muted} text-center max-w-md`}>
+              Welcome! I'm your AI culinary assistant. Ask me about cooking techniques, recipes, ingredient substitutions, or food preparation tips!
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6 max-w-md">
+              <button
+                onClick={() => setInput("What's a good recipe for pasta?")}
+                className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
+              >
+                💡 Recipe suggestions
+              </button>
+              <button
+                onClick={() => setInput("How do I cook perfect rice?")}
+                className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
+              >
+                🔥 Cooking techniques
+              </button>
+              <button
+                onClick={() => setInput("Can you suggest meal prep ideas?")}
+                className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
+              >
+                📅 Meal planning
+              </button>
+              <button
+                onClick={() => setInput("What are healthy alternatives to sugar?")}
+                className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
+              >
+                🥗 Healthy swaps
+              </button>
+            </div>
+          </div>
         )}
         
         {messages.map((message, index) => (
-          <div key={index} className={`mb-3 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
-            <div className={`inline-block p-3 rounded-lg max-w-xs ${
-              message.type === 'user' 
-                ? 'bg-amber-600 text-white' 
-                : 'bg-white border border-gray-200'
-            }`}>
-              <p className="text-sm">{message.content}</p>
-              <span className="text-xs opacity-70">
-                {message.timestamp.toLocaleTimeString()}
-              </span>
+          <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex items-start max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              {/* Avatar */}
+              <div className={`flex-shrink-0 ${message.type === 'user' ? 'ml-3' : 'mr-3'}`}>
+                {message.type === 'user' ? (
+                  user?.profileImage ? (
+                    <img 
+                      src={user.profileImage} 
+                      alt={user.name || 'User'} 
+                      className="w-8 h-8 rounded-full object-cover shadow-md border-2 border-blue-400"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-md text-sm font-bold">
+                      {user?.name?.charAt(0).toUpperCase() || '👤'}
+                    </div>
+                  )
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-md">
+                    🤖
+                  </div>
+                )}
+              </div>
+              
+              {/* Message Bubble */}
+              <div className={`flex flex-col ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className={`rounded-2xl px-4 py-3 shadow-md ${
+                  message.type === 'user' 
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-tr-none' 
+                    : isDark 
+                      ? 'bg-gray-800 border border-gray-700 rounded-tl-none' 
+                      : 'bg-white border border-stone-200 rounded-tl-none'
+                }`}>
+                  <p className={`text-sm leading-relaxed ${message.type === 'user' ? 'text-white' : classes.text.primary}`}>
+                    {message.content}
+                  </p>
+                </div>
+                <span className={`text-xs ${classes.text.muted} mt-1 px-2`}>
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
             </div>
           </div>
         ))}
         
         {loading && (
-          <div className="text-left mb-3">
-            <div className={`inline-block p-3 rounded-lg ${classes.bg.card} border ${classes.border.default}`}>
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
-                <span className={`text-sm ${classes.text.secondary}`}>Thinking...</span>
+          <div className="flex justify-start">
+            <div className="flex items-start max-w-[80%]">
+              <div className="flex-shrink-0 mr-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md">
+                  🤖
+                </div>
+              </div>
+              <div className={`rounded-2xl rounded-tl-none px-4 py-3 shadow-md ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-stone-200'}`}>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className={`text-sm ${classes.text.secondary}`}>Thinking...</span>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      <form onSubmit={sendMessage} className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about cooking tips, recipes, ingredients..."
-          className={`flex-1 px-4 py-2 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500`}
-          disabled={loading}
-        />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
-        >
-          Send
-        </button>
-      </form>
+      {/* Input Area */}
+      <div className={`p-4 border-t ${classes.border.default} ${isDark ? 'bg-gray-900/50' : 'bg-stone-50/50'}`}>
+        <form onSubmit={sendMessage} className="flex gap-2">
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your cooking question..."
+              className={`w-full px-4 py-3 pr-12 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm`}
+              disabled={loading}
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              💬
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={loading || !input.trim()}
+            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </button>
+        </form>
+        <p className={`text-xs ${classes.text.muted} mt-2 text-center`}>
+          Powered by AI • Ask about recipes, cooking tips, ingredients & more
+        </p>
+      </div>
     </div>
   );
 };

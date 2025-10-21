@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { buildApiEndpoint } from '../../utils/apiConfig';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const Profile = () => {
+  const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const navigate = useNavigate();
   const { isAuthenticated, user: authUser, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -156,10 +158,10 @@ const Profile = () => {
   // Show loading while authentication is being checked
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
+      <div className={`min-h-screen ${getClass('bgPrimary')} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Checking authentication...</p>
+          <p className={`text-xl ${getClass('textSecondary')}`}>Checking authentication...</p>
         </div>
       </div>
     );
@@ -168,18 +170,18 @@ const Profile = () => {
   // Show loading while profile data is being fetched
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center">
+      <div className={`min-h-screen ${getClass('bgPrimary')} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Loading your profile...</p>
+          <p className={`text-xl ${getClass('textSecondary')}`}>Loading your profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+  <div className={`min-h-screen ${getClass('bgPrimary')}`}>
+      <div className="max-w-6xl ml-24 mr-8 px-6 py-8">
         {/* Profile Header */}
         <div className="bg-gradient-to-r from-amber-600 via-orange-500 to-yellow-500 rounded-3xl p-8 text-white mb-8 relative overflow-hidden">
           <div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
@@ -248,17 +250,17 @@ const Profile = () => {
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-2xl p-6 shadow-lg border border-amber-100 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div key={index} className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-amber-100'} rounded-2xl p-6 shadow-lg border text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
               <div className="text-3xl mb-3">{stat.icon}</div>
               <div className="text-3xl font-bold text-amber-600 mb-1">{stat.value}</div>
-              <div className="text-gray-600 text-sm font-medium">{stat.label}</div>
+              <div className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-sm font-medium`}>{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-  <div className="bg-white rounded-3xl shadow-lg border border-amber-100 overflow-hidden">
-          <div className="flex border-b border-gray-200">
+  <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-amber-100'} rounded-3xl shadow-lg border overflow-hidden`}>
+          <div className={`flex ${isDark ? 'border-gray-700' : 'border-gray-200'} border-b`}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -266,7 +268,7 @@ const Profile = () => {
                 className={`flex-1 px-6 py-4 text-center font-semibold transition-all duration-300 ${
                   activeTab === tab.id
                     ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white'
-                    : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'
+                    : `${isDark ? 'text-gray-300 hover:text-amber-400 hover:bg-gray-700' : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'}`
                 }`}
               >
                 <span className="mr-2">{tab.icon}</span>
@@ -280,15 +282,15 @@ const Profile = () => {
               <div className="space-y-8">
                 {/* Bio Section */}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">About Me</h3>
-                  <p className="text-gray-600 leading-relaxed text-lg">
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'} mb-4`}>About Me</h3>
+                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed text-lg`}>
                     {user.bio || 'No bio available. Edit your profile to add a bio.'}
                   </p>
                 </div>
 
                 {/* Preferences */}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Cuisine Preferences</h3>
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'} mb-4`}>Cuisine Preferences</h3>
                   <div className="flex flex-wrap gap-3">
                     {(user.preferences || user.cuisinePreferences || []).map((pref, index) => (
                       <span key={index} className="px-4 py-2 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 rounded-full font-semibold border border-amber-200">
@@ -305,16 +307,16 @@ const Profile = () => {
 
                 {/* Recent Activity */}
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Recent Bookings</h3>
+                  <h3 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'} mb-4`}>Recent Bookings</h3>
                   <div className="space-y-4">
                     {recentBookings.length > 0 ? (
                       recentBookings.map((booking, index) => (
-                        <div key={booking._id || index} className="bg-gray-50 rounded-xl p-6 flex items-center justify-between hover:shadow-md transition-shadow duration-300">
+                        <div key={booking._id || index} className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-xl p-6 flex items-center justify-between hover:shadow-md transition-shadow duration-300`}>
                           <div>
-                            <h4 className="font-semibold text-gray-800">
+                            <h4 className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>
                               {booking.chefId?.name || booking.chefName || 'Chef Name Not Available'}
                             </h4>
-                            <p className="text-gray-600 text-sm">
+                            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
                               {booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString() : 'Date Not Available'}
                             </p>
                           </div>
@@ -341,10 +343,10 @@ const Profile = () => {
                       ))
                     ) : (
                       <div className="text-center py-8">
-                        <svg className="w-12 h-12 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className={`w-12 h-12 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                         </svg>
-                        <p className="text-gray-500">No bookings yet. Start exploring chefs!</p>
+                        <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>No bookings yet. Start exploring chefs!</p>
                         <Link to="/chefs" className="inline-block mt-4 px-6 py-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-lg hover:shadow-lg transition-all duration-300">
                           Browse Chefs
                         </Link>
@@ -357,11 +359,11 @@ const Profile = () => {
 
             {activeTab === 'bookings' && (
               <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
                 </svg>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">All Bookings</h3>
-                <p className="text-gray-500 mb-6">View and manage all your bookings here</p>
+                <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>All Bookings</h3>
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-6`}>View and manage all your bookings here</p>
                 <Link to="/bookings" className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   View All Bookings
                 </Link>
@@ -370,11 +372,11 @@ const Profile = () => {
 
             {activeTab === 'favorites' && (
               <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path>
                 </svg>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">Favorite Chefs</h3>
-                <p className="text-gray-500 mb-6">Your saved chefs will appear here</p>
+                <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Favorite Chefs</h3>
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-6`}>Your saved chefs will appear here</p>
                 <Link to="/favorites" className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   View Favorites
                 </Link>
@@ -383,11 +385,11 @@ const Profile = () => {
 
             {activeTab === 'settings' && (
               <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <svg className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path>
                 </svg>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">Account Settings</h3>
-                <p className="text-gray-500 mb-6">Manage your account preferences and settings</p>
+                <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Account Settings</h3>
+                <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-6`}>Manage your account preferences and settings</p>
                 <Link to="/edit-profile" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
                   Edit Settings
                 </Link>
