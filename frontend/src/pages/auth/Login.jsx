@@ -54,10 +54,6 @@ const Login = () => {
     window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
-  const handleFacebookLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/facebook`;
-  };
-
   return (
   <div className="relative min-h-screen overflow-hidden">
       {/* Dynamic Saffron Animated Background - Same as Signup page */}
@@ -172,16 +168,6 @@ const Login = () => {
               <button onClick={handleGoogleLogin} className="p-2 border border-gray-300 rounded-full bg-white hover:shadow-md transition" title="Sign in with Google">
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-4 h-4" />
               </button>
-              <button onClick={handleFacebookLogin} className="p-2 border border-gray-300 rounded-full bg-white hover:shadow-md transition" title="Sign in with Facebook">
-                <svg fill="#FF9800" height="16px" width="16px" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </button>
-              <Link to="/mobile-login" className="p-2 border border-gray-300 rounded-full bg-white hover:shadow-md transition" title="Sign in with Mobile">
-                <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"></path>
-                </svg>
-              </Link>
             </div>
             <p className="text-center text-sm text-gray-600 font-medium mt-2">
               Don't have an account? <Link to="/signup" className="text-orange-800 font-semibold hover:text-orange-900 transition-colors duration-200">Sign up</Link>
