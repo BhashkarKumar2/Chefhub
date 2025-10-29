@@ -76,7 +76,8 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
         process.env.NODE_ENV === "production"
           ? "https://chefhub.onrender.com/api/auth/facebook/callback"
           : "http://localhost:5000/api/auth/facebook/callback",
-      profileFields: ['id', 'displayName', 'email', 'photos']
+      profileFields: ['id', 'displayName', 'emails', 'photos'],
+      enableProof: true
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
