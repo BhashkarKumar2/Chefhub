@@ -18,6 +18,8 @@ const Profile = () => {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
 
   // Load user data from backend
   useEffect(() => {
@@ -108,6 +110,25 @@ const Profile = () => {
         } catch (bookingError) {
           console.log('ℹ️ Error loading bookings:', bookingError.message);
           setRecentBookings([]);
+        }
+
+        // Check password status
+        try {
+          const passwordStatusResponse = await fetch(buildApiEndpoint('auth/password-status'), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (passwordStatusResponse.ok) {
+            const passwordData = await passwordStatusResponse.json();
+            console.log('✅ Password status:', passwordData);
+            setHasPassword(passwordData.hasPassword);
+            setIsOAuthUser(passwordData.isOAuthUser);
+          }
+        } catch (passwordError) {
+          console.log('ℹ️ Error checking password status:', passwordError.message);
         }
 
       } catch (error) {
@@ -384,15 +405,38 @@ const Profile = () => {
             )}
 
             {activeTab === 'settings' && (
-              <div className="text-center py-12">
-                <svg className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path>
-                </svg>
-                <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Account Settings</h3>
-                <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-6`}>Manage your account preferences and settings</p>
-                <Link to="/edit-profile" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
-                  Edit Settings
-                </Link>
+              <div className="space-y-6">
+                <div className="text-center py-8">
+                  <svg className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd"></path>
+                  </svg>
+                  <h3 className={`text-xl font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Account Settings</h3>
+                  <p className={`${isDark ? 'text-gray-400' : 'text-gray-500'} mb-6`}>Manage your account preferences and settings</p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Link to="/edit-profile" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold">
+                      Edit Profile
+                    </Link>
+                    
+                    <Link 
+                      to="/set-password" 
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
+                      </svg>
+                      {hasPassword ? 'Change Password' : 'Set Password'}
+                    </Link>
+                  </div>
+                  
+                  {isOAuthUser && !hasPassword && (
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
+                      <p className="text-sm text-blue-700">
+                        <strong>Tip:</strong> You signed up with Google. Set a password to enable email/password login as an alternative.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

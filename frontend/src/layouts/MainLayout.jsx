@@ -11,7 +11,7 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
 
-  const noSidebarPages = ['/login', '/register'];
+  const noSidebarPages = ['/login', '/register', '/signup'];
   const showSidebar = !noSidebarPages.includes(location.pathname);
 
   // Scroll to top on route change

@@ -3,6 +3,7 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { registerUser, loginUser, validateToken, getCurrentUser, verifyFirebaseOTP } from './authController.js';
 import { verifyToken as authMiddleware } from '../middleware/authMiddleware.js';
+import { setPassword, changePassword, checkPasswordStatus } from '../controllers/passwordController.js';
 
 const router = express.Router();
 
@@ -18,6 +19,11 @@ router.post('/validate-token', validateToken);
 
 // Get current user (protected route)
 router.get('/me', authMiddleware, getCurrentUser);
+
+// Password management routes (protected)
+router.post('/set-password', authMiddleware, setPassword);
+router.post('/change-password', authMiddleware, changePassword);
+router.get('/password-status', authMiddleware, checkPasswordStatus);
 
 // Google OAuth routes
 router.get('/google', 

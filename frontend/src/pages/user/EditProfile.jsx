@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const EditProfile = () => {
+  const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [activeSection, setActiveSection] = useState('personal');
@@ -279,21 +281,21 @@ const EditProfile = () => {
   ];
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
+  <div className={`min-h-screen ml-30 ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
       {/* Header */}
   <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-16">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-6xl mx-auto px-6">
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-4 mb-6">
-            <Link 
-              to="/profile"
-              className="inline-flex items-center px-4 py-2 bg-white/20 rounded-xl hover:bg-white/30 transition-all duration-300"
+            <button 
+              onClick={() => navigate('/profile')}
+              className="inline-flex items-center px-4 py-2 bg-white/20 rounded-xl hover:bg-white/30 transition-all duration-300 cursor-pointer"
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"></path>
               </svg>
               Back to Profile
-            </Link>
+            </button>
           </div>
           
           <div className="text-center">
@@ -316,12 +318,12 @@ const EditProfile = () => {
         <div className="absolute bottom-20 right-20 w-8 h-8 bg-white/15 rounded-full animate-bounce"></div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
-  <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-orange-100">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+  <div className={`rounded-3xl shadow-xl overflow-hidden border ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'}`}>
           <div className="flex flex-col lg:flex-row">
             {/* Sidebar Navigation */}
-            <div className="lg:w-1/4 bg-gradient-to-b from-orange-50 to-amber-50 p-6 border-r border-orange-100">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">Profile Sections</h3>
+            <div className={`lg:w-1/4 p-4 sm:p-6 border-r ${isDark ? 'bg-gradient-to-b from-gray-800 to-gray-700 border-gray-600' : 'bg-gradient-to-b from-orange-50 to-amber-50 border-orange-100'}`}>
+              <h3 className={`text-xl font-bold mb-6 ${isDark ? 'text-orange-300' : 'text-gray-800'}`}>Profile Sections</h3>
               <nav className="space-y-2">
                 {sections.map((section) => (
                   <button
@@ -330,7 +332,7 @@ const EditProfile = () => {
                     className={`w-full flex items-center px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       activeSection === section.id
                         ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-lg'
-                        : 'text-gray-600 hover:bg-white hover:shadow-md'
+                        : `${isDark ? 'text-orange-300 hover:bg-gray-700 hover:shadow-md' : 'text-gray-600 hover:bg-white hover:shadow-md'}`
                     }`}
                   >
                     <span className="mr-3">{section.icon}</span>
@@ -341,75 +343,75 @@ const EditProfile = () => {
             </div>
 
             {/* Main Content */}
-            <div className="lg:w-3/4 p-8 md:p-12">
+            <div className={`lg:w-3/4 p-4 sm:p-6 md:p-8 ${isDark ? 'bg-gray-800' : ''}`}>
               <form onSubmit={handleSubmit} className="space-y-8">
                 {activeSection === 'personal' && (
                   <div className="space-y-6">
                     <div className="text-center mb-8">
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">
+                      <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent'}`}>
                         Personal Information
                       </h2>
-                      <p className="text-gray-600">Update your basic profile details</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Update your basic profile details</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Full Name</label>
                         <input
                           type="text"
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your full name"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Email Address</label>
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your email"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Phone Number</label>
                         <input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your phone number"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Date of Birth</label>
                         <input
                           type="date"
                           name="dateOfBirth"
                           value={formData.dateOfBirth}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                      <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Gender</label>
                       <select
                         name="gender"
                         value={formData.gender}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                       >
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -419,13 +421,13 @@ const EditProfile = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                      <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Bio</label>
                       <textarea
                         name="bio"
                         value={formData.bio}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                         placeholder="Tell us about yourself..."
                       ></textarea>
                     </div>
@@ -435,68 +437,68 @@ const EditProfile = () => {
                 {activeSection === 'address' && (
                   <div className="space-y-6">
                     <div className="text-center mb-8">
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                      <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent'}`}>
                         Address Information
                       </h2>
-                      <p className="text-gray-600">Update your location details</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Update your location details</p>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Street Address</label>
+                      <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Street Address</label>
                       <input
                         type="text"
                         name="address"
                         value={formData.address}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                         placeholder="Enter your street address"
                       />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>City</label>
                         <input
                           type="text"
                           name="city"
                           value={formData.city}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your city"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>State</label>
                         <input
                           type="text"
                           name="state"
                           value={formData.state}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your state"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">ZIP Code</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>ZIP Code</label>
                         <input
                           type="text"
                           name="zipCode"
                           value={formData.zipCode}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your ZIP code"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                        <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Country</label>
                         <select
                           name="country"
                           value={formData.country}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                         >
                           <option value="India">India</option>
                           <option value="USA">United States</option>
@@ -512,58 +514,58 @@ const EditProfile = () => {
                 {activeSection === 'preferences' && (
                   <div className="space-y-8">
                     <div className="text-center mb-8">
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                      <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent'}`}>
                         Food Preferences
                       </h2>
-                      <p className="text-gray-600">Tell us about your dietary preferences and allergies</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Tell us about your dietary preferences and allergies</p>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Dietary Preferences</h3>
+                      <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-orange-300' : 'text-gray-800'}`}>Dietary Preferences</h3>
                       <div className="grid md:grid-cols-3 gap-3">
                         {dietaryOptions.map((option) => (
-                          <label key={option} className="flex items-center p-3 border border-gray-300 rounded-xl hover:bg-purple-50 transition-all duration-300 cursor-pointer">
+                          <label key={option} className={`flex items-center p-3 border rounded-xl transition-all duration-300 cursor-pointer ${isDark ? 'border-gray-600 hover:bg-gray-700' : 'border-orange-300 hover:bg-orange-50'}`}>
                             <input
                               type="checkbox"
                               checked={formData.dietaryPreferences.includes(option)}
                               onChange={() => handleArrayChange('dietaryPreferences', option)}
-                              className="mr-3 text-purple-600 focus:ring-purple-500"
+                              className="mr-3 text-orange-600 focus:ring-orange-500"
                             />
-                            <span className="text-gray-700 capitalize font-medium">{option}</span>
+                            <span className={`capitalize font-medium ${isDark ? 'text-amber-300' : 'text-gray-700'}`}>{option}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Cuisine Preferences</h3>
+                      <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-orange-300' : 'text-gray-800'}`}>Cuisine Preferences</h3>
                       <div className="grid md:grid-cols-3 gap-3">
                         {cuisineOptions.map((option) => (
-                          <label key={option} className="flex items-center p-3 border border-gray-300 rounded-xl hover:bg-blue-50 transition-all duration-300 cursor-pointer">
+                          <label key={option} className={`flex items-center p-3 border rounded-xl transition-all duration-300 cursor-pointer ${isDark ? 'border-gray-600 hover:bg-gray-700' : 'border-amber-300 hover:bg-amber-50'}`}>
                             <input
                               type="checkbox"
                               checked={formData.cuisinePreferences.includes(option)}
                               onChange={() => handleArrayChange('cuisinePreferences', option)}
-                              className="mr-3 text-blue-600 focus:ring-blue-500"
+                              className="mr-3 text-amber-600 focus:ring-amber-500"
                             />
-                            <span className="text-gray-700 capitalize font-medium">{option}</span>
+                            <span className={`capitalize font-medium ${isDark ? 'text-amber-300' : 'text-gray-700'}`}>{option}</span>
                           </label>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Allergens & Restrictions</h3>
+                      <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-orange-300' : 'text-gray-800'}`}>Allergens & Restrictions</h3>
                       <div className="grid md:grid-cols-3 gap-3">
                         {allergenOptions.map((option) => (
-                          <label key={option} className="flex items-center p-3 border border-red-300 rounded-xl hover:bg-red-50 transition-all duration-300 cursor-pointer">
+                          <label key={option} className={`flex items-center p-3 border border-red-300 rounded-xl transition-all duration-300 cursor-pointer ${isDark ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
                             <input
                               type="checkbox"
                               checked={formData.allergens.includes(option)}
                               onChange={() => handleArrayChange('allergens', option)}
                               className="mr-3 text-red-600 focus:ring-red-500"
                             />
-                            <span className="text-gray-700 capitalize font-medium">{option}</span>
+                            <span className={`capitalize font-medium ${isDark ? 'text-amber-300' : 'text-gray-700'}`}>{option}</span>
                           </label>
                         ))}
                       </div>
@@ -574,61 +576,61 @@ const EditProfile = () => {
                 {activeSection === 'settings' && (
                   <div className="space-y-6">
                     <div className="text-center mb-8">
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                      <h2 className={`text-3xl font-bold mb-2 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent'}`}>
                         Account Settings
                       </h2>
-                      <p className="text-gray-600">Manage your notification preferences and privacy settings</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>Manage your notification preferences and privacy settings</p>
                     </div>
 
-                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-4">Notification Preferences</h3>
+                    <div className={`rounded-xl p-6 border ${isDark ? 'bg-gradient-to-r from-gray-700 to-gray-600 border-gray-600' : 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200'}`}>
+                      <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-orange-300' : 'text-gray-800'}`}>Notification Preferences</h3>
                       <div className="space-y-4">
-                        <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200">
+                        <label className={`flex items-center justify-between p-3 rounded-xl border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'}`}>
                           <div>
-                            <div className="font-medium text-gray-800">Email Notifications</div>
-                            <div className="text-sm text-gray-600">Receive updates via email</div>
+                            <div className={`font-medium ${isDark ? 'text-amber-300' : 'text-gray-800'}`}>Email Notifications</div>
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Receive updates via email</div>
                           </div>
                           <input
                             type="checkbox"
                             name="notifications.email"
                             checked={formData.notifications.email}
                             onChange={handleChange}
-                            className="text-purple-600 focus:ring-purple-500"
+                            className="text-orange-600 focus:ring-orange-500"
                           />
                         </label>
 
-                        <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200">
+                        <label className={`flex items-center justify-between p-3 rounded-xl border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'}`}>
                           <div>
-                            <div className="font-medium text-gray-800">SMS Notifications</div>
-                            <div className="text-sm text-gray-600">Receive updates via SMS</div>
+                            <div className={`font-medium ${isDark ? 'text-amber-300' : 'text-gray-800'}`}>SMS Notifications</div>
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Receive updates via SMS</div>
                           </div>
                           <input
                             type="checkbox"
                             name="notifications.sms"
                             checked={formData.notifications.sms}
                             onChange={handleChange}
-                            className="text-purple-600 focus:ring-purple-500"
+                            className="text-orange-600 focus:ring-orange-500"
                           />
                         </label>
 
-                        <label className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-200">
+                        <label className={`flex items-center justify-between p-3 rounded-xl border ${isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'}`}>
                           <div>
-                            <div className="font-medium text-gray-800">Push Notifications</div>
-                            <div className="text-sm text-gray-600">Receive push notifications in browser</div>
+                            <div className={`font-medium ${isDark ? 'text-amber-300' : 'text-gray-800'}`}>Push Notifications</div>
+                            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Receive push notifications in browser</div>
                           </div>
                           <input
                             type="checkbox"
                             name="notifications.push"
                             checked={formData.notifications.push}
                             onChange={handleChange}
-                            className="text-purple-600 focus:ring-purple-500"
+                            className="text-orange-600 focus:ring-orange-500"
                           />
                         </label>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                      <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Profile Picture</label>
                       
                       {/* Image Preview */}
                       <div className="mb-4">
@@ -637,7 +639,7 @@ const EditProfile = () => {
                             <img
                               src={imagePreview}
                               alt="Profile preview"
-                              className="w-32 h-32 rounded-full object-cover border-4 border-purple-200 shadow-lg"
+                              className="w-32 h-32 rounded-full object-cover border-4 border-orange-200 shadow-lg"
                             />
                             <button
                               type="button"
@@ -665,13 +667,13 @@ const EditProfile = () => {
                         name="profileImage"
                         accept="image/*"
                         onChange={handleImageChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                       />
-                      <p className="text-sm text-gray-500 mt-2">Upload a new profile picture (JPG, PNG up to 5MB)</p>
+                      <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Upload a new profile picture (JPG, PNG up to 5MB)</p>
                       
                       {uploadingImage && (
-                        <div className="mt-2 text-sm text-purple-600 flex items-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <div className="mt-2 text-sm text-orange-600 flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-orange-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
@@ -684,19 +686,20 @@ const EditProfile = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-200">
-                  <Link
-                    to="/profile"
-                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 font-semibold text-center"
+                  <button
+                    type="button"
+                    onClick={() => navigate('/profile')}
+                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-300 font-semibold text-center cursor-pointer"
                   >
                     Cancel
-                  </Link>
+                  </button>
                   <button
                     type="submit"
                     disabled={isLoading}
                     className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       isLoading
                         ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:scale-105'
+                        : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-lg hover:scale-105'
                     }`}
                   >
                     {isLoading ? (

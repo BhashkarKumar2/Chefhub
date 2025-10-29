@@ -47,6 +47,14 @@ export const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
 
+    // Check if user has a password (might be OAuth-only user)
+    if (!user.password) {
+      return res.status(400).json({ 
+        message: "No password set for this account. Please use 'Continue with Google' or set a password first.",
+        isOAuthUser: true
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 

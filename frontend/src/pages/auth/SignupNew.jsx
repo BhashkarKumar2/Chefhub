@@ -85,43 +85,43 @@ const SignupNew = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <div className="relative z-10 flex items-center justify-center min-h-screen p-4 py-8">
         <div className="w-150 max-w-md">
           {/* Logo Section */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <div className="inline-block relative">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-amber-400 rounded-full blur-lg opacity-60 animate-pulse"></div>
               <img 
                 src={logo} 
                 alt="ChefHub Logo" 
-                className="w-16 h-16 object-contain relative z-10 mx-auto"
+                className="w-14 h-14 object-contain relative z-10 mx-auto"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div className="w-16 h-16 flex items-center justify-center rounded-full text-xl font-bold relative z-10 mx-auto bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600" style={{display: 'none'}}>
+              <div className="w-14 h-14 flex items-center justify-center rounded-full text-xl font-bold relative z-10 mx-auto bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600" style={{display: 'none'}}>
                 CH
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-orange-900 mt-4 mb-2">Join ChefHub</h1>
-            <p className="text-orange-700">Create your account and start your culinary journey</p>
+            <h1 className="text-2xl font-bold text-orange-900 mt-3 mb-1">Join ChefHub</h1>
+            <p className="text-sm text-orange-700">Create your account and start your culinary journey</p>
           </div>
 
           {/* Signup Form Card */}
-          <div className="bg-white/20 backdrop-blur-md border border-orange-200/30 rounded-2xl p-8 shadow-xl">
+          <div className="bg-white/20 backdrop-blur-md border border-orange-200/30 rounded-2xl p-6 shadow-xl">
 
-          <form onSubmit={handleSubmit} className="space-y-4 w-full">
+          <form onSubmit={handleSubmit} className="space-y-3 w-full">
             {/* Full Name */}
             <div>
-              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1">Full Name</label>
+              <label htmlFor="fullName" className="block text-xs font-semibold text-gray-700 mb-1">Full Name</label>
               <div className="relative">
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
                   required
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className="w-full p-2.5 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Enter your full name"
                   onChange={handleChange}
                   value={formData.fullName}
@@ -134,7 +134,7 @@ const SignupNew = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+              <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
               <div className="relative">
                 <input
                   id="email"
@@ -142,7 +142,7 @@ const SignupNew = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className="w-full p-2.5 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="you@example.com"
                   onChange={handleChange}
                   value={formData.email}
@@ -156,14 +156,14 @@ const SignupNew = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+              <label htmlFor="password" className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={passwordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className="w-full p-2.5 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Create a strong password"
                   onChange={handleChange}
                   value={formData.password}
@@ -179,14 +179,14 @@ const SignupNew = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">Confirm Password</label>
+              <label htmlFor="confirmPassword" className="block text-xs font-semibold text-gray-700 mb-1">Confirm Password</label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
                   type={confirmPasswordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className="w-full p-2.5 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
                   placeholder="Confirm your password"
                   onChange={handleChange}
                   value={formData.confirmPassword}
@@ -202,7 +202,7 @@ const SignupNew = () => {
 
             {/* Error */}
             {error && (
-              <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded mb-3 text-sm">
+              <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded text-xs">
                 {error}
               </div>
             )}
@@ -211,7 +211,7 @@ const SignupNew = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full p-3 bg-gradient-to-br from-amber-700 to-amber-400 text-white font-semibold rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center"
+              className="w-full p-2.5 bg-gradient-to-br from-amber-700 to-amber-400 text-white font-semibold rounded-lg shadow hover:shadow-lg transition-all duration-300 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 flex items-center justify-center"
             >
               {loading ? (
                 <>
@@ -228,14 +228,15 @@ const SignupNew = () => {
           </form>
 
           {/* Social login */}
-          <div className="text-center my-4 text-gray-500 text-sm">or continue with</div>
-          <div className="flex justify-center gap-3 mb-4">
-            <button onClick={handleGoogleSignup} className="p-2 border border-gray-300 rounded-full bg-white hover:shadow-md transition" title="Sign up with Google">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-4 h-4" />
+          <div className="text-center my-3 text-gray-500 text-xs">or continue with</div>
+          <div className="flex justify-center mb-3">
+            <button onClick={handleGoogleSignup} className="flex items-center gap-2 px-4 py-2 border border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 hover:shadow-md transition-all duration-200" title="Sign up with Google">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-5 h-5" />
+              <span className="text-orange-800 font-medium text-sm">Continue with Google</span>
             </button>
           </div>
 
-          <p className="text-center text-sm text-gray-600 font-medium mt-2">
+          <p className="text-center text-xs text-gray-600 font-medium mt-2">
             Already have an account? <Link to="/login" className="text-orange-800 font-semibold hover:text-orange-900 transition-colors duration-200">Sign In</Link>
           </p>
         </div>

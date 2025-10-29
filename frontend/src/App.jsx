@@ -15,6 +15,7 @@ import Services from './pages/basic/Services';
 import Profile from './pages/user/Profile';
 import Favorites from './pages/user/Favorites';
 import EditProfile from './pages/user/EditProfile';
+import SetPassword from './pages/user/SetPassword';
 import ViewBookings from './pages/user/ViewBookings';
 import Register from './pages/auth/SignupNew';
 import AuthSuccess from './pages/auth/AuthSuccess';
@@ -104,6 +105,11 @@ const App = () => {
                       <Route path="/edit-profile" element={
                         <ProtectedRoute>
                           <EditProfile />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/set-password" element={
+                        <ProtectedRoute>
+                          <SetPassword />
                         </ProtectedRoute>
                       } />
                       <Route path="/bookings" element={
