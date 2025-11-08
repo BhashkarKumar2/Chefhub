@@ -114,7 +114,8 @@ export const getUserBookings = async (req, res) => {
 
     const bookings = await Booking.find({ user: req.user.id })
       .populate('chef', 'name fullName email phone specialties pricePerHour profileImage rating')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -148,7 +149,8 @@ export const getChefBookings = async (req, res) => {
 
     const bookings = await Booking.find({ chef: chefId })
       .populate('user', 'name email phone')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.status(200).json({
       success: true,

@@ -5,6 +5,7 @@ import { useThemeAwareStyle } from '../../utils/themeUtils';
 import TextInput from '../../components/TextInput';
 import CheckboxGroup from '../../components/CheckboxGroup';
 import TextareaInput from '../../components/TextareaInput';
+import { prepareImageForUpload } from '../../utils/imageOptimizer';
 
 const ChefOnboarding = () => {
   const { getClass, classes, isDark } = useThemeAwareStyle();
@@ -115,24 +116,23 @@ const ChefOnboarding = () => {
     });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const { name, files } = e.target;
     const file = files[0];
     
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
-        return;
+      try {
+        // Optimize image before setting it
+        const optimizedFile = await prepareImageForUpload(file, {
+          maxWidth: 800,
+          maxHeight: 800,
+          quality: 0.85
+        });
+        
+        setFormData(prev => ({ ...prev, [name]: optimizedFile }));
+      } catch (error) {
+        alert(error.message || 'Failed to process image');
       }
-      
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        return;
-      }
-      
-      setFormData(prev => ({ ...prev, [name]: file }));
     }
   };
 
@@ -195,7 +195,7 @@ const ChefOnboarding = () => {
     if (!formData.rate) {
       errors.push('Hourly rate is required');
     } else if (formData.rate < 500 || formData.rate > 10000) {
-      errors.push('Hourly rate must be between â‚¹500 and â‚¹10,000');
+      errors.push('Hourly rate must be between ₹500 and ₹10,000');
     }
 
     // Validate experience

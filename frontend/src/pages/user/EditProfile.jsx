@@ -274,10 +274,10 @@ const EditProfile = () => {
   };
 
   const sections = [
-    { id: 'personal', label: 'Personal Info', icon: 'ðŸ‘¤' },
-    { id: 'address', label: 'Address', icon: 'ðŸ“' },
-    { id: 'preferences', label: 'Preferences', icon: 'ðŸ½ï¸' },
-    { id: 'settings', label: 'Settings', icon: 'âš™ï¸' }
+    { id: 'personal', label: 'Personal Info', icon: '👤' },
+    { id: 'address', label: 'Address', icon: '📍' },
+    { id: 'preferences', label: 'Preferences', icon: '🍽️' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' }
   ];
 
   return (

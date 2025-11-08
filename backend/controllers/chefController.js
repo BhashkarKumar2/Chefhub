@@ -168,7 +168,7 @@ export const createChefProfile = async (req, res) => {
 
 export const getAllChefs = async (req, res) => {
   try {
-    const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 });
+    const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 }).lean();
     
     // console.log('âœ… Chefs retrieved successfully:', chefs.length);
     res.status(200).json({ 
@@ -177,7 +177,7 @@ export const getAllChefs = async (req, res) => {
       success: true
     });
   } catch (err) {
-    // console.error('âŒ Error retrieving chefs:', err);
+    // console.error('âŒ Error retrieving chefs:', err);
     res.status(500).json({ 
       message: 'Failed to retrieve chefs',
       error: err.message,
@@ -259,7 +259,7 @@ export const searchChefs = async (req, res) => {
       ];
     }
 
-    // console.log('ðŸ” Search query:', JSON.stringify(searchQuery, null, 2));
+    // console.log('ðŸ" Search query:', JSON.stringify(searchQuery, null, 2));
 
     // Execute search with pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -268,7 +268,8 @@ export const searchChefs = async (req, res) => {
       Chef.find(searchQuery)
         .sort({ rating: -1, reviewsCount: -1 }) // Sort by rating and review count
         .skip(skip)
-        .limit(parseInt(limit)),
+        .limit(parseInt(limit))
+        .lean(),
       Chef.countDocuments(searchQuery)
     ]);
 
@@ -301,7 +302,7 @@ export const searchChefs = async (req, res) => {
 
 export const getChefById = async (req, res) => {
   try {
-    const chef = await Chef.findById(req.params.id);
+    const chef = await Chef.findById(req.params.id).lean();
     if (!chef) {
       return res.status(404).json({ message: 'Chef not found' });
     }

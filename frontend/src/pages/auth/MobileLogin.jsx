@@ -61,7 +61,7 @@ const MobileLogin = () => {
     try {
       // console.log('ðŸ”¥ Firebase Auth object:', auth);
       // console.log('ðŸ“± Phone number:', phoneNumber);
-      // console.log('ðŸ¤– reCAPTCHA verifier:', window.recaptchaVerifier);
+      // console.log('🤖 reCAPTCHA verifier:', window.recaptchaVerifier);
       
       // Send OTP using Firebase
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);

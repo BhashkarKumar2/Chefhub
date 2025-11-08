@@ -230,11 +230,49 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     });
 
   } catch (err) {
-    // console.error('\nâŒ === USER PROFILE IMAGE UPLOAD FAILED ===');
+    // console.error('\nâŒ === USER PROFILE IMAGE UPLOAD FAILED ===');
     // console.error('ðŸš¨ Error:', err);
-    // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
+    // console.error('ðŸ"¥ === ERROR HANDLING COMPLETED ===\n');
     res.status(500).json({ 
       message: 'Failed to upload profile image', 
+      error: err.message 
+    });
+  }
+});
+
+// @route   GET /api/user/dashboard/batch
+// @desc    Get all dashboard data in one request (batched)
+// @access  Private
+router.get('/dashboard/batch', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch all data in parallel
+    const [user, bookings] = await Promise.all([
+      User.findById(userId).select('-password').lean(),
+      mongoose.model('Booking').find({ user: userId })
+        .populate('chef', 'name profileImage specialty')
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean()
+    ]);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      user,
+      bookings: bookings || [],
+      stats: {
+        totalBookings: bookings.length,
+        upcomingBookings: bookings.filter(b => b.status === 'confirmed').length,
+        completedBookings: bookings.filter(b => b.status === 'completed').length
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      message: 'Failed to fetch dashboard data', 
       error: err.message 
     });
   }

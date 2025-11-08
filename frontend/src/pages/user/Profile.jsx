@@ -153,10 +153,10 @@ const Profile = () => {
   };
 
   const stats = [
-    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: 'ðŸ“…' },
-    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: 'â¤ï¸' },
-    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: 'â­' },
-    { label: 'Member Since', value: userStats.memberSince.toString(), icon: 'ðŸ†' }
+    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: '📅' },
+    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: '❤️' },
+    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: '⭐' },
+    { label: 'Member Since', value: userStats.memberSince.toString(), icon: '🏆' }
   ];
 
   const handleLogout = () => {
@@ -170,10 +170,10 @@ const Profile = () => {
   };
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: 'ðŸ‘¤' },
-    { id: 'bookings', name: 'Bookings', icon: 'ðŸ“…' },
-    { id: 'favorites', name: 'Favorites', icon: 'â¤ï¸' },
-    { id: 'settings', name: 'Settings', icon: 'âš™ï¸' }
+    { id: 'overview', name: 'Overview', icon: '👤' },
+    { id: 'bookings', name: 'Bookings', icon: '📅' },
+    { id: 'favorites', name: 'Favorites', icon: '❤️' },
+    { id: 'settings', name: 'Settings', icon: '⚙️' }
   ];
 
   // Show loading while authentication is being checked

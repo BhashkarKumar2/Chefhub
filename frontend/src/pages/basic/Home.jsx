@@ -31,7 +31,7 @@ function useCountUp(target, duration = 1200) {
 const geocodeAddress = async (address) => {
   try {
     const response = await fetch(
-      `https://api.openrouteservice.org/geo                    <>ðŸ¤– {isAuthenticated ? 'Experience AI Features' : 'Sign Up for AI Features'}</>ode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`
+      `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`
     );
     const data = await response.json();
     if (data.features && data.features.length > 0) {
@@ -251,7 +251,7 @@ const Home = () => {
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
                   ) : (
-                    <>ðŸ¤–</>
+                    <>🤖</>
                   )}
                   {isLoading ? 'Loading...' : (isAuthenticated ? 'AI Features' : 'Sign Up for AI Features')}
                 </span>
@@ -440,7 +440,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
-              <span className="bg-gradient-to-r from-orange-300 via-amber-200 to-orange-400 bg-clip-text text-transparent">ðŸ¤– AI-Powered Chef Experience</span>
+              <span className="bg-gradient-to-r from-orange-300 via-amber-200 to-orange-400 bg-clip-text text-transparent">🤖 AI-Powered Chef Experience</span>
             </h2>
             <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto mb-8">
               Experience the future of culinary booking with our cutting-edge AI technology
@@ -450,7 +450,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center hover:bg-white/20 transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-400 to-amber-600 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all duration-300">
-                <span className="text-3xl">ðŸŽ¯</span>
+                <span className="text-3xl">🎯</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Smart Chef Matching</h3>
               <p className="text-white/80 leading-relaxed">
@@ -460,7 +460,7 @@ const Home = () => {
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center hover:bg-white/20 transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-amber-700 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all duration-300">
-                <span className="text-3xl">ðŸ½ï¸</span>
+                <span className="text-3xl">🍽️</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Custom Menu Generation</h3>
               <p className="text-white/80 leading-relaxed">
@@ -470,7 +470,7 @@ const Home = () => {
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center hover:bg-white/20 transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-600 to-amber-800 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all duration-300">
-                <span className="text-3xl">ðŸ’¬</span>
+                <span className="text-3xl">💬</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">AI Culinary Assistant</h3>
               <p className="text-white/80 leading-relaxed">

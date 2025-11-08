@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import FavoriteButton from '../../components/FavoriteButton';
+import { cachedFetch, invalidateCache } from '../../utils/apiCache';
+import { debounce } from '../../utils/debounce';
 
 const Chefs = () => {
   const { getClass, classes, isDark } = useThemeAwareStyle();
@@ -16,9 +18,76 @@ const Chefs = () => {
   const cuisineTypes = ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai', 'French', 'Japanese', 'Mediterranean'];
   const locations = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
 
+  // Debounced fetch function - waits 500ms after user stops typing
+  const debouncedFetchRef = useRef(
+    debounce((search, cuisine, location) => {
+      fetchChefsWithParams(search, cuisine, location);
+    }, 500)
+  );
+
   useEffect(() => {
-    fetchChefs();
+    // Use debounced function for search, immediate for filters
+    if (searchTerm) {
+      debouncedFetchRef.current(searchTerm, selectedCuisine, selectedLocation);
+    } else {
+      // Immediate fetch when no search term or filters change
+      fetchChefsWithParams(searchTerm, selectedCuisine, selectedLocation);
+    }
+
+    // Cleanup function to cancel pending debounced calls
+    return () => {
+      if (debouncedFetchRef.current.cancel) {
+        debouncedFetchRef.current.cancel();
+      }
+    };
   }, [searchTerm, selectedCuisine, selectedLocation]);
+
+  const fetchChefsWithParams = async (search, cuisine, location) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (search) params.append('q', search);
+      if (cuisine) params.append('cuisine', cuisine);
+      if (location) params.append('location', location);
+
+      const queryString = params.toString();
+      const endpoint = queryString ? `/chefs/search?${queryString}` : '/chefs';
+      
+      // Create cache key based on filters
+      const cacheKey = `chefs-${search}-${cuisine}-${location}`;
+
+      // Use cached fetch with 2 minute TTL
+      const data = await cachedFetch(
+        cacheKey,
+        async () => {
+          const response = await fetch(buildApiEndpoint(endpoint), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch chefs: ${response.status}`);
+          }
+
+          return await response.json();
+        },
+        2 * 60 * 1000 // Cache for 2 minutes
+      );
+      
+      setChefs(data.chefs || data.data || []);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      setChefs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchChefs = async () => {
     try {

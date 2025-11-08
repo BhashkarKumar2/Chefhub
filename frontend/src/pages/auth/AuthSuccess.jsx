@@ -9,7 +9,7 @@ const AuthSuccess = () => {
 
   useEffect(() => {
     const handleOAuthSuccess = () => {
-      // console.log('ðŸŽ¯ AuthSuccess page loaded');
+      // console.log('🎯 AuthSuccess page loaded');
       // console.log('ðŸ” Current URL:', window.location.href);
       // console.log('ðŸ” Search params:', searchParams.toString());
       

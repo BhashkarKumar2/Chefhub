@@ -34,4 +34,8 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Additional indexes for better query performance
+// Note: email, googleId, facebookId, firebaseUid, phone already have indexes via unique: true
+userSchema.index({ favorites: 1 }); // For favorite queries
+
 export default mongoose.model('User', userSchema);

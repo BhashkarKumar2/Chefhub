@@ -49,7 +49,7 @@ const BookChef = () => {
     {
       id: 'birthday',
       name: 'Birthday Party',
-      icon: 'ðŸŽ‚',
+      icon: '🎂',
       description: 'Celebrate special birthdays with custom menus and party atmosphere',
       baseMultiplier: 1.5, // 50% more than base rate
       minDuration: 3,
@@ -81,13 +81,13 @@ const BookChef = () => {
   // Dynamic add-ons based on service type
   const getAddOnsForService = (serviceType) => {
     const baseAddOns = [
-      { name: 'Cleanup', price: 150, icon: 'ðŸ§¹', description: 'Complete post-meal cleanup service' }
+      { name: 'Cleanup', price: 150, icon: '🧹', description: 'Complete post-meal cleanup service' }
     ];
 
     const serviceSpecificAddOns = {
       birthday: [
-        { name: 'Party Decor', price: 500, icon: 'ðŸŽ¨', description: 'Birthday party table decoration' },
-        { name: 'Birthday Cake', price: 800, icon: 'ðŸŽ‚', description: 'Custom birthday cake' },
+        { name: 'Party Decor', price: 500, icon: '🎨', description: 'Birthday party table decoration' },
+        { name: 'Birthday Cake', price: 800, icon: '🎂', description: 'Custom birthday cake' },
         { name: 'Photography', price: 1200, icon: 'ðŸ“¸', description: 'Party photography service' }
       ],
       marriage: [

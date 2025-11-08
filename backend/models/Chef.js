@@ -29,4 +29,14 @@ const chefSchema = new mongoose.Schema({
   timestamps: true
 });
 
+// Indexes for better query performance
+// Note: email already has an index via unique: true
+chefSchema.index({ specialty: 1 }); // For cuisine filtering
+chefSchema.index({ city: 1 }); // For location filtering
+chefSchema.index({ isActive: 1 }); // For filtering active chefs
+chefSchema.index({ rating: -1 }); // For sorting by rating
+chefSchema.index({ pricePerHour: 1 }); // For price range filtering
+chefSchema.index({ 'locationCoords.lat': 1, 'locationCoords.lon': 1 }); // For geo queries
+chefSchema.index({ name: 'text', bio: 'text', specialty: 'text' }); // For text search
+
 export default mongoose.model('Chef', chefSchema);
