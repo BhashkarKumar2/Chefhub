@@ -43,7 +43,7 @@ export const setPassword = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Set password error:', error);
+    // console.error('Set password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -98,7 +98,7 @@ export const changePassword = async (req, res) => {
       success: true
     });
   } catch (error) {
-    console.error('Change password error:', error);
+    // console.error('Change password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -119,7 +119,7 @@ export const checkPasswordStatus = async (req, res) => {
       canSetPassword: !user.password && !!(user.googleId || user.facebookId)
     });
   } catch (error) {
-    console.error('Check password status error:', error);
+    // console.error('Check password status error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

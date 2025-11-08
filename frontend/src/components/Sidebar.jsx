@@ -153,7 +153,7 @@ const Sidebar = () => {
       await logout();
       navigate('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      // console.error('Logout error:', error);
     }
     setIsMobileOpen(false);
   };

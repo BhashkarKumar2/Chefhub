@@ -26,25 +26,25 @@ export const AuthProvider = ({ children }) => {
       const token = getToken();
       
       if (!token) {
-        console.log('🔍 No token found, user not authenticated');
+        // console.log('ðŸ” No token found, user not authenticated');
         setIsAuthenticated(false);
         setUser(null);
         setIsLoading(false);
         return;
       }
 
-      console.log('🔍 Token found, validating with backend...');
+      // console.log('ðŸ” Token found, validating with backend...');
 
       // Validate token with backend
       const validation = await validateToken();
       
       if (validation.valid) {
-        console.log('✅ Token validation successful:', validation.user);
+        // console.log('âœ… Token validation successful:', validation.user);
         setIsAuthenticated(true);
         
         // Use validated user data from backend first, then fallback to localStorage
         if (validation.user) {
-          console.log('✅ Using validated user data from backend:', validation.user);
+          // console.log('âœ… Using validated user data from backend:', validation.user);
           setUser(validation.user);
         } else {
           // Fallback to localStorage data, but validate it first
@@ -60,21 +60,21 @@ export const AuthProvider = ({ children }) => {
               email: userEmail,
               name: userName && userName !== 'undefined' && userName !== 'null' ? userName : userEmail
             };
-            console.log('✅ Using validated localStorage data:', userData);
+            // console.log('âœ… Using validated localStorage data:', userData);
             setUser(userData);
           } else {
-            console.log('❌ Invalid user data in localStorage, logging out');
+            // console.log('âŒ Invalid user data in localStorage, logging out');
             logout();
             return;
           }
         }
       } else {
-        console.log('❌ Token validation failed:', validation.error);
+        // console.log('âŒ Token validation failed:', validation.error);
         // Token is invalid, clear everything
         logout();
       }
     } catch (error) {
-      console.error('❌ Auth check failed:', error);
+      // console.error('âŒ Auth check failed:', error);
       logout();
     } finally {
       setIsLoading(false);
@@ -82,11 +82,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (token, userData) => {
-    console.log('🔑 AuthContext login called with:', { token: !!token, userData });
+    // console.log('ðŸ”‘ AuthContext login called with:', { token: !!token, userData });
     
     // Validate input data
     if (!token || !userData || !userData.id || !userData.email) {
-      console.error('❌ Invalid login data provided:', { token: !!token, userData });
+      // console.error('âŒ Invalid login data provided:', { token: !!token, userData });
       return;
     }
     
@@ -99,11 +99,11 @@ export const AuthProvider = ({ children }) => {
     
     // Double-check that we don't have invalid values
     if (cleanUserData.id === 'undefined' || cleanUserData.id === 'null' || !cleanUserData.id) {
-      console.error('❌ Invalid user ID detected:', cleanUserData.id);
+      // console.error('âŒ Invalid user ID detected:', cleanUserData.id);
       return;
     }
     
-    console.log('✅ Storing clean user data:', cleanUserData);
+    // console.log('âœ… Storing clean user data:', cleanUserData);
     
     // Store token and user data
     localStorage.setItem('token', token);
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     setUser(cleanUserData);
     
-    console.log('✅ Login successful, user authenticated');
+    // console.log('âœ… Login successful, user authenticated');
   };
 
   const logout = () => {

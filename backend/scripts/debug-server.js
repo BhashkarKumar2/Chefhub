@@ -1,41 +1,41 @@
 // Debug server to find the exact issue
 import './loadEnv.js';
 
-console.log('Environment loaded');
-console.log('MONGO_URI:', process.env.MONGO_URI ? 'Found' : 'Missing');
-console.log('PORT:', process.env.PORT);
+// console.log('Environment loaded');
+// console.log('MONGO_URI:', process.env.MONGO_URI ? 'Found' : 'Missing');
+// console.log('PORT:', process.env.PORT);
 
 try {
-  console.log('Importing express...');
+  // console.log('Importing express...');
   const express = await import('express');
-  console.log('Express imported successfully');
+  // console.log('Express imported successfully');
   
-  console.log('Importing cors...');
+  // console.log('Importing cors...');
   const cors = await import('cors');
-  console.log('CORS imported successfully');
+  // console.log('CORS imported successfully');
   
-  console.log('Importing mongoose...');
+  // console.log('Importing mongoose...');
   const mongoose = await import('mongoose');
-  console.log('Mongoose imported successfully');
+  // console.log('Mongoose imported successfully');
   
-  console.log('Creating app...');
+  // console.log('Creating app...');
   const app = express.default();
-  console.log('App created successfully');
+  // console.log('App created successfully');
   
-  console.log('Setting up middleware...');
+  // console.log('Setting up middleware...');
   app.use(cors.default());
   app.use(express.default.json());
   
-  console.log('Connecting to MongoDB...');
+  // console.log('Connecting to MongoDB...');
   await mongoose.default.connect(process.env.MONGO_URI);
-  console.log('MongoDB connected successfully');
+  // console.log('MongoDB connected successfully');
   
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`Debug server running on port ${PORT}`);
+    // console.log(`Debug server running on port ${PORT}`);
   });
   
 } catch (error) {
-  console.error('Error in debug server:', error);
-  console.error('Stack:', error.stack);
+  // console.error('Error in debug server:', error);
+  // console.error('Stack:', error.stack);
 }

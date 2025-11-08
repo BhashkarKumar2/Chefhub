@@ -38,7 +38,7 @@ const SetPassword = () => {
       setIsOAuthUser(response.data.isOAuthUser);
       setLoading(false);
     } catch (error) {
-      console.error('Error checking password status:', error);
+      // console.error('Error checking password status:', error);
       setError('Failed to load password status');
       setLoading(false);
     }

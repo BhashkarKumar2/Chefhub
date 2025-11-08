@@ -34,7 +34,7 @@ class SocketService {
           socket.userId = decoded.id;
           next();
         } catch (error) {
-          console.error('Socket authentication error:', error);
+          // console.error('Socket authentication error:', error);
           next(new Error('Authentication error'));
         }
       } else {
@@ -44,11 +44,11 @@ class SocketService {
     });
 
     this.io.on('connection', (socket) => {
-      console.log(`🔗 Socket connected: ${socket.id}`);
+      // console.log(`ðŸ”— Socket connected: ${socket.id}`);
       
       if (socket.userId) {
         this.connectedUsers.set(socket.userId, socket.id);
-        console.log(`👤 User ${socket.userId} connected`);
+        // console.log(`ðŸ‘¤ User ${socket.userId} connected`);
         
         // Join user to their personal room for notifications
         socket.join(`user:${socket.userId}`);
@@ -75,22 +75,22 @@ class SocketService {
       });
 
       socket.on('disconnect', () => {
-        console.log(`🔌 Socket disconnected: ${socket.id}`);
+        // console.log(`ðŸ”Œ Socket disconnected: ${socket.id}`);
         if (socket.userId) {
           this.connectedUsers.delete(socket.userId);
-          console.log(`👤 User ${socket.userId} disconnected`);
+          // console.log(`ðŸ‘¤ User ${socket.userId} disconnected`);
         }
       });
     });
 
-    console.log('🚀 Socket.io server initialized');
+    // console.log('ðŸš€ Socket.io server initialized');
   }
 
   // Notify specific user
   notifyUser(userId, event, data) {
     if (this.io) {
       this.io.to(`user:${userId}`).emit(event, data);
-      console.log(`📨 Notification sent to user ${userId}:`, event);
+      // console.log(`ðŸ“¨ Notification sent to user ${userId}:`, event);
     }
   }
 
@@ -98,7 +98,7 @@ class SocketService {
   broadcast(event, data) {
     if (this.io) {
       this.io.emit(event, data);
-      console.log(`📡 Broadcast sent:`, event);
+      // console.log(`ðŸ“¡ Broadcast sent:`, event);
     }
   }
 

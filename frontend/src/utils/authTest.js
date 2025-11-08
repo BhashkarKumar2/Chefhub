@@ -2,10 +2,10 @@
 import { validateToken, getToken } from './auth.js';
 
 export const testAuthState = async () => {
-  console.log('🧪 Testing authentication state...');
+  // console.log('ðŸ§ª Testing authentication state...');
   
   // Check all localStorage keys
-  console.log('🔍 All localStorage keys:', Object.keys(localStorage));
+  // console.log('ðŸ” All localStorage keys:', Object.keys(localStorage));
   
   // Check localStorage
   const token = getToken();
@@ -13,29 +13,30 @@ export const testAuthState = async () => {
   const userName = localStorage.getItem('userName');
   const userId = localStorage.getItem('userId');
   
-  console.log('📦 LocalStorage state:', {
-    hasToken: !!token,
-    tokenLength: token?.length,
-    tokenPreview: token ? token.substring(0, 20) + '...' : 'None',
-    userEmail,
-    userName,
-    userId
-  });
+  // console.log('ðŸ“¦ LocalStorage state:', 
+  // {
+  //   hasToken: !!token,
+  //   tokenLength: token?.length,
+  //   tokenPreview: token ? token.substring(0, 20) + '...' : 'None',
+  //   userEmail,
+  //   userName,
+  //   userId
+  // });
   
   if (token) {
-    console.log('🔍 Full token:', token);
+    // console.log('ðŸ” Full token:', token);
   }
   
   // Test token validation
   const validation = await validateToken();
-  console.log('✅ Validation result:', validation);
+  // console.log('âœ… Validation result:', validation);
   
   return validation;
 };
 
 // Clear all auth data
 export const clearAllAuthData = () => {
-  console.log('🧹 Clearing all authentication data...');
+  // console.log('ðŸ§¹ Clearing all authentication data...');
   localStorage.removeItem('token');
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userName');
@@ -47,5 +48,5 @@ export const clearAllAuthData = () => {
     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
   });
   
-  console.log('✅ All auth data and cookies cleared');
+  // console.log('âœ… All auth data and cookies cleared');
 };

@@ -28,7 +28,7 @@ export const isTokenExpired = (token) => {
     // Check if token is expired
     return payload.exp < currentTime;
   } catch (error) {
-    console.error('Error parsing token:', error);
+    // console.error('Error parsing token:', error);
     return true;
   }
 };
@@ -37,22 +37,22 @@ export const isTokenExpired = (token) => {
 export const validateToken = async () => {
   const token = getToken();
   
-  console.log('🔍 Validating token:', token ? 'Token exists' : 'No token found');
+  // console.log('ðŸ” Validating token:', token ? 'Token exists' : 'No token found');
   
   if (!token) {
-    console.log('❌ No token found');
+    // console.log('âŒ No token found');
     return { valid: false, error: 'No token found' };
   }
 
   // Check if token is expired client-side first
   if (isTokenExpired(token)) {
-    console.log('❌ Token expired (client-side check)');
+    // console.log('âŒ Token expired (client-side check)');
     removeToken();
     return { valid: false, error: 'Token expired' };
   }
 
   try {
-    console.log('🔄 Sending validation request to backend...');
+    // console.log('ðŸ”„ Sending validation request to backend...');
     const response = await fetch(buildApiEndpoint('/auth/validate-token'), {
       method: 'POST',
       headers: {
@@ -62,19 +62,19 @@ export const validateToken = async () => {
     });
 
     const data = await response.json();
-    console.log('📡 Backend validation response:', { status: response.status, data });
+    // console.log('ðŸ“¡ Backend validation response:', { status: response.status, data });
 
     if (!response.ok) {
       // Token is invalid, remove it
-      console.log('❌ Token validation failed:', data.message);
+      // console.log('âŒ Token validation failed:', data.message);
       removeToken();
       return { valid: false, error: data.message };
     }
 
-    console.log('✅ Token validation successful:', data.user);
+    // console.log('âœ… Token validation successful:', data.user);
     return { valid: true, user: data.user };
   } catch (error) {
-    console.error('❌ Token validation error:', error);
+    // console.error('âŒ Token validation error:', error);
     removeToken();
     return { valid: false, error: 'Network error' };
   }
@@ -103,7 +103,7 @@ export const getCurrentUser = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    // console.error('Error fetching current user:', error);
     removeToken();
     return null;
   }

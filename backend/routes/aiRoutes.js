@@ -44,7 +44,7 @@ router.post('/chef-recommendations', async (req, res) => {
       data: recommendations
     });
   } catch (error) {
-    console.error('Chef recommendations error:', error);
+    // console.error('Chef recommendations error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get chef recommendations',
@@ -65,7 +65,7 @@ router.post('/generate-menu', async (req, res) => {
       data: menu
     });
   } catch (error) {
-    console.error('Menu generation error:', error);
+    // console.error('Menu generation error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate menu',
@@ -96,7 +96,7 @@ router.post('/pricing-suggestions', async (req, res) => {
       data: pricingSuggestions
     });
   } catch (error) {
-    console.error('Pricing suggestions error:', error);
+    // console.error('Pricing suggestions error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get pricing suggestions',
@@ -125,7 +125,7 @@ router.post('/review-response', verifyToken, async (req, res) => {
       data: { response }
     });
   } catch (error) {
-    console.error('Review response error:', error);
+    // console.error('Review response error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate review response',
@@ -146,7 +146,7 @@ router.post('/cooking-content', async (req, res) => {
       data: { content }
     });
   } catch (error) {
-    console.error('Cooking content error:', error);
+    // console.error('Cooking content error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate cooking content',
@@ -167,7 +167,7 @@ router.post('/meal-plan', verifyToken, async (req, res) => {
       data: mealPlan
     });
   } catch (error) {
-    console.error('Meal plan error:', error);
+    // console.error('Meal plan error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate meal plan',
@@ -218,7 +218,7 @@ router.post('/chat', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('AI chat error:', error);
+    // console.error('AI chat error:', error);
     
     // Provide more specific error messages
     let errorMessage = 'Failed to process chat message';

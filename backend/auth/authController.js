@@ -5,7 +5,7 @@ import { verifyFirebaseToken, getFirebaseUserByPhone } from '../services/smsServ
 
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
-  console.log('Registration request:', req.body);
+  // console.log('Registration request:', req.body);
   
   try {
     // Validate required fields
@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
     });
     await newUser.save();
     
-    console.log('✅ User registered successfully:', newUser.email);
+    // console.log('âœ… User registered successfully:', newUser.email);
     res.status(201).json({ 
       message: "User registered successfully",
       user: {
@@ -35,25 +35,25 @@ export const registerUser = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('❌ Registration error:', err);
+    // console.error('âŒ Registration error:', err);
     res.status(500).json({ message: err.message });
   }
 };
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  console.log('🔍 Login attempt for:', email);
+  // console.log('ðŸ” Login attempt for:', email);
   
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('❌ User not found:', email);
+      // console.log('âŒ User not found:', email);
       return res.status(400).json({ message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.log('❌ Invalid password for:', email);
+      // console.log('âŒ Invalid password for:', email);
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -66,13 +66,13 @@ export const loginUser = async (req, res) => {
       profileImage: user.profileImage
     };
     
-    console.log('✅ Login successful for:', email, 'User ID:', user._id);
+    // console.log('âœ… Login successful for:', email, 'User ID:', user._id);
     res.json({ 
       token, 
       user: userResponse 
     });
   } catch (err) {
-    console.error('❌ Login error:', err);
+    // console.error('âŒ Login error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -112,7 +112,7 @@ export const validateToken = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Token validation error:', error);
+    // console.error('Token validation error:', error);
     
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
@@ -140,7 +140,7 @@ export const getCurrentUser = async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
   } catch (error) {
-    console.error('Get current user error:', error);
+    // console.error('Get current user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -183,7 +183,7 @@ export const verifyFirebaseOTP = async (req, res) => {
       });
       
       await user.save();
-      console.log('✅ New user created:', user.phone);
+      // console.log('âœ… New user created:', user.phone);
     } else {
       // Update phone verification status and Firebase UID
       user.isPhoneVerified = true;
@@ -192,7 +192,7 @@ export const verifyFirebaseOTP = async (req, res) => {
         user.email = firebaseUser.email;
       }
       await user.save();
-      console.log('✅ Existing user updated:', user.phone);
+      // console.log('âœ… Existing user updated:', user.phone);
     }
     
     // Generate JWT token for our application
@@ -211,7 +211,7 @@ export const verifyFirebaseOTP = async (req, res) => {
       message: 'Login successful'
     });
   } catch (error) {
-    console.error('Firebase OTP verification error:', error);
+    // console.error('Firebase OTP verification error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

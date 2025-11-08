@@ -49,7 +49,7 @@ const BookChef = () => {
     {
       id: 'birthday',
       name: 'Birthday Party',
-      icon: '🎂',
+      icon: 'ðŸŽ‚',
       description: 'Celebrate special birthdays with custom menus and party atmosphere',
       baseMultiplier: 1.5, // 50% more than base rate
       minDuration: 3,
@@ -59,7 +59,7 @@ const BookChef = () => {
     {
       id: 'marriage',
       name: 'Marriage Ceremony',
-      icon: '💒',
+      icon: 'ðŸ’’',
       description: 'Grand wedding celebrations with multi-course traditional meals',
       baseMultiplier: 2.5, // 150% more than base rate
       minDuration: 6,
@@ -69,7 +69,7 @@ const BookChef = () => {
     {
       id: 'daily',
       name: 'Daily Cook',
-      icon: '🍽️',
+      icon: 'ðŸ½ï¸',
       description: 'Regular home cooking for daily meals and weekly meal prep',
       baseMultiplier: 0.8, // 20% less than base rate for regular service
       minDuration: 2,
@@ -81,25 +81,25 @@ const BookChef = () => {
   // Dynamic add-ons based on service type
   const getAddOnsForService = (serviceType) => {
     const baseAddOns = [
-      { name: 'Cleanup', price: 150, icon: '🧹', description: 'Complete post-meal cleanup service' }
+      { name: 'Cleanup', price: 150, icon: 'ðŸ§¹', description: 'Complete post-meal cleanup service' }
     ];
 
     const serviceSpecificAddOns = {
       birthday: [
-        { name: 'Party Decor', price: 500, icon: '🎨', description: 'Birthday party table decoration' },
-        { name: 'Birthday Cake', price: 800, icon: '🎂', description: 'Custom birthday cake' },
-        { name: 'Photography', price: 1200, icon: '📸', description: 'Party photography service' }
+        { name: 'Party Decor', price: 500, icon: 'ðŸŽ¨', description: 'Birthday party table decoration' },
+        { name: 'Birthday Cake', price: 800, icon: 'ðŸŽ‚', description: 'Custom birthday cake' },
+        { name: 'Photography', price: 1200, icon: 'ðŸ“¸', description: 'Party photography service' }
       ],
       marriage: [
-        { name: 'Wedding Decor', price: 2000, icon: '💐', description: 'Elegant wedding decoration' },
-        { name: 'Traditional Setup', price: 1500, icon: '🏺', description: 'Traditional ceremony setup' },
-        { name: 'Catering Staff', price: 3000, icon: '👥', description: 'Additional serving staff' },
-        { name: 'Premium Ingredients', price: 2500, icon: '⭐', description: 'Premium quality ingredients' }
+        { name: 'Wedding Decor', price: 2000, icon: 'ðŸ’', description: 'Elegant wedding decoration' },
+        { name: 'Traditional Setup', price: 1500, icon: 'ðŸº', description: 'Traditional ceremony setup' },
+        { name: 'Catering Staff', price: 3000, icon: 'ðŸ‘¥', description: 'Additional serving staff' },
+        { name: 'Premium Ingredients', price: 2500, icon: 'â­', description: 'Premium quality ingredients' }
       ],
       daily: [
-        { name: 'Grocery Shopping', price: 200, icon: '🛒', description: 'Weekly grocery shopping' },
-        { name: 'Meal Planning', price: 300, icon: '📋', description: 'Weekly meal planning service' },
-        { name: 'Utensils Care', price: 150, icon: '🍴', description: 'Kitchen utensils maintenance' }
+        { name: 'Grocery Shopping', price: 200, icon: 'ðŸ›’', description: 'Weekly grocery shopping' },
+        { name: 'Meal Planning', price: 300, icon: 'ðŸ“‹', description: 'Weekly meal planning service' },
+        { name: 'Utensils Care', price: 150, icon: 'ðŸ´', description: 'Kitchen utensils maintenance' }
       ]
     };
 
@@ -163,13 +163,13 @@ const BookChef = () => {
         }
         
         const response = await res.json();
-        console.log('📋 BookChef - Full API response:', response);
+        // console.log('ðŸ“‹ BookChef - Full API response:', response);
         
         const chefsData = response.chefs || response.data || [];
-        console.log('📊 BookChef - Extracted chefs data:', chefsData);
+        // console.log('ðŸ“Š BookChef - Extracted chefs data:', chefsData);
         
         let chefList = Array.isArray(chefsData) ? chefsData : [];
-        console.log('🔢 BookChef - Chef list length:', chefList.length);
+        // console.log('ðŸ”¢ BookChef - Chef list length:', chefList.length);
 
         // If user location is set and geocoded, sort chefs by closest serviceable location
         if (userLocation.lat && userLocation.lon) {
@@ -202,7 +202,7 @@ const BookChef = () => {
           setSelectedChef(chefById);
         }
       } catch (err) {
-        console.error('Error fetching chefs:', err);
+        // console.error('Error fetching chefs:', err);
         setChefs([]);
       } finally {
         setLoading(false);
@@ -275,11 +275,11 @@ const BookChef = () => {
     // Service fee calculation
     let serviceFee = 0;
     if (bookingDetails.serviceType === 'marriage') {
-      serviceFee = Math.max(500, totalBasePrice * 0.1); // 10% or ₹500 minimum
+      serviceFee = Math.max(500, totalBasePrice * 0.1); // 10% or â‚¹500 minimum
     } else if (bookingDetails.serviceType === 'birthday') {
-      serviceFee = Math.max(200, totalBasePrice * 0.08); // 8% or ₹200 minimum
+      serviceFee = Math.max(200, totalBasePrice * 0.08); // 8% or â‚¹200 minimum
     } else {
-      serviceFee = Math.max(100, totalBasePrice * 0.05); // 5% or ₹100 minimum
+      serviceFee = Math.max(100, totalBasePrice * 0.05); // 5% or â‚¹100 minimum
     }
 
     // GST calculation (18%)
@@ -348,7 +348,7 @@ const BookChef = () => {
   };
 
   const handleBooking = async () => {
-    console.log('Current booking details:', bookingDetails); // Debug log
+    // console.log('Current booking details:', bookingDetails); // Debug log
     
     if (!selectedChef) return alert("No chef selected");
     
@@ -417,7 +417,7 @@ const BookChef = () => {
         }
       };
 
-      console.log('Creating booking with payload:', bookingPayload);
+      // console.log('Creating booking with payload:', bookingPayload);
 
       // Create booking
       const bookingRes = await fetch(buildApiEndpoint('bookings'), {
@@ -431,13 +431,13 @@ const BookChef = () => {
 
       if (!bookingRes.ok) {
         const error = await bookingRes.json();
-        console.error('Booking creation error:', error);
+        // console.error('Booking creation error:', error);
         alert(error.message || "Failed to create booking!");
         return;
       }
 
       const bookingResult = await bookingRes.json();
-      console.log('Booking created:', bookingResult);
+      // console.log('Booking created:', bookingResult);
 
       // Step 2: Create payment order
       const paymentPayload = {
@@ -446,7 +446,7 @@ const BookChef = () => {
         currency: 'INR'
       };
 
-      console.log('Creating payment order with payload:', paymentPayload);
+      // console.log('Creating payment order with payload:', paymentPayload);
 
       const paymentRes = await fetch(buildApiEndpoint('payments/create-order'), {
         method: 'POST',
@@ -459,26 +459,26 @@ const BookChef = () => {
 
       if (!paymentRes.ok) {
         const error = await paymentRes.json();
-        console.error('Payment order creation error:', error);
+        // console.error('Payment order creation error:', error);
         alert(error.message || "Failed to create payment order!");
         return;
       }
 
       const paymentResult = await paymentRes.json();
-      console.log('Payment order created:', paymentResult);
+      // console.log('Payment order created:', paymentResult);
 
       // Step 3: Initialize Razorpay
       initializeRazorpay(paymentResult.data, bookingResult.booking);
 
     } catch (err) {
-      console.error('Network error:', err);
+      // console.error('Network error:', err);
       alert("Error booking chef. Please try again.");
     }
   };
 
   // Initialize Razorpay payment
   const initializeRazorpay = (paymentData, bookingData) => {
-    console.log('Initializing Razorpay with:', paymentData);
+    // console.log('Initializing Razorpay with:', paymentData);
     
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -490,7 +490,7 @@ const BookChef = () => {
       // image: "/logo.png", 
       order_id: paymentData.orderId,
       handler: function (response) {
-        console.log('Payment successful:', response);
+        // console.log('Payment successful:', response);
         verifyPayment(response, bookingData._id);
       },
       prefill: {
@@ -508,14 +508,14 @@ const BookChef = () => {
       },
       modal: {
         ondismiss: function() {
-          console.log('Payment modal closed');
+          // console.log('Payment modal closed');
           // Handle payment cancellation
           handlePaymentFailure(bookingData._id, { description: "Payment cancelled by user" });
         }
       }
     };
 
-    console.log('Razorpay options:', options);
+    // console.log('Razorpay options:', options);
 
     // Check if Razorpay is loaded
     if (typeof window.Razorpay === 'undefined') {
@@ -523,17 +523,17 @@ const BookChef = () => {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => {
-        console.log('Razorpay script loaded, creating instance...');
+        // console.log('Razorpay script loaded, creating instance...');
         const rzp = new window.Razorpay(options);
         rzp.open();
       };
       script.onerror = () => {
-        console.error('Failed to load Razorpay script');
+        // console.error('Failed to load Razorpay script');
         alert('Failed to load payment gateway. Please try again.');
       };
       document.body.appendChild(script);
     } else {
-      console.log('Razorpay already loaded, creating instance...');
+      // console.log('Razorpay already loaded, creating instance...');
       const rzp = new window.Razorpay(options);
       rzp.open();
     }
@@ -559,14 +559,14 @@ const BookChef = () => {
 
       if (verifyResult.success) {
         alert("Payment successful! Your booking is confirmed.");
-        console.log('Payment verified:', verifyResult);
+        // console.log('Payment verified:', verifyResult);
         navigate('/dashboard');
       } else {
         alert("Payment verification failed. Please contact support.");
-        console.error('Payment verification failed:', verifyResult);
+        // console.error('Payment verification failed:', verifyResult);
       }
     } catch (error) {
-      console.error('Payment verification error:', error);
+      // console.error('Payment verification error:', error);
       alert("Error verifying payment. Please contact support.");
     }
   };
@@ -585,9 +585,9 @@ const BookChef = () => {
         body: JSON.stringify(failurePayload)
       });
 
-      console.log('Payment failure recorded');
+      // console.log('Payment failure recorded');
     } catch (err) {
-      console.error('Error recording payment failure:', err);
+      // console.error('Error recording payment failure:', err);
     }
   };
 
@@ -625,7 +625,7 @@ const BookChef = () => {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'} rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border`}>
             <label className={`block text-sm font-semibold ${isDark ? 'text-orange-300' : 'text-orange-900'} mb-4`}>
-              📍 Your Service Location Details
+              ðŸ“ Your Service Location Details
             </label>
             
             {/* City and State Row */}
@@ -665,7 +665,7 @@ const BookChef = () => {
                 {userLocation.address || 'Address will be auto-generated from city and state'}
               </div>
               <p className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-600'} mt-1`}>
-                ✨ Address is automatically created from your city and state for consistency
+                âœ¨ Address is automatically created from your city and state for consistency
               </p>
             </div>
 
@@ -701,7 +701,7 @@ const BookChef = () => {
             </div>
             {locationError && <p className={`text-xs mt-2 ${isDark ? 'text-red-400' : 'text-red-500'}`}>{locationError}</p>}
             <p className={`text-xs mt-2 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
-              💡 Enter city and state - we'll automatically create the complete address for precise chef location mapping
+              ðŸ’¡ Enter city and state - we'll automatically create the complete address for precise chef location mapping
             </p>
           </div>
         </div>
@@ -835,7 +835,7 @@ const BookChef = () => {
                   <p className="text-xl opacity-95 mb-4">{selectedChef.specialty}</p>
                   <p className="leading-relaxed opacity-90 mb-6">{selectedChef.bio}</p>
                   <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
-                    <p className="text-2xl font-bold text-orange-600">₹{selectedChef.pricePerHour || selectedChef.rate || 1200}/hour</p>
+                    <p className="text-2xl font-bold text-orange-600">â‚¹{selectedChef.pricePerHour || selectedChef.rate || 1200}/hour</p>
                     <p className={`text-sm opacity-80 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>Base rate (excluding add-ons)</p>
                   </div>
                 </div>
@@ -897,7 +897,7 @@ const BookChef = () => {
                               <span className={`text-xs font-semibold ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
                                 {service.baseMultiplier}x rate
                               </span>
-                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-400">â€¢</span>
                               <span className={`text-xs ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                                 {service.minDuration}-{service.maxDuration}h
                               </span>
@@ -1237,7 +1237,7 @@ const BookChef = () => {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className={`font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>+₹{addOn.price}</p>
+                              <p className={`font-bold ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>+â‚¹{addOn.price}</p>
                               {bookingDetails.addOns.includes(addOn.name) && (
                                 <svg className="w-5 h-5 text-green-500 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
@@ -1273,7 +1273,7 @@ const BookChef = () => {
                 <div className={`rounded-2xl p-6 border ${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600' : 'bg-gradient-to-r from-orange-50 to-amber-100 border-orange-200'}`}>
                   <div className="flex items-center justify-between mb-4">
                     <span className={`text-lg font-semibold ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>Total Amount:</span>
-                    <span className={`text-3xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{calculateTotal()}</span>
+                    <span className={`text-3xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>â‚¹{calculateTotal()}</span>
                   </div>
                   <button
                     onClick={handleBooking}

@@ -32,7 +32,7 @@ const geocodeAddress = async (address) => {
     }
     return null;
   } catch (error) {
-    console.error('Geocoding error:', error);
+    // console.error('Geocoding error:', error);
     return null;
   }
 };
@@ -57,7 +57,7 @@ const Favorites = () => {
         alert('Location not found. Please try a different address.');
       }
     } catch (error) {
-      console.error('Location search error:', error);
+      // console.error('Location search error:', error);
       alert('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);
@@ -242,7 +242,7 @@ const Favorites = () => {
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className={`absolute top-4 right-4 backdrop-blur-sm rounded-xl px-3 py-1 ${isDark ? 'bg-gray-800/90' : 'bg-white/90'}`}>
-                    <span className={`font-bold text-lg ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{chef.pricePerHour}/hr</span>
+                    <span className={`font-bold text-lg ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>â‚¹{chef.pricePerHour}/hr</span>
                   </div>
                   <div className="absolute top-2 left-15">
                     <FavoriteButton chef={chef} variant="card" />

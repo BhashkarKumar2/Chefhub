@@ -25,45 +25,45 @@ const Profile = () => {
   useEffect(() => {
     // Don't run if auth is still loading
     if (isLoading) {
-      console.log('⏳ Auth still loading, waiting...');
+      // console.log('â³ Auth still loading, waiting...');
       return;
     }
     
     const loadUserData = async () => {
       try {
-        // Check if user is authenticated
-        console.log('🔍 Profile auth check:', {
-          isAuthenticated,
-          authUser,
-          hasUserId: authUser?.id,
-          authUserObject: authUser
-        });
+        // // Check if user is authenticated
+        // // console.log('ðŸ” Profile auth check:', {
+        //   isAuthenticated,
+        //   authUser,
+        //   hasUserId: authUser?.id,
+        //   authUserObject: authUser
+        // });
         
         if (!isAuthenticated || !authUser || !authUser.id) {
-          console.log('❌ User not authenticated, redirecting to login');
-          console.log('Debug info:', {
-            isAuthenticated,
-            authUser,
-            authUserId: authUser?.id,
-            localStorage: {
-              token: localStorage.getItem('token'),
-              userId: localStorage.getItem('userId'),
-              userEmail: localStorage.getItem('userEmail')
-            }
-          });
+          // console.log('âŒ User not authenticated, redirecting to login');
+          // // console.log('Debug info:', {
+          //   isAuthenticated,
+          //   authUser,
+          //   authUserId: authUser?.id,
+          //   localStorage: {
+          //     token: localStorage.getItem('token'),
+          //     userId: localStorage.getItem('userId'),
+          //     userEmail: localStorage.getItem('userEmail')
+          //   }
+          // });
           navigate('/login');
           return;
         }
         
         const token = localStorage.getItem('token');
         if (!token) {
-          console.log('❌ No token found, redirecting to login');
+          // console.log('âŒ No token found, redirecting to login');
           navigate('/login');
           return;
         }
         
-        console.log('🔍 Loading user profile for ID:', authUser.id);
-        console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+        // console.log('ðŸ” Loading user profile for ID:', authUser.id);
+        // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
         
         // Load user profile data
         const profileResponse = await fetch(buildApiEndpoint(`/user/profile/${authUser.id}`), {
@@ -75,8 +75,8 @@ const Profile = () => {
         
         if (profileResponse.ok) {
           const user = await profileResponse.json();
-          console.log('✅ User data loaded:', user);
-          console.log('🖼️ Profile image URL:', user.profileImage);
+          // console.log('âœ… User data loaded:', user);
+          // console.log('ðŸ–¼ï¸ Profile image URL:', user.profileImage);
           setUserData(user);
           setUserStats({
             totalBookings: user.totalBookings || 0,
@@ -85,7 +85,7 @@ const Profile = () => {
             memberSince: user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()
           });
         } else {
-          console.error('❌ Failed to load user data');
+          // console.error('âŒ Failed to load user data');
           navigate('/login');
           return;
         }
@@ -101,14 +101,14 @@ const Profile = () => {
           
           if (bookingsResponse.ok) {
             const bookings = await bookingsResponse.json();
-            console.log('✅ Bookings data loaded:', bookings);
+            // console.log('âœ… Bookings data loaded:', bookings);
             setRecentBookings(bookings.slice(0, 3)); // Show only 3 most recent
           } else {
-            console.log('ℹ️ No bookings found or failed to load bookings');
+            // console.log('â„¹ï¸ No bookings found or failed to load bookings');
             setRecentBookings([]);
           }
         } catch (bookingError) {
-          console.log('ℹ️ Error loading bookings:', bookingError.message);
+          // console.log('â„¹ï¸ Error loading bookings:', bookingError.message);
           setRecentBookings([]);
         }
 
@@ -123,16 +123,16 @@ const Profile = () => {
           
           if (passwordStatusResponse.ok) {
             const passwordData = await passwordStatusResponse.json();
-            console.log('✅ Password status:', passwordData);
+            // console.log('âœ… Password status:', passwordData);
             setHasPassword(passwordData.hasPassword);
             setIsOAuthUser(passwordData.isOAuthUser);
           }
         } catch (passwordError) {
-          console.log('ℹ️ Error checking password status:', passwordError.message);
+          // console.log('â„¹ï¸ Error checking password status:', passwordError.message);
         }
 
       } catch (error) {
-        console.error('Error loading user data:', error);
+        // console.error('Error loading user data:', error);
         navigate('/login');
       } finally {
         setLoading(false);
@@ -153,10 +153,10 @@ const Profile = () => {
   };
 
   const stats = [
-    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: '📅' },
-    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: '❤️' },
-    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: '⭐' },
-    { label: 'Member Since', value: userStats.memberSince.toString(), icon: '🏆' }
+    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: 'ðŸ“…' },
+    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: 'â¤ï¸' },
+    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: 'â­' },
+    { label: 'Member Since', value: userStats.memberSince.toString(), icon: 'ðŸ†' }
   ];
 
   const handleLogout = () => {
@@ -165,15 +165,15 @@ const Profile = () => {
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
-    console.log('✅ User logged out successfully');
+    // console.log('âœ… User logged out successfully');
     navigate('/login');
   };
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: '👤' },
-    { id: 'bookings', name: 'Bookings', icon: '📅' },
-    { id: 'favorites', name: 'Favorites', icon: '❤️' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' }
+    { id: 'overview', name: 'Overview', icon: 'ðŸ‘¤' },
+    { id: 'bookings', name: 'Bookings', icon: 'ðŸ“…' },
+    { id: 'favorites', name: 'Favorites', icon: 'â¤ï¸' },
+    { id: 'settings', name: 'Settings', icon: 'âš™ï¸' }
   ];
 
   // Show loading while authentication is being checked
@@ -215,7 +215,7 @@ const Profile = () => {
                 alt="Profile"
                 className="w-32 h-32 rounded-full shadow-xl border-4 border-white/30 backdrop-blur-sm object-cover"
                 onError={(e) => {
-                  console.log('❌ Profile image failed to load:', e.target.src);
+                  // console.log('âŒ Profile image failed to load:', e.target.src);
                   e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&size=150&background=6366f1&color=ffffff';
                 }}
               />

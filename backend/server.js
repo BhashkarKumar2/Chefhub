@@ -62,14 +62,14 @@ app.use('/api', healthRoutes);
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
+    // console.log('MongoDB connected');
     
     // Initialize Socket.io
     socketService.init(server);
     
     server.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📡 Socket.io enabled for real-time features`);
+      // console.log(`ðŸš€ Server running on port ${PORT}`);
+      // console.log(`ðŸ“¡ Socket.io enabled for real-time features`);
     });
   })
   .catch(err => console.error(err));

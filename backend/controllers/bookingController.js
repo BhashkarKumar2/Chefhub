@@ -20,7 +20,7 @@ export const createBooking = async (req, res) => {
       contactInfo
     } = req.body;
 
-    console.log('Creating booking with data:', req.body);
+    // console.log('Creating booking with data:', req.body);
 
     // Use chef or chefId
     const selectedChefId = chef || chefId;
@@ -84,7 +84,7 @@ export const createBooking = async (req, res) => {
     await booking.populate('chef', 'name fullName email phone specialties pricePerHour profileImage rating');
     await booking.populate('user', 'name email phone');
 
-    console.log('Booking created successfully:', booking._id);
+    // console.log('Booking created successfully:', booking._id);
 
     res.status(201).json({
       success: true,
@@ -93,7 +93,7 @@ export const createBooking = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error creating booking:', error);
+    // console.error('Error creating booking:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create booking',
@@ -123,7 +123,7 @@ export const getUserBookings = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching user bookings:', error);
+    // console.error('Error fetching user bookings:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -156,7 +156,7 @@ export const getChefBookings = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching chef bookings:', error);
+    // console.error('Error fetching chef bookings:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -191,7 +191,7 @@ export const getBookingById = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching booking:', error);
+    // console.error('Error fetching booking:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking',
@@ -238,7 +238,7 @@ export const updateBookingStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error updating booking status:', error);
+    // console.error('Error updating booking status:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -276,7 +276,7 @@ export const deleteBooking = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error deleting booking:', error);
+    // console.error('Error deleting booking:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -325,7 +325,7 @@ export const getBookingStats = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching booking stats:', error);
+    // console.error('Error fetching booking stats:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',

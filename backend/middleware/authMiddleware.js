@@ -38,7 +38,7 @@ export const verifyToken = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.error('Token verification error:', error);
+    // console.error('Token verification error:', error);
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
@@ -108,7 +108,7 @@ export const requireAdmin = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Admin check error:', error);
+    // console.error('Admin check error:', error);
     return res.status(500).json({
       message: 'Server error during authorization'
     });
@@ -132,7 +132,7 @@ export const requireChef = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Chef check error:', error);
+    // console.error('Chef check error:', error);
     return res.status(500).json({
       message: 'Server error during authorization'
     });
@@ -165,7 +165,7 @@ export const requireOwnershipOrAdmin = (resourceUserField = 'user') => {
 
       next();
     } catch (error) {
-      console.error('Ownership check error:', error);
+      // console.error('Ownership check error:', error);
       return res.status(500).json({
         message: 'Server error during authorization'
       });
@@ -213,7 +213,7 @@ export const requestLogger = (req, res, next) => {
   const userAgent = req.get('User-Agent') || 'Unknown';
   const userId = req.user ? req.user.id : 'Anonymous';
 
-  console.log(`[${timestamp}] ${method} ${url} - User: ${userId} - Agent: ${userAgent}`);
+  // console.log(`[${timestamp}] ${method} ${url} - User: ${userId} - Agent: ${userAgent}`);
   next();
 };
 
@@ -236,7 +236,7 @@ export const validateApiKey = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('API key validation error:', error);
+    // console.error('API key validation error:', error);
     return res.status(500).json({
       message: 'Server error during API key validation'
     });

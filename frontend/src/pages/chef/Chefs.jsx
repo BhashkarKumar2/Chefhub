@@ -34,7 +34,7 @@ const Chefs = () => {
       const queryString = params.toString();
       const endpoint = queryString ? `/chefs/search?${queryString}` : '/chefs';
       
-      console.log('🔍 Fetching chefs from:', buildApiEndpoint(endpoint));
+      // console.log('ðŸ” Fetching chefs from:', buildApiEndpoint(endpoint));
 
       const response = await fetch(buildApiEndpoint(endpoint), {
         headers: {
@@ -48,22 +48,22 @@ const Chefs = () => {
       }
 
       const data = await response.json();
-      console.log('✅ Chefs fetched:', data);
-      console.log('📊 Response structure:', {
-        hasChefs: !!data.chefs,
-        hasData: !!data.data,
-        chefCount: data.chefs?.length || data.data?.length || 0,
-        responseKeys: Object.keys(data)
-      });
+      // console.log('âœ… Chefs fetched:', data);
+      // console.log('ðŸ“Š Response structure:', {
+      //   hasChefs: !!data.chefs,
+      //   hasData: !!data.data,
+      //   chefCount: data.chefs?.length || data.data?.length || 0,
+      //   responseKeys: Object.keys(data)
+      // });
       
       setChefs(data.chefs || data.data || []);
       setError(null);
     } catch (err) {
-      console.error('❌ Error fetching chefs:', err);
-      console.error('📋 Error details:', {
-        message: err.message,
-        stack: err.stack?.split('\n')[0] // First line of stack trace
-      });
+      // console.error('âŒ Error fetching chefs:', err);
+      // console.error('ðŸ“‹ Error details:', {
+      //   message: err.message,
+      //   stack: err.stack?.split('\n')[0] // First line of stack trace
+      // });
       setError(err.message);
       setChefs([]);
     } finally {

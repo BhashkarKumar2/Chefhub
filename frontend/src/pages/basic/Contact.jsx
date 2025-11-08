@@ -20,11 +20,11 @@ const Contact = () => {
         import.meta.env.VITE_EMAILJS_PUBLIC_KEY
       );
       
-      console.log('Admin email sent:', result.text);
+      // console.log('Admin email sent:', result.text);
       setStatus('success');
       form.current.reset();
     } catch (error) {
-      console.error('Failed to send email:', error.text);
+      // console.error('Failed to send email:', error.text);
       setStatus('error');
     } finally {
       setIsLoading(false);

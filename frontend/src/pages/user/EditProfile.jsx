@@ -51,13 +51,13 @@ const EditProfile = () => {
         const token = localStorage.getItem('token');
         
         if (!userId || !token) {
-          console.log('❌ No user ID or token found, redirecting to login');
+          // console.log('âŒ No user ID or token found, redirecting to login');
           navigate('/login');
           return;
         }
         
-        console.log('🔍 Loading user data for editing...');
-        console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+        // console.log('ðŸ” Loading user data for editing...');
+        // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
         
         const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
           headers: {
@@ -67,7 +67,7 @@ const EditProfile = () => {
         });
         if (response.ok) {
           const userData = await response.json();
-          console.log('✅ User data loaded for editing:', userData);
+          // console.log('âœ… User data loaded for editing:', userData);
           
           // Map backend data to form structure
           setFormData({
@@ -98,10 +98,10 @@ const EditProfile = () => {
             setImagePreview(userData.profileImage);
           }
         } else {
-          console.error('❌ Failed to load user data');
+          // console.error('âŒ Failed to load user data');
         }
       } catch (error) {
-        console.error('Error loading user data:', error);
+        // console.error('Error loading user data:', error);
       } finally {
         setDataLoading(false);
       }
@@ -168,7 +168,7 @@ const EditProfile = () => {
       const imageFormData = new FormData();
       imageFormData.append('profileImage', imageFile);
 
-      console.log('🖼️ Uploading profile image...');
+      // console.log('ðŸ–¼ï¸ Uploading profile image...');
       const token = localStorage.getItem('token');
       const response = await fetch(buildApiEndpoint(`/user/upload-profile-image/${userId}`), {
         method: 'POST',
@@ -180,17 +180,17 @@ const EditProfile = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Image uploaded successfully:', result);
-        console.log('🔗 Cloudinary URL:', result.imageUrl);
-        console.log('📄 Full response:', result);
+        // console.log('âœ… Image uploaded successfully:', result);
+        // console.log('ðŸ”— Cloudinary URL:', result.imageUrl);
+        // console.log('ðŸ“„ Full response:', result);
         return result.imageUrl;
       } else {
         const error = await response.json();
-        console.error('❌ Image upload response error:', error);
+        // console.error('âŒ Image upload response error:', error);
         throw new Error(error.message || 'Failed to upload image');
       }
     } catch (error) {
-      console.error('❌ Image upload failed:', error);
+      // console.error('âŒ Image upload failed:', error);
       throw error;
     } finally {
       setUploadingImage(false);
@@ -201,8 +201,8 @@ const EditProfile = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    console.log('\n🔥 === USER PROFILE UPDATE STARTED ===');
-    console.log('📝 Form Data:', formData);
+    // console.log('\nðŸ”¥ === USER PROFILE UPDATE STARTED ===');
+    // console.log('ðŸ“ Form Data:', formData);
     
     try {
       // First upload image if one was selected
@@ -228,11 +228,11 @@ const EditProfile = () => {
         delete updateData.profileImage;
       }
       
-      console.log('🆔 Using User ID:', userId);
-      console.log('🌐 Sending update request to backend...');
+      // console.log('ðŸ†” Using User ID:', userId);
+      // console.log('ðŸŒ Sending update request to backend...');
       
       const token = localStorage.getItem('token');
-      console.log('🔑 Token exists:', token ? 'Yes' : 'No');
+      // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
       
       const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
         method: 'PUT',
@@ -243,17 +243,17 @@ const EditProfile = () => {
         body: JSON.stringify(updateData),
       });
 
-      console.log('📡 Response received:', response.status, response.statusText);
+      // console.log('ðŸ“¡ Response received:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Backend returned error:', errorData);
+        // console.error('âŒ Backend returned error:', errorData);
         throw new Error(errorData.message || 'Failed to update profile');
       }
 
       const result = await response.json();
-      console.log('✅ Profile updated successfully:', result);
-      console.log('🔥 === USER PROFILE UPDATE COMPLETED ===\n');
+      // console.log('âœ… Profile updated successfully:', result);
+      // console.log('ðŸ”¥ === USER PROFILE UPDATE COMPLETED ===\n');
       
       // Update localStorage if user data is stored there
       if (result.user) {
@@ -263,9 +263,9 @@ const EditProfile = () => {
       alert('Profile updated successfully!');
       navigate('/profile');
     } catch (error) {
-      console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
-      console.error('🚨 Error:', error.message);
-      console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+      // console.error('\nâŒ === USER PROFILE UPDATE FAILED ===');
+      // console.error('ðŸš¨ Error:', error.message);
+      // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
       
       alert(`Error updating profile: ${error.message}`);
     } finally {
@@ -274,10 +274,10 @@ const EditProfile = () => {
   };
 
   const sections = [
-    { id: 'personal', label: 'Personal Info', icon: '👤' },
-    { id: 'address', label: 'Address', icon: '📍' },
-    { id: 'preferences', label: 'Preferences', icon: '🍽️' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' }
+    { id: 'personal', label: 'Personal Info', icon: 'ðŸ‘¤' },
+    { id: 'address', label: 'Address', icon: 'ðŸ“' },
+    { id: 'preferences', label: 'Preferences', icon: 'ðŸ½ï¸' },
+    { id: 'settings', label: 'Settings', icon: 'âš™ï¸' }
   ];
 
   return (
@@ -649,7 +649,7 @@ const EditProfile = () => {
                               }}
                               className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
                             >
-                              ×
+                              Ã—
                             </button>
                           </div>
                         ) : (

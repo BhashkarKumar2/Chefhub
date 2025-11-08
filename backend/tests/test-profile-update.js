@@ -6,7 +6,7 @@ import User from './models/User.js';
 async function testProfileUpdate() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
+    // console.log('Connected to MongoDB');
     
     const userId = '688f1698011794190d7203f6';
     
@@ -22,8 +22,8 @@ async function testProfileUpdate() {
       bio: "Food enthusiast and cooking lover - Updated!"
     };
     
-    console.log('🔄 Testing profile update...');
-    console.log('📝 Update Data:', JSON.stringify(updateData, null, 2));
+    // console.log('ðŸ”„ Testing profile update...');
+    // console.log('ðŸ“ Update Data:', JSON.stringify(updateData, null, 2));
     
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -32,16 +32,16 @@ async function testProfileUpdate() {
     ).select('-password');
     
     if (updatedUser) {
-      console.log('✅ Profile update successful!');
-      console.log('👤 Updated User:', JSON.stringify(updatedUser, null, 2));
+      // console.log('âœ… Profile update successful!');
+      // console.log('ðŸ‘¤ Updated User:', JSON.stringify(updatedUser, null, 2));
     } else {
-      console.log('❌ User not found');
+      // console.log('âŒ User not found');
     }
     
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    // console.log('Disconnected from MongoDB');
   } catch (error) {
-    console.error('❌ Error:', error);
+    // console.error('âŒ Error:', error);
   }
 }
 

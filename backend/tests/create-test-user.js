@@ -7,15 +7,15 @@ import User from './models/User.js';
 async function createTestUser() {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
+    // console.log('Connected to MongoDB');
     
     // Check if test user already exists
     const existingUser = await User.findOne({ email: 'test@example.com' });
     if (existingUser) {
-      console.log('✅ Test user already exists:');
-      console.log('📧 Email:', existingUser.email);
-      console.log('🆔 User ID:', existingUser._id);
-      console.log('👤 Name:', existingUser.name);
+      // console.log('âœ… Test user already exists:');
+      // console.log('ðŸ“§ Email:', existingUser.email);
+      // console.log('ðŸ†” User ID:', existingUser._id);
+      // console.log('ðŸ‘¤ Name:', existingUser.name);
       await mongoose.disconnect();
       return;
     }
@@ -36,17 +36,17 @@ async function createTestUser() {
     
     await testUser.save();
     
-    console.log('✅ Test user created successfully:');
-    console.log('📧 Email: test@example.com');
-    console.log('🔐 Password: password123');
-    console.log('🆔 User ID:', testUser._id);
-    console.log('👤 Name:', testUser.name);
-    console.log('\n🔧 Use this User ID in your frontend for testing profile updates');
+    // console.log('âœ… Test user created successfully:');
+    // console.log('ðŸ“§ Email: test@example.com');
+    // console.log('ðŸ” Password: password123');
+    // console.log('ðŸ†” User ID:', testUser._id);
+    // console.log('ðŸ‘¤ Name:', testUser.name);
+    // console.log('\nðŸ”§ Use this User ID in your frontend for testing profile updates');
     
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    // console.log('Disconnected from MongoDB');
   } catch (error) {
-    console.error('Error:', error);
+    // console.error('Error:', error);
   }
 }
 

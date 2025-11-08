@@ -21,7 +21,7 @@ export const FavoritesProvider = ({ children }) => {
         setFavorites(JSON.parse(savedFavorites));
       }
     } catch (error) {
-      console.error('Error loading favorites from localStorage:', error);
+      // console.error('Error loading favorites from localStorage:', error);
     }
   }, []);
 
@@ -30,7 +30,7 @@ export const FavoritesProvider = ({ children }) => {
     try {
       localStorage.setItem('chefFavorites', JSON.stringify(favorites));
     } catch (error) {
-      console.error('Error saving favorites to localStorage:', error);
+      // console.error('Error saving favorites to localStorage:', error);
     }
   }, [favorites]);
 

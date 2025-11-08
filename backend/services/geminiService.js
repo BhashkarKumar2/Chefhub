@@ -78,7 +78,7 @@ class GeminiService {
     
     // If all models failed, provide a fallback response for chat
     if (prompt.toLowerCase().includes('chef assistant') || prompt.toLowerCase().includes('cooking')) {
-      console.log('All AI models failed, returning fallback cooking response');
+      // console.log('All AI models failed, returning fallback cooking response');
       return {
         text: () => "I'm sorry, but the AI service is currently unavailable. However, I'd be happy to help with basic cooking advice! For specific recipes and detailed cooking instructions, please try again later when the AI service is restored."
       };
@@ -97,7 +97,7 @@ class GeminiService {
     User Preferences:
     - Event Type: ${userPreferences.serviceType || 'Event'}
     - Guest Count: ${userPreferences.guestCount || 'Not specified'}
-    - Budget Range: ₹${userPreferences.minBudget || 0} - ₹${userPreferences.maxBudget || 'Not specified'}
+    - Budget Range: â‚¹${userPreferences.minBudget || 0} - â‚¹${userPreferences.maxBudget || 'Not specified'}
     - Cuisine Preference: ${userPreferences.cuisinePreference || userPreferences.cuisine || 'Any'}
     - Dietary Restrictions: ${userPreferences.dietaryRestrictions || 'None'}
     - Location: ${userPreferences.location || 'Not specified'}
@@ -157,7 +157,7 @@ class GeminiService {
       // Return as-is if already in expected format
       return Array.isArray(parsed) ? parsed : [parsed];
     } catch (error) {
-      console.error('Gemini API error:', error);
+      // console.error('Gemini API error:', error);
       throw new Error('Failed to generate chef recommendations');
     }
   }
@@ -170,7 +170,7 @@ class GeminiService {
     Event Details:
     - Service Type: ${eventDetails.serviceType || 'General Event'}
     - Guest Count: ${eventDetails.guests || 'Not specified'}
-    - Budget: ₹${eventDetails.budget || 'Not specified'}
+    - Budget: â‚¹${eventDetails.budget || 'Not specified'}
     - Cuisine Style: ${eventDetails.cuisine || 'Mixed Cuisine'}
     - Dietary Restrictions: ${eventDetails.dietary || 'None'}
     - Meal Time: ${eventDetails.mealTime || 'Dinner'}
@@ -240,7 +240,7 @@ class GeminiService {
       
       return menu;
     } catch (error) {
-      console.error('Menu generation error:', error);
+      // console.error('Menu generation error:', error);
       
       // Return a fallback menu with proper structure
       return {
@@ -285,7 +285,7 @@ class GeminiService {
     - Complexity Level: ${bookingDetails.complexity}
     
     Market Context:
-    - Average rates in area: ₹${marketData.averageRate}/hour
+    - Average rates in area: â‚¹${marketData.averageRate}/hour
     - Seasonal demand: ${marketData.seasonalDemand}
     - Competition level: ${marketData.competitionLevel}
     
@@ -303,7 +303,7 @@ class GeminiService {
       const response = await this.generateWithFallback(prompt);
       return this.parseJSONResponse(response.text());
     } catch (error) {
-      console.error('Pricing suggestion error:', error);
+      // console.error('Pricing suggestion error:', error);
       throw new Error('Failed to generate pricing suggestions');
     }
   }
@@ -337,7 +337,7 @@ class GeminiService {
       const response = await this.generateWithFallback(prompt);
       return response.text().trim();
     } catch (error) {
-      console.error('Review response error:', error);
+      // console.error('Review response error:', error);
       throw new Error('Failed to generate review response');
     }
   }
@@ -364,7 +364,7 @@ class GeminiService {
       const response = await this.generateWithFallback(prompt);
       return response.text();
     } catch (error) {
-      console.error('Cooking content error:', error);
+      // console.error('Cooking content error:', error);
       throw new Error('Failed to generate cooking content');
     }
   }
@@ -376,7 +376,7 @@ class GeminiService {
       const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleanText);
     } catch (error) {
-      console.error('JSON parsing error:', error);
+      // console.error('JSON parsing error:', error);
       // Return a structured error response
       return {
         error: 'Failed to parse AI response',
@@ -393,7 +393,7 @@ class GeminiService {
     Preferences:
     - Cuisine types: ${preferences.cuisineTypes}
     - Dietary restrictions: ${preferences.dietaryRestrictions}
-    - Budget: ₹${preferences.weeklyBudget}
+    - Budget: â‚¹${preferences.weeklyBudget}
     - Family size: ${preferences.familySize}
     - Cooking skill level: ${preferences.skillLevel}
     
@@ -411,7 +411,7 @@ class GeminiService {
       const response = await this.generateWithFallback(prompt);
       return this.parseJSONResponse(response.text());
     } catch (error) {
-      console.error('Meal plan error:', error);
+      // console.error('Meal plan error:', error);
       throw new Error('Failed to generate meal plan');
     }
   }

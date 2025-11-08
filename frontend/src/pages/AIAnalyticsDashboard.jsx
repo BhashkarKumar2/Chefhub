@@ -28,7 +28,7 @@ const AIAnalyticsDashboard = () => {
       setAnalyticsData(response.data.data);
       generateAIInsights(response.data.data);
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      // console.error('Error loading analytics:', error);
       // Fallback data for demo
       setAnalyticsData({
         totalUsers: 245,
@@ -58,7 +58,7 @@ const AIAnalyticsDashboard = () => {
       });
       setAiInsights(response.data.data);
     } catch (error) {
-      console.error('Error generating AI insights:', error);
+      // console.error('Error generating AI insights:', error);
     }
   };
 
@@ -84,7 +84,7 @@ const AIAnalyticsDashboard = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-            🤖 AI-Powered Analytics Dashboard
+            ðŸ¤– AI-Powered Analytics Dashboard
           </h1>
           <p className="text-xl text-gray-600">
             Intelligent insights for your chef booking platform
@@ -94,7 +94,7 @@ const AIAnalyticsDashboard = () => {
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-3xl shadow-xl p-6 text-center">
-            <div className="text-4xl mb-2">👥</div>
+            <div className="text-4xl mb-2">ðŸ‘¥</div>
             <div className="text-3xl font-bold text-purple-600 mb-1">
               {analyticsData.totalUsers.toLocaleString()}
             </div>
@@ -102,7 +102,7 @@ const AIAnalyticsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-6 text-center">
-            <div className="text-4xl mb-2">👨‍🍳</div>
+            <div className="text-4xl mb-2">ðŸ‘¨â€ðŸ³</div>
             <div className="text-3xl font-bold text-green-600 mb-1">
               {analyticsData.totalChefs}
             </div>
@@ -110,7 +110,7 @@ const AIAnalyticsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-6 text-center">
-            <div className="text-4xl mb-2">📅</div>
+            <div className="text-4xl mb-2">ðŸ“…</div>
             <div className="text-3xl font-bold text-blue-600 mb-1">
               {analyticsData.totalBookings}
             </div>
@@ -118,9 +118,9 @@ const AIAnalyticsDashboard = () => {
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-6 text-center">
-            <div className="text-4xl mb-2">💰</div>
+            <div className="text-4xl mb-2">ðŸ’°</div>
             <div className="text-3xl font-bold text-emerald-600 mb-1">
-              ₹{(analyticsData.revenue / 1000).toFixed(0)}K
+              â‚¹{(analyticsData.revenue / 1000).toFixed(0)}K
             </div>
             <div className="text-gray-600 text-sm">Total Revenue</div>
           </div>
@@ -133,7 +133,7 @@ const AIAnalyticsDashboard = () => {
             {aiInsights && (
               <div className="bg-white rounded-3xl shadow-xl p-8">
                 <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                  🧠 AI Business Insights
+                  ðŸ§  AI Business Insights
                 </h3>
                 <div className="space-y-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
@@ -162,7 +162,7 @@ const AIAnalyticsDashboard = () => {
             {searchResults.length > 0 && (
               <div className="bg-white rounded-3xl shadow-xl p-8">
                 <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                  🔍 Search Results ({searchResults.length})
+                  ðŸ” Search Results ({searchResults.length})
                 </h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   {searchResults.slice(0, 4).map((chef, index) => (
@@ -176,9 +176,9 @@ const AIAnalyticsDashboard = () => {
                           <p className="text-purple-600 text-sm mb-1">{chef.specialty}</p>
                           <p className="text-gray-600 text-sm mb-2">{chef.experienceYears} years experience</p>
                           <div className="flex items-center justify-between">
-                            <span className="text-green-600 font-semibold">₹{chef.pricePerHour}/hr</span>
+                            <span className="text-green-600 font-semibold">â‚¹{chef.pricePerHour}/hr</span>
                             <div className="flex items-center">
-                              <span className="text-yellow-500">⭐</span>
+                              <span className="text-yellow-500">â­</span>
                               <span className="text-sm text-gray-600 ml-1">{chef.rating}</span>
                             </div>
                           </div>
@@ -193,7 +193,7 @@ const AIAnalyticsDashboard = () => {
             {/* Top Cuisines */}
             <div className="bg-white rounded-3xl shadow-xl p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                🍽️ Popular Cuisines
+                ðŸ½ï¸ Popular Cuisines
               </h3>
               <div className="space-y-4">
                 {analyticsData.topCuisines.map((cuisine, index) => (
@@ -227,20 +227,20 @@ const AIAnalyticsDashboard = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-3xl shadow-xl p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">
-                ⚡ Quick AI Actions
+                âš¡ Quick AI Actions
               </h3>
               <div className="space-y-3">
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
-                  🔮 Generate Market Forecast
+                  ðŸ”® Generate Market Forecast
                 </button>
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
-                  📊 Create Performance Report
+                  ðŸ“Š Create Performance Report
                 </button>
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
-                  🎯 Optimize Pricing Strategy
+                  ðŸŽ¯ Optimize Pricing Strategy
                 </button>
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
-                  🤖 AI Business Consultation
+                  ðŸ¤– AI Business Consultation
                 </button>
               </div>
             </div>
@@ -248,7 +248,7 @@ const AIAnalyticsDashboard = () => {
             {/* Platform Health */}
             <div className="bg-white rounded-3xl shadow-xl p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">
-                ❤️ Platform Health
+                â¤ï¸ Platform Health
               </h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">

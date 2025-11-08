@@ -9,22 +9,23 @@ const AuthSuccess = () => {
 
   useEffect(() => {
     const handleOAuthSuccess = () => {
-      console.log('🎯 AuthSuccess page loaded');
-      console.log('🔍 Current URL:', window.location.href);
-      console.log('🔍 Search params:', searchParams.toString());
+      // console.log('ðŸŽ¯ AuthSuccess page loaded');
+      // console.log('ðŸ” Current URL:', window.location.href);
+      // console.log('ðŸ” Search params:', searchParams.toString());
       
       const token = searchParams.get('token');
       const userId = searchParams.get('userId');
       const email = searchParams.get('email');
       const name = searchParams.get('name');
 
-      console.log('🔑 OAuth Success - Received data:', { 
-        hasToken: !!token, 
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'None',
-        userId, 
-        email, 
-        name 
-      });
+      // console.log('ðŸ”‘ OAuth Success - Received data:',
+      //  { 
+      //   hasToken: !!token, 
+      //   tokenPreview: token ? token.substring(0, 20) + '...' : 'None',
+      //   userId, 
+      //   email, 
+      //   name 
+      // });
 
       if (token && userId && email && name) {
         // Use AuthContext login method
@@ -34,15 +35,15 @@ const AuthSuccess = () => {
           name: name
         });
         
-        console.log('✅ OAuth data stored successfully');
-        console.log('🚀 Navigating to dashboard...');
+        // console.log('âœ… OAuth data stored successfully');
+        // console.log('ðŸš€ Navigating to dashboard...');
         
         // Small delay to ensure authentication state is updated
         setTimeout(() => {
           navigate('/dashboard');
         }, 500);
       } else {
-        console.error('❌ Missing OAuth data:', { token: !!token, userId, email, name });
+        // console.error('âŒ Missing OAuth data:', { token: !!token, userId, email, name });
         navigate('/login?error=oauth_incomplete');
       }
     };

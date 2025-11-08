@@ -2,9 +2,9 @@ import Chef from '../models/Chef.js';
 import cloudinary from '../config/cloudinary.js';
 
 export const createChefProfile = async (req, res) => {
-  console.log('\n🔥 === CHEF PROFILE CREATION STARTED ===');
-  console.log('📝 Request Body:', JSON.stringify(req.body, null, 2));
-  console.log('📎 File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
+  // console.log('\nðŸ”¥ === CHEF PROFILE CREATION STARTED ===');
+  // console.log('ðŸ“ Request Body:', JSON.stringify(req.body, null, 2));
+  // console.log('ðŸ“Ž File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
   
   try {
     // Validate required fields
@@ -12,7 +12,7 @@ export const createChefProfile = async (req, res) => {
     const missingFields = requiredFields.filter(field => !req.body[field]);
     
     if (missingFields.length > 0) {
-      console.log('❌ Validation Error - Missing required fields:', missingFields);
+      // console.log('âŒ Validation Error - Missing required fields:', missingFields);
       return res.status(400).json({ 
         message: 'Missing required fields',
         missingFields: missingFields,
@@ -21,28 +21,28 @@ export const createChefProfile = async (req, res) => {
     }
 
     // Check if email already exists
-    console.log('🔍 Checking if email already exists:', req.body.email);
+    // console.log('ðŸ” Checking if email already exists:', req.body.email);
     const existingChef = await Chef.findOne({ email: req.body.email });
     if (existingChef) {
-      console.log('❌ Email already exists in database');
+      // console.log('âŒ Email already exists in database');
       return res.status(409).json({ 
         message: 'Email already exists',
         error: `A chef profile with email "${req.body.email}" already exists. Please use a different email address.`,
         suggestion: 'Try using a different email or contact support to update your existing profile.'
       });
     }
-    console.log('✅ Email is unique, proceeding...');
+    // console.log('âœ… Email is unique, proceeding...');
 
     // Parse serviceableLocations (accept array or comma-separated string)
     let serviceableLocations = req.body.serviceableLocations;
-    console.log('🗺️ Raw serviceableLocations from req.body:', serviceableLocations);
+    // console.log('ðŸ—ºï¸ Raw serviceableLocations from req.body:', serviceableLocations);
     if (typeof serviceableLocations === 'string') {
       serviceableLocations = serviceableLocations.split(',').map(loc => loc.trim()).filter(Boolean);
     }
     if (Array.isArray(serviceableLocations)) {
-      console.log('🗺️ Parsed serviceableLocations array:', serviceableLocations);
+      // console.log('ðŸ—ºï¸ Parsed serviceableLocations array:', serviceableLocations);
     } else {
-      console.log('🗺️ serviceableLocations is not an array after parsing:', serviceableLocations);
+      // console.log('ðŸ—ºï¸ serviceableLocations is not an array after parsing:', serviceableLocations);
     }
 
     const chefData = {
@@ -64,19 +64,19 @@ export const createChefProfile = async (req, res) => {
         lon: parseFloat(req.body.locationCoords.lon)
       } : undefined
     };
-    console.log('📦 Final chefData to be saved:', JSON.stringify(chefData, null, 2));
+    // console.log('ðŸ“¦ Final chefData to be saved:', JSON.stringify(chefData, null, 2));
 
-    console.log('📊 Chef data prepared:', JSON.stringify(chefData, null, 2));
+    // console.log('ðŸ“Š Chef data prepared:', JSON.stringify(chefData, null, 2));
 
     // If image was uploaded, upload to Cloudinary
     if (req.file) {
-      console.log('🖼️ Processing image upload...');
+      // console.log('ðŸ–¼ï¸ Processing image upload...');
       try {
         // Convert buffer to base64
         const b64 = Buffer.from(req.file.buffer).toString('base64');
         const dataURI = `data:${req.file.mimetype};base64,${b64}`;
         
-        console.log('☁️ Uploading to Cloudinary...');
+        // console.log('â˜ï¸ Uploading to Cloudinary...');
         // Upload to Cloudinary
         const uploadResult = await cloudinary.uploader.upload(dataURI, {
           folder: 'chef-profiles',
@@ -87,13 +87,13 @@ export const createChefProfile = async (req, res) => {
           public_id: `chef-${Date.now()}-${Math.round(Math.random() * 1E9)}`
         });
 
-        console.log('✅ Cloudinary upload successful:', uploadResult.secure_url);
+        // console.log('âœ… Cloudinary upload successful:', uploadResult.secure_url);
         chefData.profileImage = {
           url: uploadResult.secure_url,
           publicId: uploadResult.public_id
         };
       } catch (uploadError) {
-        console.error('❌ Cloudinary upload error:', uploadError);
+        // console.error('âŒ Cloudinary upload error:', uploadError);
         return res.status(500).json({ 
           message: 'Failed to upload image',
           error: uploadError.message,
@@ -101,17 +101,17 @@ export const createChefProfile = async (req, res) => {
         });
       }
     } else {
-      console.log('📷 No image uploaded, continuing without profile image');
+      // console.log('ðŸ“· No image uploaded, continuing without profile image');
     }
 
-    console.log('💾 Creating chef profile in database...');
+    // console.log('ðŸ’¾ Creating chef profile in database...');
     const newChef = new Chef(chefData);
     await newChef.save();
     
-    console.log('✅ Chef profile created successfully!');
-    console.log('👨‍🍳 Chef ID:', newChef._id);
-    console.log('📧 Chef Email:', newChef.email);
-    console.log('🔥 === CHEF PROFILE CREATION COMPLETED ===\n');
+    // console.log('âœ… Chef profile created successfully!');
+    // console.log('ðŸ‘¨â€ðŸ³ Chef ID:', newChef._id);
+    // console.log('ðŸ“§ Chef Email:', newChef.email);
+    // console.log('ðŸ”¥ === CHEF PROFILE CREATION COMPLETED ===\n');
     
     res.status(201).json({
       message: 'Chef profile created successfully',
@@ -119,17 +119,17 @@ export const createChefProfile = async (req, res) => {
       success: true
     });
   } catch (err) {
-    console.error('\n❌ === CHEF PROFILE CREATION FAILED ===');
-    console.error('🚨 Error type:', err.name);
-    console.error('📄 Error message:', err.message);
-    console.error('🔍 Error code:', err.code);
+    // console.error('\nâŒ === CHEF PROFILE CREATION FAILED ===');
+    // console.error('ðŸš¨ Error type:', err.name);
+    // console.error('ðŸ“„ Error message:', err.message);
+    // console.error('ðŸ” Error code:', err.code);
     
     // Handle specific MongoDB errors
     if (err.code === 11000) {
-      console.error('💥 Duplicate key error - Email already exists');
+      // console.error('ðŸ’¥ Duplicate key error - Email already exists');
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
-      console.error(`🔑 Duplicate field: ${field} = ${value}`);
+      // console.error(`ðŸ”‘ Duplicate field: ${field} = ${value}`);
       
       return res.status(409).json({ 
         message: 'Email already exists',
@@ -142,7 +142,7 @@ export const createChefProfile = async (req, res) => {
     
     // Handle validation errors
     if (err.name === 'ValidationError') {
-      console.error('📝 Validation error details:', err.errors);
+      // console.error('ðŸ“ Validation error details:', err.errors);
       const validationErrors = Object.keys(err.errors).map(key => ({
         field: key,
         message: err.errors[key].message
@@ -155,8 +155,8 @@ export const createChefProfile = async (req, res) => {
       });
     }
     
-    console.error('📊 Full error stack:', err.stack);
-    console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+    // console.error('ðŸ“Š Full error stack:', err.stack);
+    // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
     
     res.status(500).json({ 
       message: 'Failed to create chef profile',
@@ -170,14 +170,14 @@ export const getAllChefs = async (req, res) => {
   try {
     const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 });
     
-    console.log('✅ Chefs retrieved successfully:', chefs.length);
+    // console.log('âœ… Chefs retrieved successfully:', chefs.length);
     res.status(200).json({ 
       message: 'Chefs retrieved successfully',
       chefs: chefs,
       success: true
     });
   } catch (err) {
-    console.error('❌ Error retrieving chefs:', err);
+    // console.error('âŒ Error retrieving chefs:', err);
     res.status(500).json({ 
       message: 'Failed to retrieve chefs',
       error: err.message,
@@ -259,7 +259,7 @@ export const searchChefs = async (req, res) => {
       ];
     }
 
-    console.log('🔍 Search query:', JSON.stringify(searchQuery, null, 2));
+    // console.log('ðŸ” Search query:', JSON.stringify(searchQuery, null, 2));
 
     // Execute search with pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -274,7 +274,7 @@ export const searchChefs = async (req, res) => {
 
     const totalPages = Math.ceil(totalCount / parseInt(limit));
 
-    console.log(`✅ Search completed: ${chefs.length} results found`);
+    // console.log(`âœ… Search completed: ${chefs.length} results found`);
 
     res.status(200).json({
       success: true,
@@ -290,7 +290,7 @@ export const searchChefs = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Search error:', error);
+    // console.error('âŒ Search error:', error);
     res.status(500).json({
       success: false,
       message: 'Search failed',
@@ -341,9 +341,9 @@ export const updateChefProfile = async (req, res) => {
         if (currentChef.profileImage && currentChef.profileImage.publicId) {
           try {
             await cloudinary.uploader.destroy(currentChef.profileImage.publicId);
-            console.log('Old image deleted from Cloudinary');
+            // console.log('Old image deleted from Cloudinary');
           } catch (error) {
-            console.error('Error deleting old image:', error);
+            // console.error('Error deleting old image:', error);
           }
         }
 
@@ -365,7 +365,7 @@ export const updateChefProfile = async (req, res) => {
           publicId: uploadResult.public_id
         };
       } catch (uploadError) {
-        console.error('Cloudinary upload error:', uploadError);
+        // console.error('Cloudinary upload error:', uploadError);
         return res.status(500).json({ 
           message: 'Failed to upload image',
           error: uploadError.message 
@@ -400,9 +400,9 @@ export const deleteChef = async (req, res) => {
     if (chef.profileImage && chef.profileImage.publicId) {
       try {
         await cloudinary.uploader.destroy(chef.profileImage.publicId);
-        console.log('Chef image deleted from Cloudinary');
+        // console.log('Chef image deleted from Cloudinary');
       } catch (error) {
-        console.error('Error deleting chef image:', error);
+        // console.error('Error deleting chef image:', error);
       }
     }
 

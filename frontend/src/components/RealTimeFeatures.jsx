@@ -27,18 +27,18 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('🔗 Socket connected');
+      // console.log('ðŸ”— Socket connected');
       setIsConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('🔌 Socket disconnected');
+      // console.log('ðŸ”Œ Socket disconnected');
       setIsConnected(false);
     });
 
     // Listen for booking status updates
     newSocket.on('booking-status-changed', (data) => {
-      console.log('📅 Booking status update:', data);
+      // console.log('ðŸ“… Booking status update:', data);
       addNotification({
         id: Date.now(),
         type: 'booking',
@@ -51,7 +51,7 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for new messages
     newSocket.on('new-message', (data) => {
-      console.log('💬 New message:', data);
+      // console.log('ðŸ’¬ New message:', data);
       addNotification({
         id: Date.now(),
         type: 'message',
@@ -64,7 +64,7 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for payment updates
     newSocket.on('payment-status-update', (data) => {
-      console.log('💳 Payment update:', data);
+      // console.log('ðŸ’³ Payment update:', data);
       addNotification({
         id: Date.now(),
         type: 'payment',
@@ -77,7 +77,7 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for chef location updates
     newSocket.on('chef-location-update', (data) => {
-      console.log('📍 Chef location update:', data);
+      // console.log('ðŸ“ Chef location update:', data);
       addNotification({
         id: Date.now(),
         type: 'location',
@@ -90,7 +90,7 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for system announcements
     newSocket.on('system-announcement', (data) => {
-      console.log('📢 System announcement:', data);
+      // console.log('ðŸ“¢ System announcement:', data);
       addNotification({
         id: Date.now(),
         type: 'system',
@@ -166,12 +166,12 @@ export const NotificationCenter = () => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'booking': return '📅';
-      case 'message': return '💬';
-      case 'payment': return '💳';
-      case 'location': return '📍';
-      case 'system': return '📢';
-      default: return '🔔';
+      case 'booking': return 'ðŸ“…';
+      case 'message': return 'ðŸ’¬';
+      case 'payment': return 'ðŸ’³';
+      case 'location': return 'ðŸ“';
+      case 'system': return 'ðŸ“¢';
+      default: return 'ðŸ””';
     }
   };
 
@@ -221,7 +221,7 @@ export const NotificationCenter = () => {
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <div className="text-4xl mb-2">🔔</div>
+                <div className="text-4xl mb-2">ðŸ””</div>
                 <p>No notifications</p>
               </div>
             ) : (
@@ -253,7 +253,7 @@ export const NotificationCenter = () => {
                       }}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      ×
+                      Ã—
                     </button>
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export const RealTimeChat = ({ recipientId, bookingId }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
-      <h3 className="text-lg font-semibold mb-4">💬 Chat</h3>
+      <h3 className="text-lg font-semibold mb-4">ðŸ’¬ Chat</h3>
       
       <div className="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
         {chatHistory.length === 0 ? (

@@ -9,14 +9,14 @@ const MobileLoginTest = () => {
     try {
       // Test Firebase import
       import('../../firebase/config').then((config) => {
-        setStatus('✅ Firebase config loaded successfully');
-        console.log('Firebase auth object:', config.auth);
+        setStatus('âœ… Firebase config loaded successfully');
+        // console.log('Firebase auth object:', config.auth);
       }).catch((error) => {
-        setStatus('❌ Firebase config error: ' + error.message);
-        console.error('Firebase error:', error);
+        setStatus('âŒ Firebase config error: ' + error.message);
+        // console.error('Firebase error:', error);
       });
     } catch (error) {
-      setStatus('❌ Import error: ' + error.message);
+      setStatus('âŒ Import error: ' + error.message);
     }
   };
 
@@ -24,15 +24,15 @@ const MobileLoginTest = () => {
     try {
       import('../../utils/auth').then((auth) => {
         if (auth.authAPI && auth.authAPI.verifyFirebaseOTP) {
-          setStatus('✅ Auth API loaded successfully');
+          setStatus('âœ… Auth API loaded successfully');
         } else {
-          setStatus('❌ Auth API missing verifyFirebaseOTP method');
+          setStatus('âŒ Auth API missing verifyFirebaseOTP method');
         }
       }).catch((error) => {
-        setStatus('❌ Auth API error: ' + error.message);
+        setStatus('âŒ Auth API error: ' + error.message);
       });
     } catch (error) {
-      setStatus('❌ Auth API import error: ' + error.message);
+      setStatus('âŒ Auth API import error: ' + error.message);
     }
   };
 

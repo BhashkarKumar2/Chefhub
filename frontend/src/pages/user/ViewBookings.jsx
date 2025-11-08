@@ -40,7 +40,7 @@ const ViewBookings = () => {
       }
 
       const data = await response.json();
-      console.log('Bookings fetched:', data);
+      // console.log('Bookings fetched:', data);
       
       if (data.success) {
         setBookings(data.bookings || []);
@@ -48,7 +48,7 @@ const ViewBookings = () => {
         setError(data.message || 'Failed to fetch bookings');
       }
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      // console.error('Error fetching bookings:', error);
       setError(error.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
@@ -81,7 +81,7 @@ const ViewBookings = () => {
         alert(data.message || 'Failed to cancel booking');
       }
     } catch (error) {
-      console.error('Error cancelling booking:', error);
+      // console.error('Error cancelling booking:', error);
       alert('Failed to cancel booking. Please try again.');
     }
   };
@@ -109,7 +109,7 @@ const ViewBookings = () => {
         alert(data.message || 'Failed to update booking');
       }
     } catch (error) {
-      console.error('Error updating booking:', error);
+      // console.error('Error updating booking:', error);
       alert('Failed to update booking. Please try again.');
     }
   };
@@ -248,35 +248,35 @@ const ViewBookings = () => {
       description: 'View all your bookings regardless of status',
       color: 'text-gray-600',
       bgColor: isDark ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-gray-100 text-gray-800 border-gray-200',
-      icon: '📋'
+      icon: 'ðŸ“‹'
     },
     pending: {
       label: 'Pending',
       description: 'Bookings awaiting confirmation',
       color: 'text-yellow-600',
       bgColor: isDark ? 'bg-yellow-900 text-yellow-300 border-yellow-700' : 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      icon: '⏳'
+      icon: 'â³'
     },
     confirmed: {
       label: 'Confirmed',
       description: 'Approved bookings ready for service',
       color: 'text-amber-600',
       bgColor: isDark ? 'bg-amber-900 text-amber-300 border-amber-700' : 'bg-amber-100 text-amber-800 border-amber-200',
-      icon: '✅'
+      icon: 'âœ…'
     },
     completed: {
       label: 'Completed',
       description: 'Successfully delivered services',
       color: 'text-orange-600',
       bgColor: isDark ? 'bg-orange-900 text-orange-300 border-orange-700' : 'bg-orange-100 text-orange-800 border-orange-200',
-      icon: '🎉'
+      icon: 'ðŸŽ‰'
     },
     cancelled: {
       label: 'Cancelled',
       description: 'Cancelled bookings and refunds',
       color: 'text-red-600',
       bgColor: isDark ? 'bg-red-900 text-red-300 border-red-700' : 'bg-red-100 text-red-800 border-red-200',
-      icon: '❌'
+      icon: 'âŒ'
     }
   });
 
@@ -442,9 +442,9 @@ const ViewBookings = () => {
                   onChange={(e) => setSortBy(e.target.value)}
                   className={`px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${isDark ? 'border-gray-600 bg-gray-800 text-gray-100' : 'border-gray-300 bg-white text-gray-900'}`}
                 >
-                  <option value="date">📅 Date (Newest First)</option>
-                  <option value="amount">💰 Amount (Highest First)</option>
-                  <option value="status">📊 Status</option>
+                  <option value="date">ðŸ“… Date (Newest First)</option>
+                  <option value="amount">ðŸ’° Amount (Highest First)</option>
+                  <option value="status">ðŸ“Š Status</option>
                 </select>
               </div>
             </div>
@@ -456,7 +456,7 @@ const ViewBookings = () => {
           <div className="text-center py-16">
             <div className={`rounded-3xl shadow-lg p-12 border border-orange-100 ${getClass('bgSecondary')} ${isDark ? 'border-orange-700' : ''}`}>
               <div className="text-6xl mb-6">
-                {filter === 'all' ? '📋' : getStatusConfig()[filter]?.icon || '❓'}
+                {filter === 'all' ? 'ðŸ“‹' : getStatusConfig()[filter]?.icon || 'â“'}
               </div>
               <h3 className={`text-2xl font-bold mb-4 ${getClass('textSecondary')}`}>
                 {filter === 'all' ? 'No bookings found' : `No ${getStatusConfig()[filter]?.label.toLowerCase()} bookings`}
@@ -566,7 +566,7 @@ const ViewBookings = () => {
                       <div>
                         <div className={`text-sm mb-1 ${getClass('textMuted')}`}>Total Amount</div>
                         <div className={`font-bold text-lg ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
-                          ₹{(booking.totalPrice || 0).toLocaleString()}
+                          â‚¹{(booking.totalPrice || 0).toLocaleString()}
                         </div>
                       </div>
                     </div>

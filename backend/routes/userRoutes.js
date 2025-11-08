@@ -44,7 +44,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error('Registration error:', err);
+    // console.error('Registration error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -71,7 +71,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (err) {
-    console.error('Login error:', err);
+    // console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -80,9 +80,9 @@ router.post('/login', async (req, res) => {
 // @desc    Update user profile
 // @access  Private (protected with auth middleware)
 router.put('/profile/:id', verifyToken, async (req, res) => {
-  console.log('\n🔥 === USER PROFILE UPDATE STARTED ===');
-  console.log('📝 User ID:', req.params.id);
-  console.log('📝 Update Data:', JSON.stringify(req.body, null, 2));
+  // console.log('\nðŸ”¥ === USER PROFILE UPDATE STARTED ===');
+  // console.log('ðŸ“ User ID:', req.params.id);
+  // console.log('ðŸ“ Update Data:', JSON.stringify(req.body, null, 2));
   
   try {
     const { id } = req.params;
@@ -90,7 +90,7 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
     
     // Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.log('❌ Invalid ObjectId format');
+      // console.log('âŒ Invalid ObjectId format');
       return res.status(400).json({ 
         message: 'Invalid user ID format',
         error: 'User ID must be a valid MongoDB ObjectId (24-character hex string)',
@@ -107,22 +107,22 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
     ).select('-password'); // Don't return password
     
     if (!updatedUser) {
-      console.log('❌ User not found');
+      // console.log('âŒ User not found');
       return res.status(404).json({ message: 'User not found' });
     }
     
-    console.log('✅ User profile updated successfully');
-    console.log('👤 Updated user:', updatedUser);
-    console.log('🔥 === USER PROFILE UPDATE COMPLETED ===\n');
+    // console.log('âœ… User profile updated successfully');
+    // console.log('ðŸ‘¤ Updated user:', updatedUser);
+    // console.log('ðŸ”¥ === USER PROFILE UPDATE COMPLETED ===\n');
     
     res.json({
       message: 'Profile updated successfully',
       user: updatedUser
     });
   } catch (err) {
-    console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
-    console.error('🚨 Error:', err);
-    console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+    // console.error('\nâŒ === USER PROFILE UPDATE FAILED ===');
+    // console.error('ðŸš¨ Error:', err);
+    // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
@@ -131,17 +131,17 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
 // @desc    Get user profile by ID
 // @access  Public (with optional auth for own profile)
 router.get('/profile/:id', optionalAuth, async (req, res) => {
-  console.log('🔍 Getting user profile for ID:', req.params.id);
+  // console.log('ðŸ” Getting user profile for ID:', req.params.id);
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
-      console.log('❌ User not found:', req.params.id);
+      // console.log('âŒ User not found:', req.params.id);
       return res.status(404).json({ message: 'User not found' });
     }
-    console.log('✅ User profile found:', user.email);
+    // console.log('âœ… User profile found:', user.email);
     res.json(user);
   } catch (err) {
-    console.error('❌ Get user error:', err);
+    // console.error('âŒ Get user error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -150,16 +150,16 @@ router.get('/profile/:id', optionalAuth, async (req, res) => {
 // @desc    Upload profile image for user
 // @access  Private
 router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImage'), async (req, res) => {
-  console.log('\n🔥 === USER PROFILE IMAGE UPLOAD STARTED ===');
-  console.log('📝 User ID:', req.params.id);
-  console.log('📎 File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
+  // console.log('\nðŸ”¥ === USER PROFILE IMAGE UPLOAD STARTED ===');
+  // console.log('ðŸ“ User ID:', req.params.id);
+  // console.log('ðŸ“Ž File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
   
   try {
     const { id } = req.params;
     
     // Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      console.log('❌ Invalid ObjectId format');
+      // console.log('âŒ Invalid ObjectId format');
       return res.status(400).json({ 
         message: 'Invalid user ID format',
         error: 'User ID must be a valid MongoDB ObjectId'
@@ -168,7 +168,7 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
 
     // Check if file was uploaded
     if (!req.file) {
-      console.log('❌ No file uploaded');
+      // console.log('âŒ No file uploaded');
       return res.status(400).json({ 
         message: 'No image file provided',
         error: 'Please select an image file to upload'
@@ -178,17 +178,17 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     // Find user
     const user = await User.findById(id);
     if (!user) {
-      console.log('❌ User not found');
+      // console.log('âŒ User not found');
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log('🖼️ Processing image upload...');
+    // console.log('ðŸ–¼ï¸ Processing image upload...');
     
     // Convert buffer to base64
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
     
-    console.log('☁️ Uploading to Cloudinary...');
+    // console.log('â˜ï¸ Uploading to Cloudinary...');
     
     // Upload to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(dataURI, {
@@ -200,16 +200,16 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
       public_id: `user-${id}-${Date.now()}`
     });
 
-    console.log('✅ Cloudinary upload successful:', uploadResult.secure_url);
+    // console.log('âœ… Cloudinary upload successful:', uploadResult.secure_url);
 
     // Delete old image from Cloudinary if exists
     if (user.profileImage && user.profileImage.includes('cloudinary')) {
       try {
         const publicId = user.profileImage.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(`user-profiles/${publicId}`);
-        console.log('🗑️ Old profile image deleted from Cloudinary');
+        // console.log('ðŸ—‘ï¸ Old profile image deleted from Cloudinary');
       } catch (deleteError) {
-        console.log('⚠️ Could not delete old image:', deleteError.message);
+        // console.log('âš ï¸ Could not delete old image:', deleteError.message);
       }
     }
 
@@ -220,8 +220,8 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
       { new: true, runValidators: true }
     ).select('-password');
 
-    console.log('✅ User profile image updated successfully');
-    console.log('🔥 === USER PROFILE IMAGE UPLOAD COMPLETED ===\n');
+    // console.log('âœ… User profile image updated successfully');
+    // console.log('ðŸ”¥ === USER PROFILE IMAGE UPLOAD COMPLETED ===\n');
     
     res.json({
       message: 'Profile image uploaded successfully',
@@ -230,9 +230,9 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     });
 
   } catch (err) {
-    console.error('\n❌ === USER PROFILE IMAGE UPLOAD FAILED ===');
-    console.error('🚨 Error:', err);
-    console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+    // console.error('\nâŒ === USER PROFILE IMAGE UPLOAD FAILED ===');
+    // console.error('ðŸš¨ Error:', err);
+    // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
     res.status(500).json({ 
       message: 'Failed to upload profile image', 
       error: err.message 

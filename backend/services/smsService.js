@@ -6,8 +6,8 @@ const initializeFirebase = () => {
     try {
       // Check if required Firebase environment variables are present
       if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
-        console.log('⚠️ Firebase Admin not configured - missing environment variables');
-        console.log('💡 Add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file');
+        // console.log('âš ï¸ Firebase Admin not configured - missing environment variables');
+        // console.log('ðŸ’¡ Add FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL to your .env file');
         return;
       }
 
@@ -27,9 +27,9 @@ const initializeFirebase = () => {
         credential: admin.credential.cert(serviceAccount),
       });
       
-      console.log('✅ Firebase Admin initialized successfully');
+      // console.log('âœ… Firebase Admin initialized successfully');
     } catch (error) {
-      console.error('❌ Firebase Admin initialization error:', error);
+      // console.error('âŒ Firebase Admin initialization error:', error);
     }
   }
 };
@@ -51,7 +51,7 @@ const verifyFirebaseToken = async (idToken) => {
       }
     };
   } catch (error) {
-    console.error('Firebase token verification error:', error);
+    // console.error('Firebase token verification error:', error);
     return {
       success: false,
       error: error.message
@@ -76,7 +76,7 @@ const getFirebaseUserByPhone = async (phoneNumber) => {
     if (error.code === 'auth/user-not-found') {
       return { success: false, error: 'User not found' };
     }
-    console.error('Error getting Firebase user by phone:', error);
+    // console.error('Error getting Firebase user by phone:', error);
     return { success: false, error: error.message };
   }
 };
@@ -87,7 +87,7 @@ const createFirebaseCustomToken = async (uid, additionalClaims = {}) => {
     const customToken = await admin.auth().createCustomToken(uid, additionalClaims);
     return { success: true, token: customToken };
   } catch (error) {
-    console.error('Error creating custom token:', error);
+    // console.error('Error creating custom token:', error);
     return { success: false, error: error.message };
   }
 };

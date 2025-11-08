@@ -29,7 +29,7 @@ const geocodeAddress = async (address) => {
     }
     return null;
   } catch (error) {
-    console.error('Geocoding error:', error);
+    // console.error('Geocoding error:', error);
     return null;
   }
 };
@@ -86,7 +86,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
         alert('Location not found. Please try a different address.');
       }
     } catch (error) {
-      console.error('Location search error:', error);
+      // console.error('Location search error:', error);
       alert('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);
@@ -144,7 +144,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
       setSearchResults(results);
       onResults?.(results);
     } catch (error) {
-      console.error('Search error:', error);
+      // console.error('Search error:', error);
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -185,7 +185,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
     <div className="bg-white rounded-3xl shadow-xl p-6 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-800">
-          🔍 Smart Chef Search
+          ðŸ” Smart Chef Search
         </h2>
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
@@ -217,7 +217,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
           {/* Price Range */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Price Range (₹/hour)
+              Price Range (â‚¹/hour)
             </label>
             <div className="grid grid-cols-2 gap-4">
               <input
@@ -279,7 +279,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-yellow-50'
                   }`}
                 >
-                  {rating}⭐
+                  {rating}â­
                 </button>
               ))}
             </div>
@@ -337,7 +337,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
           {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              📍 Location Details
+              ðŸ“ Location Details
             </label>
             
             {/* City and State Row */}
@@ -414,7 +414,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
             </div>
             
             <p className="text-xs text-purple-600 mt-2">
-              💡 City/state filters help find chefs in your area, even when multiple cities share the same name
+              ðŸ’¡ City/state filters help find chefs in your area, even when multiple cities share the same name
             </p>
           </div>
 
@@ -425,7 +425,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
               disabled={loading}
               className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
-              {loading ? '🔍 Searching...' : '🔍 Search Chefs'}
+              {loading ? 'ðŸ” Searching...' : 'ðŸ” Search Chefs'}
             </button>
             <button
               onClick={clearFilters}
@@ -445,7 +445,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
               Found {searchResults.length} chef{searchResults.length !== 1 ? 's' : ''} matching your criteria
             </span>
             <span className="text-green-600 text-sm">
-              ✨ Results optimized by AI
+              âœ¨ Results optimized by AI
             </span>
           </div>
         </div>

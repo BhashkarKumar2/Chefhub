@@ -13,15 +13,15 @@ export const createPaymentOrder = async (req, res) => {
   try {
     const { amount, currency = 'INR', bookingId } = req.body;
 
-    console.log('=== Payment Order Creation Debug ===');
-    console.log('Request body:', req.body);
-    console.log('Amount received:', amount, typeof amount);
-    console.log('Currency:', currency);
-    console.log('Booking ID:', bookingId);
+    // console.log('=== Payment Order Creation Debug ===');
+    // console.log('Request body:', req.body);
+    // console.log('Amount received:', amount, typeof amount);
+    // console.log('Currency:', currency);
+    // console.log('Booking ID:', bookingId);
 
     // Validate required fields
     if (!amount || !bookingId) {
-      console.log('Validation failed: Missing amount or bookingId');
+      // console.log('Validation failed: Missing amount or bookingId');
       return res.status(400).json({
         success: false,
         message: 'Amount and booking ID are required'
@@ -31,14 +31,14 @@ export const createPaymentOrder = async (req, res) => {
     // Verify booking exists
     const booking = await Booking.findById(bookingId);
     if (!booking) {
-      console.log('Booking not found for ID:', bookingId);
+      // console.log('Booking not found for ID:', bookingId);
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
 
-    console.log('Booking found:', booking._id);
+    // console.log('Booking found:', booking._id);
 
     // Create Razorpay order
     const orderOptions = {
@@ -53,14 +53,15 @@ export const createPaymentOrder = async (req, res) => {
       }
     };
 
-    console.log('Order options for Razorpay:', orderOptions);
-    console.log('Razorpay instance configured with:', {
-      key_id: process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set',
-      key_secret: process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set'
-    });
+    // console.log('Order options for Razorpay:', orderOptions);
+    // // console.log('Razorpay instance configured with:',
+    //  {
+    //   key_id: process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set',
+    //   key_secret: process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set'
+    // });
 
     const order = await razorpay.orders.create(orderOptions);
-    console.log('Razorpay order created successfully:', order);
+    // console.log('Razorpay order created successfully:', order);
 
     // Update booking with order ID
     booking.paymentId = order.id;
@@ -80,15 +81,15 @@ export const createPaymentOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('=== Payment Order Creation Error ===');
-    console.error('Error details:', error);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
+    // console.error('=== Payment Order Creation Error ===');
+    // console.error('Error details:', error);
+    // console.error('Error message:', error.message);
+    // console.error('Error stack:', error.stack);
     
     // Check if it's a Razorpay specific error
     if (error.statusCode) {
-      console.error('Razorpay Error Code:', error.statusCode);
-      console.error('Razorpay Error Details:', error.error);
+      // console.error('Razorpay Error Code:', error.statusCode);
+      // console.error('Razorpay Error Details:', error.error);
     }
     
     res.status(500).json({
@@ -168,7 +169,7 @@ export const verifyPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error verifying payment:', error);
+    // console.error('Error verifying payment:', error);
     res.status(500).json({
       success: false,
       message: 'Error verifying payment',
@@ -212,7 +213,7 @@ export const handlePaymentFailure = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error handling payment failure:', error);
+    // console.error('Error handling payment failure:', error);
     res.status(500).json({
       success: false,
       message: 'Error handling payment failure',
@@ -250,7 +251,7 @@ export const getPaymentStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error getting payment status:', error);
+    // console.error('Error getting payment status:', error);
     res.status(500).json({
       success: false,
       message: 'Error getting payment status',
@@ -302,7 +303,7 @@ export const refundPayment = async (req, res) => {
     // Update booking
     booking.paymentStatus = 'refunded';
     booking.status = 'cancelled';
-    booking.notes = `Refund processed: ₹${refundAmount}. Reason: ${reason || 'Booking cancellation'}`;
+    booking.notes = `Refund processed: â‚¹${refundAmount}. Reason: ${reason || 'Booking cancellation'}`;
     booking.updatedAt = new Date();
     await booking.save();
 
@@ -317,7 +318,7 @@ export const refundPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error processing refund:', error);
+    // console.error('Error processing refund:', error);
     res.status(500).json({
       success: false,
       message: 'Error processing refund',

@@ -53,7 +53,7 @@ const ChefOnboarding = () => {
   const geocodeAddress = async (address) => {
     try {
       setLocationLoading(true);
-      console.log('🌍 Geocoding address:', address);
+      // console.log('ðŸŒ Geocoding address:', address);
       
       const res = await fetch(buildApiEndpoint('geocode'), {
         method: 'POST',
@@ -63,21 +63,21 @@ const ChefOnboarding = () => {
         body: JSON.stringify({ address }),
       });
       
-      console.log('📡 Geocode response status:', res.status);
+      // console.log('ðŸ“¡ Geocode response status:', res.status);
       
       if (!res.ok) {
         const errorData = await res.json();
-        console.error('❌ Geocoding error:', errorData);
+        // console.error('âŒ Geocoding error:', errorData);
         setLocationError(`Geocoding failed: ${errorData.error || 'Unknown error'}`);
         return null;
       }
       
       const data = await res.json();
-      console.log('✅ Geocoding successful:', data);
+      // console.log('âœ… Geocoding successful:', data);
       
       if (data.features && data.features.length > 0) {
         const coords = data.features[0].geometry.coordinates;
-        console.log('📍 Coordinates found:', { lat: coords[1], lon: coords[0] });
+        // console.log('ðŸ“ Coordinates found:', { lat: coords[1], lon: coords[0] });
         setLocationError(''); // Clear any previous errors
         return { lat: coords[1], lon: coords[0] };
       } else {
@@ -85,7 +85,7 @@ const ChefOnboarding = () => {
         return null;
       }
     } catch (e) {
-      console.error('❌ Geocoding fetch error:', e);
+      // console.error('âŒ Geocoding fetch error:', e);
       setLocationError('Network error. Please check your connection and try again.');
       return null;
     } finally {
@@ -195,7 +195,7 @@ const ChefOnboarding = () => {
     if (!formData.rate) {
       errors.push('Hourly rate is required');
     } else if (formData.rate < 500 || formData.rate > 10000) {
-      errors.push('Hourly rate must be between ₹500 and ₹10,000');
+      errors.push('Hourly rate must be between â‚¹500 and â‚¹10,000');
     }
 
     // Validate experience
@@ -232,21 +232,21 @@ const ChefOnboarding = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    console.log('\n🔥 === CHEF ONBOARDING FORM SUBMISSION STARTED ===');
-    console.log('📝 Form Data:', formData);
+    // console.log('\nðŸ”¥ === CHEF ONBOARDING FORM SUBMISSION STARTED ===');
+    // console.log('ðŸ“ Form Data:', formData);
     
     const validationErrors = getValidationErrors();
     if (validationErrors.length > 0) {
-      console.log('❌ Form validation failed:', validationErrors);
+      // console.log('âŒ Form validation failed:', validationErrors);
       alert('Please fix the following errors:\n\n' + validationErrors.join('\n'));
       return;
     }
-    console.log('✅ Form validation passed');
+    // console.log('âœ… Form validation passed');
     
     setIsSubmitting(true);
 
     try {
-      console.log('📦 Creating FormData for submission...');
+      // console.log('ðŸ“¦ Creating FormData for submission...');
       // Create FormData to handle file upload
       const formDataToSend = new FormData();
       
@@ -274,49 +274,49 @@ const ChefOnboarding = () => {
       
       // Add profile image if uploaded
       if (formData.profileImage) {
-        console.log('🖼️ Adding profile image to FormData:', formData.profileImage.name);
+        // console.log('ðŸ–¼ï¸ Adding profile image to FormData:', formData.profileImage.name);
         formDataToSend.append('profileImage', formData.profileImage);
       } else {
-        console.log('📷 No profile image selected');
+        // console.log('ðŸ“· No profile image selected');
       }
 
       // Log FormData contents
-      console.log('📋 FormData contents:');
+      // console.log('ðŸ“‹ FormData contents:');
       for (let [key, value] of formDataToSend.entries()) {
         if (key === 'profileImage') {
-          console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
+          // console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
         } else {
-          console.log(`  ${key}:`, value);
+          // console.log(`  ${key}:`, value);
         }
       }
 
-      console.log('🌐 Sending request to backend...');
+      // console.log('ðŸŒ Sending request to backend...');
       const response = await fetch(buildApiEndpoint('chefs'), {
         method: 'POST',
         body: formDataToSend, // Don't set Content-Type header when using FormData
       });
 
-      console.log('📡 Response received:', response.status, response.statusText);
+      // console.log('ðŸ“¡ Response received:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Backend returned error:', errorData);
+        // console.error('âŒ Backend returned error:', errorData);
         throw new Error(errorData.error || errorData.message || 'Failed to create chef profile');
       }
 
       const savedChef = await response.json();
-      console.log('✅ Chef profile saved successfully:', savedChef);
-      console.log('🔥 === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
+      // console.log('âœ… Chef profile saved successfully:', savedChef);
+      // console.log('ðŸ”¥ === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
       
       // Success message and redirect
       alert('Chef profile created successfully! Redirecting to dashboard...');
       navigate('/dashboard');
       
     } catch (error) {
-      console.error('\n❌ === CHEF ONBOARDING FAILED ===');
-      console.error('🚨 Error message:', error.message);
-      console.error('📊 Full error:', error);
-      console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+      // console.error('\nâŒ === CHEF ONBOARDING FAILED ===');
+      // console.error('ðŸš¨ Error message:', error.message);
+      // console.error('ðŸ“Š Full error:', error);
+      // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
       
       // More user-friendly error messages
       let userMessage = error.message;
@@ -421,7 +421,7 @@ const ChefOnboarding = () => {
               {/* Location Input */}
               <div>
                 <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>'
-                  📍 Service Location Details
+                  ðŸ“ Service Location Details
                 </label>
                 
                 {/* City and State Row */}
@@ -461,7 +461,7 @@ const ChefOnboarding = () => {
                     {formData.address || 'Address will be auto-generated from city and state'}
                   </div>
                   <p className={getClass('text-xs text-amber-600 mt-1', 'text-xs text-amber-400 mt-1')}>'
-                    ✨ Address is automatically created from your city and state for consistency
+                    âœ¨ Address is automatically created from your city and state for consistency
                   </p>
                 </div>
 
@@ -478,14 +478,14 @@ const ChefOnboarding = () => {
                       }
                       
                       setLocationError('');
-                      console.log('🔄 Starting geocoding for:', formData.address);
+                      // console.log('ðŸ”„ Starting geocoding for:', formData.address);
                       
                       const coords = await geocodeAddress(formData.address);
                       if (coords) {
                         setFormData(prev => ({ ...prev, locationLat: coords.lat, locationLon: coords.lon }));
-                        console.log('✅ Location set successfully:', coords);
+                        // console.log('âœ… Location set successfully:', coords);
                       } else {
-                        console.log('❌ Geocoding failed');
+                        // console.log('âŒ Geocoding failed');
                         // Error message is already set by geocodeAddress function
                       }
                     }}
@@ -503,7 +503,7 @@ const ChefOnboarding = () => {
                 </div>
                 {locationError && <p className="text-red-500 text-xs mt-2">{locationError}</p>}
                 <p className={getClass('text-xs text-orange-600 mt-2', 'text-xs text-orange-400 mt-2')}>'
-                  💡 Enter city and state - we'll automatically create the complete address for location mapping and geocoding
+                  ðŸ’¡ Enter city and state - we'll automatically create the complete address for location mapping and geocoding
                 </p>
               </div>
               
@@ -552,7 +552,7 @@ const ChefOnboarding = () => {
                   <p className="text-red-500">Bio must be at least 50 characters long</p>
                 )}
                 {formData.bio.length >= 50 && formData.bio.length <= 1000 && (
-                  <p className="text-green-500">✓ Bio length is good</p>
+                  <p className="text-green-500">âœ“ Bio length is good</p>
                 )}
                 {formData.bio.length > 1000 && (
                   <p className="text-red-500">Bio is too long (maximum 1000 characters)</p>
@@ -580,7 +580,7 @@ const ChefOnboarding = () => {
                   min="500"
                   max="10000"
                   step="50"
-                  title="Hourly rate should be between ₹500 and ₹10,000"
+                  title="Hourly rate should be between â‚¹500 and â‚¹10,000"
                   required
                 />
                 <TextInput

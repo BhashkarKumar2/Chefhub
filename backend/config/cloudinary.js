@@ -8,10 +8,10 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
-  console.log('✅ Cloudinary configured successfully');
+  // console.log('âœ… Cloudinary configured successfully');
 } else {
-  console.log('⚠️ Cloudinary not configured - missing environment variables');
-  console.log('💡 Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your .env file');
+  // console.log('âš ï¸ Cloudinary not configured - missing environment variables');
+  // console.log('ðŸ’¡ Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your .env file');
 }
 
 // Test Cloudinary configuration on startup
@@ -19,12 +19,12 @@ const testConnection = async () => {
   try {
     if (process.env.CLOUDINARY_CLOUD_NAME) {
       await cloudinary.api.ping();
-      console.log('✅ Cloudinary connected successfully');
+      // console.log('âœ… Cloudinary connected successfully');
     } else {
-      console.log('⚠️ Cloudinary connection test skipped - not configured');
+      // console.log('âš ï¸ Cloudinary connection test skipped - not configured');
     }
   } catch (error) {
-    console.error('❌ Cloudinary connection failed:', error);
+    // console.error('âŒ Cloudinary connection failed:', error);
   }
 };
 

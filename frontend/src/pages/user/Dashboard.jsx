@@ -32,21 +32,21 @@ const Dashboard = () => {
   useEffect(() => {
     // Wait for auth to complete
     if (authLoading) {
-      console.log('🔄 Dashboard: Waiting for authentication to complete...');
+      // console.log('ðŸ”„ Dashboard: Waiting for authentication to complete...');
       return;
     }
 
     const loadDashboardData = async () => {
       try {
-        console.log('🔍 Dashboard: Loading dashboard data...');
-        console.log('🔍 Dashboard auth state:', { 
-          isAuthenticated, 
-          user: user ? { id: user.id, email: user.email, name: user.name } : null,
-          hasToken: !!token 
-        });
+        // console.log('ðŸ” Dashboard: Loading dashboard data...');
+        // console.log('ðŸ” Dashboard auth state:', { 
+        //   isAuthenticated, 
+        //   user: user ? { id: user.id, email: user.email, name: user.name } : null,
+        //   hasToken: !!token 
+        // });
         
         if (!isAuthenticated || !user || !token) {
-          console.log('🔍 Dashboard: No authentication found, using guest mode...');
+          // console.log('ðŸ” Dashboard: No authentication found, using guest mode...');
           setUserData({
             name: 'Guest User',
             email: null
@@ -55,7 +55,7 @@ const Dashboard = () => {
           return;
         }
 
-        console.log(`🔍 Dashboard: Making API call to user/profile/${user.id}`);
+        // console.log(`ðŸ” Dashboard: Making API call to user/profile/${user.id}`);
         
         // Load user profile
         const userResponse = await fetch(buildApiEndpoint(`user/profile/${user.id}`), {
@@ -67,10 +67,10 @@ const Dashboard = () => {
         
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          console.log('✅ Dashboard: User data loaded:', userData);
+          // console.log('âœ… Dashboard: User data loaded:', userData);
           setUserData(userData);
         } else {
-          console.error('❌ Dashboard: Failed to load user data from API');
+          // console.error('âŒ Dashboard: Failed to load user data from API');
           // Fall back to AuthContext user data
           setUserData({
             name: user.name || 'User',
@@ -86,7 +86,7 @@ const Dashboard = () => {
         ]);
 
       } catch (error) {
-        console.error('❌ Dashboard: Error loading dashboard data:', error);
+        // console.error('âŒ Dashboard: Error loading dashboard data:', error);
         // Fall back to AuthContext user data
         if (user) {
           setUserData({
@@ -133,7 +133,7 @@ const Dashboard = () => {
           }));
         }
       } catch (error) {
-        console.error('Error loading bookings:', error);
+        // console.error('Error loading bookings:', error);
       }
     };
 
@@ -173,7 +173,7 @@ const Dashboard = () => {
           }));
         }
       } catch (error) {
-        console.error('Error loading recent activity:', error);
+        // console.error('Error loading recent activity:', error);
       }
     };
 
@@ -212,7 +212,7 @@ const Dashboard = () => {
           }));
         }
       } catch (error) {
-        console.error('Error loading stats:', error);
+        // console.error('Error loading stats:', error);
       }
     };
 
@@ -266,7 +266,7 @@ const Dashboard = () => {
 
   const quickActions = [
     {
-      title: "🤖 AI Features",
+      title: "ðŸ¤– AI Features",
       description: "AI-powered chef booking, recommendations & menu generation",
       icon: (
         <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
@@ -354,7 +354,7 @@ const Dashboard = () => {
           
           <div className="relative z-10">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4">
-              {getGreeting()}, {userName}! 👋
+              {getGreeting()}, {userName}! ðŸ‘‹
             </h1>
             <p className="text-base sm:text-lg md:text-xl opacity-95 mb-3 sm:mb-4">
               Ready to create amazing culinary experiences?
@@ -480,7 +480,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="text-4xl mb-3">📝</div>
+                <div className="text-4xl mb-3">ðŸ“</div>
                 <p className={`text-sm ${getClass('textMuted')}`}>No recent activity</p>
                 <p className={`text-xs mt-1 ${getClass('textMuted')} opacity-70`}>Your activity will appear here</p>
               </div>
@@ -494,25 +494,25 @@ const Dashboard = () => {
             { 
               label: "Total Bookings", 
               value: dashboardData.stats.totalBookings.toString(), 
-              icon: "📅", 
+              icon: "ðŸ“…", 
               color: "text-orange-600" 
             },
             { 
               label: "Favorite Chefs", 
               value: dashboardData.stats.favoriteChefs.toString(), 
-              icon: "❤️", 
+              icon: "â¤ï¸", 
               color: "text-amber-600" 
             },
             { 
               label: "Total Spent", 
-              value: `₹${dashboardData.stats.totalSpent.toLocaleString()}`, 
-              icon: "💰", 
+              value: `â‚¹${dashboardData.stats.totalSpent.toLocaleString()}`, 
+              icon: "ðŸ’°", 
               color: "text-orange-600" 
             },
             { 
               label: "Reviews Given", 
               value: dashboardData.stats.reviewsGiven.toString(), 
-              icon: "⭐", 
+              icon: "â­", 
               color: "text-amber-600" 
             }
           ].map((stat, index) => (

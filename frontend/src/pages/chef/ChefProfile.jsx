@@ -24,7 +24,7 @@ const ChefProfile = () => {
           return;
         }
 
-        console.log('🔍 Loading chef profile for ID:', id);
+        // console.log('ðŸ” Loading chef profile for ID:', id);
         
         const response = await fetch(buildApiEndpoint(`/chefs/${id}`), {
           headers: {
@@ -35,14 +35,14 @@ const ChefProfile = () => {
 
         if (response.ok) {
           const chefData = await response.json();
-          console.log('✅ Chef data loaded:', chefData);
+          // console.log('âœ… Chef data loaded:', chefData);
           setChef(chefData);
         } else {
           const errorData = await response.json();
           setError(errorData.message || 'Failed to load chef profile');
         }
       } catch (error) {
-        console.error('Error loading chef profile:', error);
+        // console.error('Error loading chef profile:', error);
         setError('Failed to load chef profile');
       } finally {
         setLoading(false);
@@ -98,13 +98,13 @@ const ChefProfile = () => {
     reviews = []
   } = chef;
 
-  console.log("chef data found is :" , chef);
+  // console.log("chef data found is :" , chef);
 
   const tabs = [
-    { id: 'about', label: 'About', icon: '👨‍🍳' },
-    { id: 'menu', label: 'Sample Menu', icon: '🍽️' },
-    { id: 'reviews', label: 'Reviews', icon: '⭐' },
-    { id: 'gallery', label: 'Gallery', icon: '📸' }
+    { id: 'about', label: 'About', icon: 'ðŸ‘¨â€ðŸ³' },
+    { id: 'menu', label: 'Sample Menu', icon: 'ðŸ½ï¸' },
+    { id: 'reviews', label: 'Reviews', icon: 'â­' },
+    { id: 'gallery', label: 'Gallery', icon: 'ðŸ“¸' }
   ];
 
   return (
@@ -187,7 +187,7 @@ const ChefProfile = () => {
                   {/* Stats */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                     <div className="text-center">
-                      <div className={getClass('text-2xl font-bold text-orange-600', 'text-2xl font-bold text-orange-300')}>₹{chef.pricePerHour}</div>
+                      <div className={getClass('text-2xl font-bold text-orange-600', 'text-2xl font-bold text-orange-300')}>â‚¹{chef.pricePerHour}</div>
                       <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>per hour</div>
                     </div>
                     <div className="text-center">
