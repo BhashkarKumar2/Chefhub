@@ -250,13 +250,7 @@ const Chefs = () => {
                       className="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   )}
-                  
-                  {/* Price Badge */}
-                  {chef.pricePerHour && (
-                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1">
-                      <span className="text-orange-600 font-bold text-sm sm:text-lg">₹{chef.pricePerHour}/hr</span>
-                    </div>
-                  )}
+                 
                   
                   {/* Favorite Button */}
                   <div className="absolute top-2 left-4 sm:top-2 sm:left-4">
@@ -272,52 +266,59 @@ const Chefs = () => {
                   
                   {/* Specialty */}
                   {chef.specialty && (
-                    <p className="text-orange-600 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
+                    <p className="text-orange-600 font-semibold mb-3 text-sm sm:text-base">
                       {chef.specialty}
                     </p>
                   )}
 
+                  {/* Rating Badge - Professional placement */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={getClass('flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200', 'flex items-center gap-1 bg-amber-900/20 px-3 py-1.5 rounded-lg border border-amber-700')}>
+                      <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                      </svg>
+                      <span className={getClass('text-sm font-semibold text-amber-700', 'text-sm font-semibold text-amber-400')}>4.8</span>
+                      <span className={getClass('text-xs text-amber-600', 'text-xs text-amber-500')}>(120)</span>
+                    </div>
+                    
+                    {/* Experience Badge */}
+                    {chef.experienceYears && (
+                      <div className={getClass('flex items-center gap-1 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200', 'flex items-center gap-1 bg-orange-900/20 px-3 py-1.5 rounded-lg border border-orange-700')}>
+                        <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                        </svg>
+                        <span className={getClass('text-xs font-medium text-orange-700', 'text-xs font-medium text-orange-400')}>{chef.experienceYears} yrs</span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Bio */}
                   {chef.bio && (
-                    <p className={getClass('text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3 text-orange-700', 'text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3 text-orange-400')}>
+                    <p className={getClass('text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 text-gray-600', 'text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 text-gray-400')}>
                       {chef.bio}
                     </p>
                   )}
 
                   {/* Location */}
                   {(chef.city || chef.address) && (
-                    <p className={getClass('text-xs mb-1 text-orange-500', 'text-xs mb-1 text-orange-400')}>
-                      <span role="img" aria-label="address">📍</span> {chef.city || chef.address}
-                    </p>
-                  )}
-
-                  {/* Experience */}
-                  {chef.experienceYears && (
-                    <p className={getClass('text-xs mb-2 text-amber-600', 'text-xs mb-2 text-amber-400')}>
-                      <svg className="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                    <div className="flex items-center gap-1 mb-4">
+                      <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
                       </svg>
-                      {chef.experienceYears} years experience
-                    </p>
+                      <span className={getClass('text-xs font-medium text-gray-600', 'text-xs font-medium text-gray-400')}>
+                        {chef.city || chef.address}
+                      </span>
+                      <span className={getClass('text-xs text-gray-500 ml-auto', 'text-xs text-gray-500 ml-auto')}>Distance: N/A</span>
+                    </div>
                   )}
 
-                  {/* Rating and Book Button */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                        </svg>
-                      ))}
-                      <span className={getClass('text-sm ml-2 text-orange-500', 'text-sm ml-2 text-orange-400')}>(4.8)</span>
-                    </div>
-                    <Link
-                      to={`/book/${chef._id}`}
-                      className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm sm:text-base min-h-[40px]"
-                    >
-                      Book Now
-                    </Link>
-                  </div>
+                  {/* Book Button - Full Width */}
+                  <Link
+                    to={`/book/${chef._id}`}
+                    className="block w-full text-center px-4 sm:px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] font-semibold text-sm sm:text-base"
+                  >
+                    Book Now
+                  </Link>
                 </div>
               </div>
             ))}

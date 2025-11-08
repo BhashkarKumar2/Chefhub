@@ -726,9 +726,7 @@ const BookChef = () => {
                       alt={chef.name || chef.fullName}
                       className="w-full h-48 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 py-1 sm:px-3 sm:py-1">
-                      <span className="text-orange-600 font-bold text-sm sm:text-lg">₹{chef.pricePerHour || chef.rate || 1200}/hr</span>
-                    </div>
+                    
                     <div className="absolute top-2 left-4 sm:top-2 sm:left-15">
                       <FavoriteButton chef={chef} variant="card" />
                     </div>
@@ -738,35 +736,62 @@ const BookChef = () => {
                     <h3 className={`text-lg sm:text-2xl font-bold mb-2 group-hover:text-orange-600 transition-colors duration-300 ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>
                       {chef.name || chef.fullName}
                     </h3>
-                    <p className="text-orange-600 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">{chef.specialty}</p>
-                    <p className={`text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-3 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
-                      {chef.bio || 'Experienced professional chef with expertise in creating exceptional culinary experiences.'}
-                    </p>
-                    {/* Show address and distance if available */}
-                   {/* // Inside the chef card, after the address: */}
-                  <p className={`text-xs mb-1 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>
-                    <span role="img" aria-label="address">📍</span> {chef.address || (Array.isArray(chef.serviceableLocations) && chef.serviceableLocations[0]) || 'No address set'}
-                  </p>
-                  <p className={`text-xs mb-2 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
-                    Distance: {typeof chef.distance === 'number' && isFinite(chef.distance) ? (chef.distance / 1000).toFixed(1) + ' km' : 'N/A'}
-                  </p>
                     
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <svg key={i} className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                          </svg>
-                        ))}
-                        <span className={`text-sm ml-2 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>(4.8)</span>
+                    {/* Specialty */}
+                    {chef.specialty && (
+                      <p className="text-orange-600 font-semibold mb-3 text-sm sm:text-base">
+                        {chef.specialty}
+                      </p>
+                    )}
+
+                    {/* Rating Badge - Professional placement */}
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className={getClass('flex items-center gap-1 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200', 'flex items-center gap-1 bg-amber-900/20 px-3 py-1.5 rounded-lg border border-amber-700')}>
+                        <svg className="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                        </svg>
+                        <span className={getClass('text-sm font-semibold text-amber-700', 'text-sm font-semibold text-amber-400')}>4.8</span>
+                        <span className={getClass('text-xs text-amber-600', 'text-xs text-amber-500')}>(120)</span>
                       </div>
-                      <button
-                        onClick={() => setSelectedChef(chef)}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm sm:text-base min-h-[40px]"
-                      >
-                        Book Now
-                      </button>
+                      
+                      {/* Experience Badge */}
+                      {chef.experienceYears && (
+                        <div className={getClass('flex items-center gap-1 bg-orange-50 px-3 py-1.5 rounded-lg border border-orange-200', 'flex items-center gap-1 bg-orange-900/20 px-3 py-1.5 rounded-lg border border-orange-700')}>
+                          <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                          </svg>
+                          <span className={getClass('text-xs font-medium text-orange-700', 'text-xs font-medium text-orange-400')}>{chef.experienceYears} yrs</span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Bio */}
+                    {chef.bio && (
+                      <p className={`text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {chef.bio || 'Experienced professional chef with expertise in creating exceptional culinary experiences.'}
+                      </p>
+                    )}
+
+                    {/* Location with Distance */}
+                    <div className="flex items-center gap-1 mb-4">
+                      <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                      </svg>
+                      <span className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {chef.address || (Array.isArray(chef.serviceableLocations) && chef.serviceableLocations[0]) || 'No address set'}
+                      </span>
+                      <span className={`text-xs ml-auto ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                        {typeof chef.distance === 'number' && isFinite(chef.distance) ? (chef.distance / 1000).toFixed(1) + ' km' : 'N/A'}
+                      </span>
+                    </div>
+                    
+                    {/* Book Button - Full Width */}
+                    <button
+                      onClick={() => setSelectedChef(chef)}
+                      className="block w-full text-center px-4 sm:px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-[1.02] font-semibold text-sm sm:text-base"
+                    >
+                      Book Now
+                    </button>
                   </div>
                 </div>
               ))}
@@ -818,121 +843,375 @@ const BookChef = () => {
             </div>
 
             {/* Booking Form */}
-            <div className={`p-8 ${isDark ? 'bg-gray-800' : ''}`}>
-              <h3 className={`text-3xl font-bold mb-8 ${isDark ? 'bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent' : 'bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent'}`}> 
-                Book Your Experience
-              </h3>
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'}`}>
+              {/* Header Section */}
+              <div className={`px-8 py-6 border-b ${isDark ? 'border-gray-700 bg-gradient-to-r from-gray-800 to-gray-700' : 'border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Book Your Experience
+                    </h3>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Create your perfect culinary experience with our professional chef
+                    </p>
+                  </div>
+                  <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${isDark ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-700'}`}>
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                    </svg>
+                    <span className="text-sm font-medium">Step by Step</span>
+                  </div>
+                </div>
+              </div>
 
-              <div className="space-y-6">
-                {/* Service Type Selection */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Service Type *</label>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {serviceTypes.map((service) => (
-                      <div
-                        key={service.id}
-                        onClick={() => setBookingDetails({ ...bookingDetails, serviceType: service.id, duration: service.minDuration })}
-                        className={`cursor-pointer border-2 rounded-xl p-4 transition-all duration-300 ${
-                          bookingDetails.serviceType === service.id
-                            ? `border-orange-500 ${isDark ? 'bg-orange-900/30' : 'bg-orange-50'}`
-                            : `${isDark ? 'border-gray-600 hover:border-orange-400 hover:bg-orange-900/20' : 'border-gray-200 hover:border-orange-300 hover:bg-orange-25'}`
-                        }`}
-                      >
-                        <div className="text-center">
-                          <span className="text-4xl mb-3 block">{service.icon}</span>
-                          <h4 className={`font-bold mb-2 ${isDark ? 'text-orange-300' : 'text-orange-900'}`}>{service.name}</h4>
-                          <p className={`text-sm mb-3 ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>{service.description}</p>
-                          <div className={`text-xs font-semibold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
-                            {service.baseMultiplier}x base rate
+              {/* Form Content */}
+              <div className="px-8 py-8">
+                <div className="space-y-8">
+                  {/* Step 1: Service Type Selection */}
+                  <div className={`p-6 rounded-2xl border-2 ${bookingDetails.serviceType ? (isDark ? 'border-green-600 bg-green-900/10' : 'border-green-400 bg-green-50') : (isDark ? 'border-gray-600 bg-gray-700/50' : 'border-gray-300 bg-gray-50')}`}>
+                    <div className="flex items-center mb-4">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${bookingDetails.serviceType ? (isDark ? 'bg-green-600 text-white' : 'bg-green-500 text-white') : (isDark ? 'bg-gray-600 text-gray-300' : 'bg-gray-400 text-white')}`}>1</div>
+                      <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Choose Your Service Type</h4>
+                      {bookingDetails.serviceType && (
+                        <svg className="w-5 h-5 text-green-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                        </svg>
+                      )}
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {serviceTypes.map((service) => (
+                        <div
+                          key={service.id}
+                          onClick={() => setBookingDetails({ ...bookingDetails, serviceType: service.id, duration: service.minDuration })}
+                          className={`cursor-pointer border-2 rounded-xl p-4 transition-all duration-300 hover:shadow-lg ${
+                            bookingDetails.serviceType === service.id
+                              ? `border-orange-500 shadow-lg ${isDark ? 'bg-orange-900/30 shadow-orange-500/20' : 'bg-orange-50 shadow-orange-200'}`
+                              : `${isDark ? 'border-gray-600 hover:border-orange-400 hover:bg-orange-900/20 bg-gray-700' : 'border-gray-300 hover:border-orange-300 hover:bg-orange-25 bg-white'}`
+                          }`}
+                        >
+                          <div className="text-center">
+                            <span className="text-4xl mb-3 block">{service.icon}</span>
+                            <h4 className={`font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{service.name}</h4>
+                            <p className={`text-sm mb-3 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{service.description}</p>
+                            <div className={`inline-flex items-center space-x-2 px-3 py-1 rounded-lg ${isDark ? 'bg-orange-900/50' : 'bg-orange-100'}`}>
+                              <span className={`text-xs font-semibold ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
+                                {service.baseMultiplier}x rate
+                              </span>
+                              <span className="text-gray-400">•</span>
+                              <span className={`text-xs ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
+                                {service.minDuration}-{service.maxDuration}h
+                              </span>
+                            </div>
                           </div>
-                          <div className={`text-xs mt-1 ${isDark ? 'text-orange-500' : 'text-orange-500'}`}>
-                            {service.minDuration}-{service.maxDuration} hours
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Duration & Schedule (if service type is selected) */}
+                  {bookingDetails.serviceType && (
+                    <div className={`p-6 rounded-2xl border-2 ${bookingDetails.date && bookingDetails.time ? (isDark ? 'border-green-600 bg-green-900/10' : 'border-green-400 bg-green-50') : (isDark ? 'border-orange-500 bg-orange-900/10' : 'border-orange-400 bg-orange-50')}`}>
+                      <div className="flex items-center mb-6">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${bookingDetails.date && bookingDetails.time ? (isDark ? 'bg-green-600 text-white' : 'bg-green-500 text-white') : (isDark ? 'bg-orange-600 text-white' : 'bg-orange-500 text-white')}`}>2</div>
+                        <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Schedule & Duration</h4>
+                        {bookingDetails.date && bookingDetails.time && (
+                          <svg className="w-5 h-5 text-green-500 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                          </svg>
+                        )}
+                      </div>
+
+                      {/* Duration Slider */}
+                      <div className="mb-6">
+                        <label className={`block text-sm font-semibold mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Duration: {bookingDetails.duration} hours
+                        </label>
+                        <div className={`p-4 rounded-xl ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <div className="flex items-center space-x-4">
+                            <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration}h
+                            </span>
+                            <input
+                              type="range"
+                              min={serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2}
+                              max={serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration || 8}
+                              value={bookingDetails.duration}
+                              onChange={(e) => setBookingDetails({ ...bookingDetails, duration: parseInt(e.target.value) })}
+                              className="flex-1 h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                              style={{
+                                background: `linear-gradient(to right, #ea580c 0%, #ea580c ${((bookingDetails.duration - (serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2)) / ((serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration || 8) - (serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2))) * 100}%, #d1d5db ${((bookingDetails.duration - (serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2)) / ((serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration || 8) - (serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2))) * 100}%, #d1d5db 100%)`
+                              }}
+                            />
+                            <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration}h
+                            </span>
                           </div>
-                          {bookingDetails.serviceType === service.id && (
-                            <svg className="w-6 h-6 text-amber-500 mx-auto mt-2" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
-                            </svg>
-                          )}
+                          <div className={`text-center mt-2 px-4 py-2 rounded-lg ${isDark ? 'bg-orange-900/30' : 'bg-orange-100'}`}>
+                            <span className={`text-lg font-bold ${isDark ? 'text-orange-400' : 'text-orange-700'}`}>
+                              {bookingDetails.duration} hours selected
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* Duration Selection (if service type is selected) */}
-                {bookingDetails.serviceType && (
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Duration (hours) *
-                    </label>
-                    <div className="flex items-center space-x-4">
-                      <input
-                        type="range"
-                        min={serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration || 2}
-                        max={serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration || 8}
-                        value={bookingDetails.duration}
-                        onChange={(e) => setBookingDetails({ ...bookingDetails, duration: parseInt(e.target.value) })}
-                        className={`flex-1 h-2 rounded-lg appearance-none cursor-pointer slider ${isDark ? 'bg-gray-600' : 'bg-orange-200'}`}
-                      />
-                      <div className={`text-lg font-semibold min-w-[60px] ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
-                        {bookingDetails.duration}h
+                      {/* Date and Time */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className={`block text-sm font-semibold mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
+                            </svg>
+                            Select Date *
+                          </label>
+                          <input
+                            type="date"
+                            value={bookingDetails.date}
+                            onChange={(e) => setBookingDetails({ ...bookingDetails, date: e.target.value })}
+                            className={`w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'} ${bookingDetails.date ? (isDark ? 'border-green-500 bg-green-900/20' : 'border-green-400 bg-green-50') : ''}`}
+                            min={new Date().toISOString().split('T')[0]}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-semibold mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
+                            </svg>
+                            Select Time *
+                          </label>
+                          <input
+                            type="time"
+                            value={bookingDetails.time}
+                            onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
+                            className={`w-full p-4 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-gray-300 bg-white text-gray-900'} ${bookingDetails.time ? (isDark ? 'border-green-500 bg-green-900/20' : 'border-green-400 bg-green-50') : ''}`}
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className={`flex justify-between text-sm mt-1 ${isDark ? 'text-orange-400' : 'text-orange-500'}`}>
-                      <span>{serviceTypes.find(s => s.id === bookingDetails.serviceType)?.minDuration}h min</span>
-                      <span>{serviceTypes.find(s => s.id === bookingDetails.serviceType)?.maxDuration}h max</span>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Date and Time */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Date *</label>
-                    <input
-                      type="date"
-                      value={bookingDetails.date}
-                      onChange={(e) => setBookingDetails({ ...bookingDetails, date: e.target.value })}
-                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
-                      min={new Date().toISOString().split('T')[0]}
-                      required
-                    />
-                    {!bookingDetails.date && (
-                      <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please select a date</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Select Time *</label>
-                    <input
-                      type="time"
-                      value={bookingDetails.time}
-                      onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
-                      className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
-                      required
-                    />
-                    {!bookingDetails.time && (
-                      <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please select a time</p>
-                    )}
-                  </div>
-                </div>
+                  {/* Step 3: Event Details */}
+                  {bookingDetails.serviceType && (
+                    <div className={`p-6 rounded-2xl border-2 ${isDark ? 'border-orange-500 bg-orange-900/10' : 'border-orange-400 bg-orange-50'}`}>
+                      <div className="flex items-center mb-6">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3 ${isDark ? 'bg-orange-600 text-white' : 'bg-orange-500 text-white'}`}>3</div>
+                        <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Event Details</h4>
+                      </div>
 
                 {/* Guest Count */}
                 <div>
                   <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Number of Guests *</label>
                   <input
                     type="number"
-                    placeholder="How many people will be dining?"
+                    placeholder={
+                      bookingDetails.serviceType === 'marriage' ? 'Expected number of wedding guests (25-500)' :
+                      bookingDetails.serviceType === 'birthday' ? 'Number of party guests (5-50)' :
+                      bookingDetails.serviceType === 'daily' ? 'Family members to cook for (1-10)' :
+                      'How many people will be dining?'
+                    }
                     value={bookingDetails.guestCount}
                     onChange={(e) => setBookingDetails({ ...bookingDetails, guestCount: e.target.value })}
                       className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
                     min="1"
-                    max="200"
+                    max={bookingDetails.serviceType === 'marriage' ? '500' : bookingDetails.serviceType === 'birthday' ? '50' : '10'}
                     required
                   />
                   {!bookingDetails.guestCount && (
                     <p className={`text-xs mt-1 ${isDark ? 'text-red-400' : 'text-red-500'}`}>Please enter the number of guests</p>
                   )}
                 </div>
+
+                {/* Service-Specific Fields */}
+                {bookingDetails.serviceType === 'birthday' && (
+                  <>
+                    {/* Birthday-specific fields */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Age Group *</label>
+                        <select
+                          value={bookingDetails.ageGroup || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, ageGroup: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                          required
+                        >
+                          <option value="">Select age group</option>
+                          <option value="kids">Kids (1-12 years)</option>
+                          <option value="teens">Teens (13-19 years)</option>
+                          <option value="adults">Adults (20-50 years)</option>
+                          <option value="seniors">Seniors (50+ years)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Party Theme</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Superhero, Princess, Retro"
+                          value={bookingDetails.partyTheme || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, partyTheme: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400' : 'border-orange-300 bg-orange-50 text-orange-900 placeholder-gray-500'}`}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Menu Preference *</label>
+                      <select
+                        value={bookingDetails.menuPreference || ''}
+                        onChange={(e) => setBookingDetails({ ...bookingDetails, menuPreference: e.target.value })}
+                        className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                        required
+                      >
+                        <option value="">Select menu type</option>
+                        <option value="kids-friendly">Kids-Friendly (Pizza, Burgers, Fries)</option>
+                        <option value="mixed">Mixed Menu (Kids + Adults)</option>
+                        <option value="gourmet">Gourmet (Fine Dining Experience)</option>
+                        <option value="custom">Custom Menu (Discuss with Chef)</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {bookingDetails.serviceType === 'marriage' && (
+                  <>
+                    {/* Marriage-specific fields */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Wedding Type *</label>
+                        <select
+                          value={bookingDetails.weddingType || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, weddingType: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                          required
+                        >
+                          <option value="">Select wedding type</option>
+                          <option value="traditional-hindu">Traditional Hindu</option>
+                          <option value="traditional-muslim">Traditional Muslim</option>
+                          <option value="traditional-christian">Traditional Christian</option>
+                          <option value="modern">Modern/Contemporary</option>
+                          <option value="destination">Destination Wedding</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Number of Courses *</label>
+                        <select
+                          value={bookingDetails.coursesCount || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, coursesCount: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                          required
+                        >
+                          <option value="">Select courses</option>
+                          <option value="3">3 Courses (Appetizer, Main, Dessert)</option>
+                          <option value="5">5 Courses (Premium)</option>
+                          <option value="7">7 Courses (Grand Celebration)</option>
+                          <option value="custom">Custom Multi-Course</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Cuisine Preference *</label>
+                      <select
+                        value={bookingDetails.cuisinePreference || ''}
+                        onChange={(e) => setBookingDetails({ ...bookingDetails, cuisinePreference: e.target.value })}
+                        className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                        required
+                      >
+                        <option value="">Select cuisine type</option>
+                        <option value="north-indian">North Indian</option>
+                        <option value="south-indian">South Indian</option>
+                        <option value="multi-cuisine">Multi-Cuisine</option>
+                        <option value="continental">Continental</option>
+                        <option value="fusion">Fusion (Mixed)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Dining Style *</label>
+                      <select
+                        value={bookingDetails.diningStyle || ''}
+                        onChange={(e) => setBookingDetails({ ...bookingDetails, diningStyle: e.target.value })}
+                        className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                        required
+                      >
+                        <option value="">Select dining style</option>
+                        <option value="buffet">Buffet Style</option>
+                        <option value="plated">Plated Service</option>
+                        <option value="family-style">Family Style</option>
+                        <option value="live-stations">Live Food Stations</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {bookingDetails.serviceType === 'daily' && (
+                  <>
+                    {/* Daily cook specific fields */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Meal Type *</label>
+                        <select
+                          value={bookingDetails.mealType || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, mealType: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                          required
+                        >
+                          <option value="">Select meal type</option>
+                          <option value="breakfast">Breakfast Only</option>
+                          <option value="lunch">Lunch Only</option>
+                          <option value="dinner">Dinner Only</option>
+                          <option value="lunch-dinner">Lunch & Dinner</option>
+                          <option value="all-meals">All Meals (Breakfast, Lunch, Dinner)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Frequency *</label>
+                        <select
+                          value={bookingDetails.frequency || ''}
+                          onChange={(e) => setBookingDetails({ ...bookingDetails, frequency: e.target.value })}
+                          className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                          required
+                        >
+                          <option value="">Select frequency</option>
+                          <option value="daily">Daily (7 days/week)</option>
+                          <option value="weekdays">Weekdays Only (5 days/week)</option>
+                          <option value="weekends">Weekends Only</option>
+                          <option value="alternate">Alternate Days</option>
+                          <option value="custom">Custom Schedule</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Dietary Preference *</label>
+                      <select
+                        value={bookingDetails.dietaryPreference || ''}
+                        onChange={(e) => setBookingDetails({ ...bookingDetails, dietaryPreference: e.target.value })}
+                        className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                        required
+                      >
+                        <option value="">Select dietary preference</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="non-vegetarian">Non-Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="jain">Jain</option>
+                        <option value="mixed">Mixed (Both Veg & Non-Veg)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={`block text-sm font-semibold mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Cooking Style *</label>
+                      <select
+                        value={bookingDetails.cookingStyle || ''}
+                        onChange={(e) => setBookingDetails({ ...bookingDetails, cookingStyle: e.target.value })}
+                        className={`w-full p-4 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 text-gray-100' : 'border-orange-300 bg-orange-50 text-orange-900'}`}
+                        required
+                      >
+                        <option value="">Select cooking style</option>
+                        <option value="home-style">Home-Style Indian</option>
+                        <option value="low-oil">Low Oil/Healthy</option>
+                        <option value="traditional">Traditional Regional</option>
+                        <option value="continental">Continental</option>
+                        <option value="chef-choice">Chef's Choice</option>
+                      </select>
+                    </div>
+                  </>
+                )}
 
                 {/* Add-ons */}
                 <div>
@@ -987,6 +1266,8 @@ const BookChef = () => {
                     rows="4"
                   />
                 </div>
+              </div>
+            )}
 
                 {/* Total and Book Button */}
                 <div className={`rounded-2xl p-6 border ${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600' : 'bg-gradient-to-r from-orange-50 to-amber-100 border-orange-200'}`}>
@@ -1010,6 +1291,7 @@ const BookChef = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

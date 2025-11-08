@@ -6,7 +6,6 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import session from 'express-session';
 import passport from './auth/Passport.js'; // Import passport config
-
 import authRoutes from './auth/authRoutes.js'; 
 import chefRoutes from './routes/chefRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
@@ -16,7 +15,6 @@ import aiRoutes from './routes/aiRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import geocodeRoutes from './routes/geocodeRoutes.js';
 import socketService from './services/socketService.js';
-
 
 const app = express();
 const server = createServer(app);
@@ -30,7 +28,7 @@ app.use(cors({
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
     'https://chefhub-ochre.vercel.app',
-    'http://chefhub-ochre.vercel.app'
+    'https://chefhub-poou.vercel.app',
   ], 
   credentials: true 
 }));
