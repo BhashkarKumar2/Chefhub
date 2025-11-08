@@ -17,9 +17,11 @@ class SocketService {
           "http://127.0.0.1:5173",
           "http://127.0.0.1:5174",
           "https://chefhub-ochre.vercel.app",
-          "http://chefhub-ochre.vercel.app"
+          "http://chefhub-ochre.vercel.app",
+          "https://chefhub-poou.vercel.app"
         ],
-        credentials: true
+        credentials: true,
+        methods: ["GET", "POST"]
       }
     });
 
