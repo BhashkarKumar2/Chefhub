@@ -70,7 +70,7 @@ export const createChefProfile = async (req, res) => {
 
     // If image was uploaded, upload to Cloudinary
     if (req.file) {
-      // console.log('ðŸ–¼ï¸ Processing image upload...');
+      // console.log('🖼️ Processing image upload...');
       try {
         // Convert buffer to base64
         const b64 = Buffer.from(req.file.buffer).toString('base64');
@@ -259,7 +259,7 @@ export const searchChefs = async (req, res) => {
       ];
     }
 
-    // console.log('ðŸ" Search query:', JSON.stringify(searchQuery, null, 2));
+    // console.log('📍 Search query:', JSON.stringify(searchQuery, null, 2));
 
     // Execute search with pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);

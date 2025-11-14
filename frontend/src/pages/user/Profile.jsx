@@ -76,7 +76,7 @@ const Profile = () => {
         if (profileResponse.ok) {
           const user = await profileResponse.json();
           // console.log('âœ… User data loaded:', user);
-          // console.log('ðŸ–¼ï¸ Profile image URL:', user.profileImage);
+          // console.log('🖼️ Profile image URL:', user.profileImage);
           setUserData(user);
           setUserStats({
             totalBookings: user.totalBookings || 0,
@@ -153,10 +153,10 @@ const Profile = () => {
   };
 
   const stats = [
-    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: '📅' },
-    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: '❤️' },
-    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: '⭐' },
-    { label: 'Member Since', value: userStats.memberSince.toString(), icon: '🏆' }
+    { label: 'Total Bookings', value: userStats.totalBookings.toString(), icon: '' },
+    { label: 'Favorite Chefs', value: userStats.favoriteChefs.toString(), icon: '' },
+    { label: 'Reviews Given', value: userStats.reviewsGiven.toString(), icon: '' },
+    { label: 'Member Since', value: userStats.memberSince.toString(), icon: '' }
   ];
 
   const handleLogout = () => {
@@ -170,10 +170,10 @@ const Profile = () => {
   };
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: '👤' },
-    { id: 'bookings', name: 'Bookings', icon: '📅' },
-    { id: 'favorites', name: 'Favorites', icon: '❤️' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' }
+    { id: 'overview', name: 'Overview', icon: '' },
+    { id: 'bookings', name: 'Bookings', icon: '' },
+    { id: 'favorites', name: 'Favorites', icon: '' },
+    { id: 'settings', name: 'Settings', icon: '' }
   ];
 
   // Show loading while authentication is being checked

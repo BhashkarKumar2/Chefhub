@@ -164,7 +164,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
     <div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className={`text-xl font-bold ${classes.text.heading}`}>
-          🍽️ AI Menu Generator
+          AI Menu Generator
         </h3>
         <button
           onClick={generateMenu}
@@ -187,7 +187,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
           {menu.error ? (
             <div className={`border rounded-lg p-4 ${isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'}`}>
               <p className={`${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-                {'⚠️ '}{menu.error}
+                {'Warning: '}{menu.error}
               </p>
               {menu.rawResponse && (
                 <details className="mt-2">
@@ -210,7 +210,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
               </div>
 
               <div>
-                <h4 className={`font-semibold text-lg mb-2 ${classes.text.heading}`}>🍛 Main Course</h4>
+                <h4 className={`font-semibold text-lg mb-2 ${classes.text.heading}`}>Main Course</h4>
                 <ul className="list-disc list-inside space-y-1">
                   {menu.mainCourse?.map((item, index) => (
                     <li key={index} className={classes.text.primary}>{item}</li>
@@ -219,7 +219,7 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
               </div>
 
               <div>
-                <h4 className={`font-semibold text-lg mb-2 ${classes.text.heading}`}>🍰 Desserts</h4>
+                <h4 className={`font-semibold text-lg mb-2 ${classes.text.heading}`}>Desserts</h4>
                 <ul className="list-disc list-inside space-y-1">
                   {menu.desserts?.map((item, index) => (
                     <li key={index} className={classes.text.primary}>{item}</li>
@@ -292,7 +292,7 @@ const AIChatAssistant = () => {
       <div className={`p-6 border-b ${classes.border.default} ${isDark ? 'bg-gradient-to-r from-amber-900/20 to-orange-900/20' : 'bg-gradient-to-r from-amber-50 to-orange-50'}`}>
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white text-2xl shadow-lg">
-            👨‍🍳
+            
           </div>
           <div>
             <h3 className={`text-xl font-bold ${classes.text.heading}`}>
@@ -309,7 +309,7 @@ const AIChatAssistant = () => {
       <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${isDark ? 'bg-gray-900/50' : 'bg-stone-50/50'}`}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full">
-            <div className="text-6xl mb-4">🍳</div>
+            <div className="text-6xl mb-4"></div>
             <p className={`${classes.text.muted} text-center max-w-md`}>
               Welcome! I'm your AI culinary assistant. Ask me about cooking techniques, recipes, ingredient substitutions, or food preparation tips!
             </p>
@@ -318,19 +318,19 @@ const AIChatAssistant = () => {
                 onClick={() => setInput("What's a good recipe for pasta?")}
                 className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
               >
-                💡 Recipe suggestions
+                Recipe suggestions
               </button>
               <button
                 onClick={() => setInput("How do I cook perfect rice?")}
                 className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
               >
-                🔥 Cooking techniques
+                Cooking techniques
               </button>
               <button
                 onClick={() => setInput("Can you suggest meal prep ideas?")}
                 className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
               >
-                📅 Meal planning
+                Meal planning
               </button>
               <button
                 onClick={() => setInput("What are healthy alternatives to sugar?")}
@@ -356,7 +356,7 @@ const AIChatAssistant = () => {
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-md text-sm font-bold">
-                      {user?.name?.charAt(0).toUpperCase() || '👤'}
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                   )
                 ) : (
@@ -423,7 +423,7 @@ const AIChatAssistant = () => {
               disabled={loading}
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-              💬
+              CHAT
             </div>
           </div>
           <button
@@ -437,7 +437,7 @@ const AIChatAssistant = () => {
           </button>
         </form>
         <p className={`text-xs ${classes.text.muted} mt-2 text-center`}>
-          Powered by AI • Ask about recipes, cooking tips, ingredients & more
+          Powered by AI - Ask about recipes, cooking tips, ingredients & more
         </p>
       </div>
     </div>
@@ -569,7 +569,7 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
                       />
                     </div>
                     <div>
-                      <label className={`block text-sm font-medium ${classes.text.primary} mb-1`}>Budget (₹)</label>
+                      <label className={`block text-sm font-medium ${classes.text.primary} mb-1`}>Budget (Rs.)</label>
                       <input
                         type="number"
                         value={eventDetails.budget}

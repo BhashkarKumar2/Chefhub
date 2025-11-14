@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
   isPhoneVerified: { type: Boolean, default: false },
   isEmailVerified: { type: Boolean, default: false },
   
+  // Password reset fields
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+  
   // Core functionality
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chef' }]
 }, {

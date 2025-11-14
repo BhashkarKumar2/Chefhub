@@ -16,13 +16,13 @@ const PricingSummary = ({ rate, guests, addOns }) => {
     <div className="bg-white p-4 rounded-2xl shadow-md">
       <h3 className="text-xl font-semibold mb-2">Pricing Summary</h3>
       <ul className="space-y-1">
-        <li>Base Fee ({guests}×₹{rate}): ₹{summary.baseFee}</li>
-        <li>Travel Fee: ₹{summary.travelFee}</li>
-        {summary.decorFee > 0 && <li>Decor: ₹{summary.decorFee}</li>}
-        {summary.cleanupFee > 0 && <li>Cleanup: ₹{summary.cleanupFee}</li>}
-        <li>Service Charge (10%): ₹{summary.serviceCharge.toFixed(2)}</li>
+        <li>Base Fee ({guests} x Rs. {rate}): Rs. {summary.baseFee}</li>
+        <li>Travel Fee: Rs. {summary.travelFee}</li>
+        {summary.decorFee > 0 && <li>Decor: Rs. {summary.decorFee}</li>}
+        {summary.cleanupFee > 0 && <li>Cleanup: Rs. {summary.cleanupFee}</li>}
+        <li>Service Charge (10%): Rs. {summary.serviceCharge.toFixed(2)}</li>
       </ul>
-      <div className="mt-3 text-lg font-bold">Total: ₹{summary.total.toFixed(2)}</div>
+      <div className="mt-3 text-lg font-bold">Total: Rs. {summary.total.toFixed(2)}</div>
     </div>
   );
 };

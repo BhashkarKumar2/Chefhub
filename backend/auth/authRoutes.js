@@ -3,7 +3,7 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { registerUser, loginUser, validateToken, getCurrentUser, verifyFirebaseOTP } from './authController.js';
 import { verifyToken as authMiddleware } from '../middleware/authMiddleware.js';
-import { setPassword, changePassword, checkPasswordStatus } from '../controllers/passwordController.js';
+import { setPassword, changePassword, checkPasswordStatus, forgotPassword, verifyResetToken, resetPassword } from '../controllers/passwordController.js';
 
 const router = express.Router();
 
@@ -24,6 +24,11 @@ router.get('/me', authMiddleware, getCurrentUser);
 router.post('/set-password', authMiddleware, setPassword);
 router.post('/change-password', authMiddleware, changePassword);
 router.get('/password-status', authMiddleware, checkPasswordStatus);
+
+// Password reset routes (public)
+router.post('/forgot-password', forgotPassword);
+router.get('/reset-password/:token', verifyResetToken);
+router.post('/reset-password/:token', resetPassword);
 
 // Google OAuth routes
 router.get('/google', 

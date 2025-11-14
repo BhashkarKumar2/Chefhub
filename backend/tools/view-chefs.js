@@ -18,7 +18,7 @@ async function viewAllChefs() {
       // console.log(`   Email: ${chef.email}`);
       // console.log(`   Phone: ${chef.phone}`);
       // console.log(`   Specialty: ${chef.specialty}`);
-      // console.log(`   Rate: â‚¹${chef.pricePerHour}/hour`);
+      // console.log(`   Rate: Rs.${chef.pricePerHour}/hour`);
       // console.log(`   Experience: ${chef.experienceYears} years`);
       // console.log(`   Bio: ${chef.bio.substring(0, 100)}...`);
       // console.log(`   Image: ${chef.profileImage?.url ? 'Yes' : 'No'}`);

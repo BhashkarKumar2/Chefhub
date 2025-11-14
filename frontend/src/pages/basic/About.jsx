@@ -138,10 +138,10 @@ const About = () => {
           </h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: "🏆", title: "Premium Quality", desc: "Only the finest chefs and ingredients" },
-              { icon: "🚀", title: "Quick Booking", desc: "Book your chef in under 2 minutes" },
-              { icon: "💝", title: "Memorable Events", desc: "Creating unforgettable dining experiences" },
-              { icon: "🌟", title: "5-Star Service", desc: "Rated excellent by thousands of customers" }
+              { icon: "", title: "Premium Quality", desc: "Only the finest chefs and ingredients" },
+              { icon: "", title: "Quick Booking", desc: "Book your chef in under 2 minutes" },
+              { icon: "", title: "Memorable Events", desc: "Creating unforgettable dining experiences" },
+              { icon: "", title: "5-Star Service", desc: "Rated excellent by thousands of customers" }
             ].map((item, index) => (
               <div 
                 key={index} 

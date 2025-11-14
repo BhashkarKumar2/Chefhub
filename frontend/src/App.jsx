@@ -42,6 +42,8 @@ const EditProfile = lazy(() => import('./pages/user/EditProfile'));
 const SetPassword = lazy(() => import('./pages/user/SetPassword'));
 const ViewBookings = lazy(() => import('./pages/user/ViewBookings'));
 const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const AuthSuccess = lazy(() => import('./pages/auth/AuthSuccess'));
 const AuthDebug = lazy(() => import('./pages/auth/AuthDebug'));
 
@@ -61,6 +63,8 @@ const App = () => {
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/mobile-login" element={<MobileLogin />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
                         <Route path="/register" element={<Signup />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/about" element={<About />} />

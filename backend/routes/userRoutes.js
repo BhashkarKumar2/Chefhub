@@ -182,7 +182,7 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // console.log('ðŸ–¼ï¸ Processing image upload...');
+    // console.log('🖼️ Processing image upload...');
     
     // Convert buffer to base64
     const b64 = Buffer.from(req.file.buffer).toString('base64');
@@ -232,7 +232,7 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
   } catch (err) {
     // console.error('\nâŒ === USER PROFILE IMAGE UPLOAD FAILED ===');
     // console.error('ðŸš¨ Error:', err);
-    // console.error('ðŸ"¥ === ERROR HANDLING COMPLETED ===\n');
+    // console.error('📍¥ === ERROR HANDLING COMPLETED ===\n');
     res.status(500).json({ 
       message: 'Failed to upload profile image', 
       error: err.message 

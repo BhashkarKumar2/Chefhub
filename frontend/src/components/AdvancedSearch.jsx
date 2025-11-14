@@ -217,7 +217,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
           {/* Price Range */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Price Range (â‚¹/hour)
+              Price Range (Rs./hour)
             </label>
             <div className="grid grid-cols-2 gap-4">
               <input
@@ -279,7 +279,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-yellow-50'
                   }`}
                 >
-                  {rating}â­
+                  {rating}⭐
                 </button>
               ))}
             </div>
@@ -445,7 +445,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
               Found {searchResults.length} chef{searchResults.length !== 1 ? 's' : ''} matching your criteria
             </span>
             <span className="text-green-600 text-sm">
-              âœ¨ Results optimized by AI
+              ✨ Results optimized by AI
             </span>
           </div>
         </div>

@@ -355,7 +355,7 @@ const Dashboard = () => {
           
           <div className="relative z-10">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-3 sm:mb-4">
-              {getGreeting()}, {userName}! 👋
+              {getGreeting()}, {userName}!
             </h1>
             <p className="text-base sm:text-lg md:text-xl opacity-95 mb-3 sm:mb-4">
               Ready to create amazing culinary experiences?
@@ -481,7 +481,7 @@ const Dashboard = () => {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="text-4xl mb-3">📋</div>
+                <div className="text-4xl mb-3"></div>
                 <p className={`text-sm ${getClass('textMuted')}`}>No recent activity</p>
                 <p className={`text-xs mt-1 ${getClass('textMuted')} opacity-70`}>Your activity will appear here</p>
               </div>
@@ -495,25 +495,25 @@ const Dashboard = () => {
             { 
               label: "Total Bookings", 
               value: dashboardData.stats.totalBookings.toString(), 
-              icon: "📅", 
+              icon: "", 
               color: "text-orange-600" 
             },
             { 
               label: "Favorite Chefs", 
               value: dashboardData.stats.favoriteChefs.toString(), 
-              icon: "❤️", 
+              icon: "", 
               color: "text-amber-600" 
             },
             { 
               label: "Total Spent", 
-              value: `₹${dashboardData.stats.totalSpent.toLocaleString()}`, 
-              icon: "💰",
+              value: `Rs. ${dashboardData.stats.totalSpent.toLocaleString()}`, 
+              icon: "",
               color: "text-orange-600" 
             },
             { 
               label: "Reviews Given", 
               value: dashboardData.stats.reviewsGiven.toString(), 
-              icon: "â­", 
+              icon: "⭐", 
               color: "text-amber-600" 
             }
           ].map((stat, index) => (

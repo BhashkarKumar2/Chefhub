@@ -11,8 +11,8 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
 
-  const noSidebarPages = ['/login', '/register', '/signup'];
-  const showSidebar = !noSidebarPages.includes(location.pathname);
+  const noSidebarPages = ['/login', '/register', '/signup', '/forgot-password', '/mobile-login'];
+  const showSidebar = !noSidebarPages.includes(location.pathname) && !location.pathname.startsWith('/reset-password/');
 
   // Scroll to top on route change
   useEffect(() => {
@@ -39,9 +39,9 @@ const MainLayout = ({ children }) => {
 
   return (
   <div className={`flex min-h-screen overflow-x-hidden max-w-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
-    {/* Floating Theme Toggle Button */}
+    {/* Floating Theme Toggle Button - Always visible */}
     <React.Suspense fallback={null}>
-      {showSidebar && <ThemeToggleButton />}
+      <ThemeToggleButton />
     </React.Suspense>
       {/* Sidebar - handles its own responsive behavior */}
       {showSidebar && <Sidebar />}

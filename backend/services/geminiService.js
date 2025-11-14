@@ -97,7 +97,7 @@ class GeminiService {
     User Preferences:
     - Event Type: ${userPreferences.serviceType || 'Event'}
     - Guest Count: ${userPreferences.guestCount || 'Not specified'}
-    - Budget Range: â‚¹${userPreferences.minBudget || 0} - â‚¹${userPreferences.maxBudget || 'Not specified'}
+    - Budget Range: Rs.${userPreferences.minBudget || 0} - Rs.${userPreferences.maxBudget || 'Not specified'}
     - Cuisine Preference: ${userPreferences.cuisinePreference || userPreferences.cuisine || 'Any'}
     - Dietary Restrictions: ${userPreferences.dietaryRestrictions || 'None'}
     - Location: ${userPreferences.location || 'Not specified'}
@@ -170,7 +170,7 @@ class GeminiService {
     Event Details:
     - Service Type: ${eventDetails.serviceType || 'General Event'}
     - Guest Count: ${eventDetails.guests || 'Not specified'}
-    - Budget: â‚¹${eventDetails.budget || 'Not specified'}
+    - Budget: Rs.${eventDetails.budget || 'Not specified'}
     - Cuisine Style: ${eventDetails.cuisine || 'Mixed Cuisine'}
     - Dietary Restrictions: ${eventDetails.dietary || 'None'}
     - Meal Time: ${eventDetails.mealTime || 'Dinner'}
@@ -285,7 +285,7 @@ class GeminiService {
     - Complexity Level: ${bookingDetails.complexity}
     
     Market Context:
-    - Average rates in area: â‚¹${marketData.averageRate}/hour
+    - Average rates in area: Rs.${marketData.averageRate}/hour
     - Seasonal demand: ${marketData.seasonalDemand}
     - Competition level: ${marketData.competitionLevel}
     
@@ -393,7 +393,7 @@ class GeminiService {
     Preferences:
     - Cuisine types: ${preferences.cuisineTypes}
     - Dietary restrictions: ${preferences.dietaryRestrictions}
-    - Budget: â‚¹${preferences.weeklyBudget}
+    - Budget: Rs.${preferences.weeklyBudget}
     - Family size: ${preferences.familySize}
     - Cooking skill level: ${preferences.skillLevel}
     

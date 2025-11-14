@@ -303,7 +303,7 @@ export const refundPayment = async (req, res) => {
     // Update booking
     booking.paymentStatus = 'refunded';
     booking.status = 'cancelled';
-    booking.notes = `Refund processed: ₹${refundAmount}. Reason: ${reason || 'Booking cancellation'}`;
+    booking.notes = `Refund processed: Rs. ${refundAmount}. Reason: ${reason || 'Booking cancellation'}`;
     booking.updatedAt = new Date();
     await booking.save();
 

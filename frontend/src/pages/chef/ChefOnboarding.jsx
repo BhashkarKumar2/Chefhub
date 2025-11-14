@@ -195,7 +195,7 @@ const ChefOnboarding = () => {
     if (!formData.rate) {
       errors.push('Hourly rate is required');
     } else if (formData.rate < 500 || formData.rate > 10000) {
-      errors.push('Hourly rate must be between ₹500 and ₹10,000');
+      errors.push('Hourly rate must be between Rs. 500 and Rs. 10,000');
     }
 
     // Validate experience
@@ -274,7 +274,7 @@ const ChefOnboarding = () => {
       
       // Add profile image if uploaded
       if (formData.profileImage) {
-        // console.log('ðŸ–¼ï¸ Adding profile image to FormData:', formData.profileImage.name);
+        // console.log('🖼️ Adding profile image to FormData:', formData.profileImage.name);
         formDataToSend.append('profileImage', formData.profileImage);
       } else {
         // console.log('ðŸ“· No profile image selected');
@@ -461,7 +461,7 @@ const ChefOnboarding = () => {
                     {formData.address || 'Address will be auto-generated from city and state'}
                   </div>
                   <p className={getClass('text-xs text-amber-600 mt-1', 'text-xs text-amber-400 mt-1')}>'
-                    âœ¨ Address is automatically created from your city and state for consistency
+                    ✨ Address is automatically created from your city and state for consistency
                   </p>
                 </div>
 
@@ -580,7 +580,7 @@ const ChefOnboarding = () => {
                   min="500"
                   max="10000"
                   step="50"
-                  title="Hourly rate should be between â‚¹500 and â‚¹10,000"
+                  title="Hourly rate should be between Rs.500 and Rs.10,000"
                   required
                 />
                 <TextInput

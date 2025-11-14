@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { buildApiEndpoint, API_BASE_URL } from '../../utils/apiConfig';
 import logo from '../../assets/logo.png';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const SignupNew = () => {
+  const { theme, isDark } = useThemeAwareStyle();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -72,16 +74,16 @@ const SignupNew = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Dynamic Saffron Animated Background - Same as Home page */}
+      {/* Dynamic Saffron Animated Background */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100"></div>
+        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100'}`}></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.3),rgba(255,255,255,0))]"></div>
         {/* Floating Saffron Elements */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-r from-orange-200/30 to-amber-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-gradient-to-r from-yellow-200/30 to-orange-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-amber-200/30 to-yellow-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '4s'}}></div>
-        <div className="absolute top-1/2 right-1/3 w-96 h-96 bg-gradient-to-r from-orange-100/25 to-amber-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-1/3 left-1/2 w-80 h-80 bg-gradient-to-r from-yellow-100/25 to-orange-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '3s'}}></div>
+        <div className={`absolute top-1/4 left-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/20 to-amber-900/20' : 'bg-gradient-to-r from-orange-200/30 to-amber-300/30'}`}></div>
+        <div className={`absolute top-3/4 right-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/20 to-orange-900/20' : 'bg-gradient-to-r from-yellow-200/30 to-orange-400/30'}`} style={{animationDelay: '2s'}}></div>
+        <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-amber-900/20 to-yellow-900/20' : 'bg-gradient-to-r from-amber-200/30 to-yellow-300/30'}`} style={{animationDelay: '4s'}}></div>
+        <div className={`absolute top-1/2 right-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/15 to-amber-900/15' : 'bg-gradient-to-r from-orange-100/25 to-amber-200/25'}`} style={{animationDelay: '1s'}}></div>
+        <div className={`absolute bottom-1/3 left-1/2 w-80 h-80 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/15 to-orange-900/15' : 'bg-gradient-to-r from-yellow-100/25 to-orange-200/25'}`} style={{animationDelay: '3s'}}></div>
       </div>
 
       {/* Content */}
@@ -90,11 +92,10 @@ const SignupNew = () => {
           {/* Logo Section */}
           <div className="text-center mb-6">
             <div className="inline-block relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-amber-400 rounded-full blur-lg opacity-60 animate-pulse"></div>
               <img 
                 src={logo} 
                 alt="ChefHub Logo" 
-                className="w-14 h-14 object-contain relative z-10 mx-auto"
+                className="w-20 h-30 object-contain relative z-10 mx-auto"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
@@ -104,24 +105,24 @@ const SignupNew = () => {
                 CH
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-orange-900 mt-3 mb-1">Join ChefHub</h1>
-            <p className="text-sm text-orange-700">Create your account and start your culinary journey</p>
+            <h1 className={`text-2xl font-bold mt-3 mb-1 ${isDark ? 'text-orange-400' : 'text-orange-900'}`}>Join ChefHub</h1>
+            <p className={`text-sm ${isDark ? 'text-orange-300' : 'text-orange-700'}`}>Create your account and start your culinary journey</p>
           </div>
 
           {/* Signup Form Card */}
-          <div className="bg-white/20 backdrop-blur-md border border-orange-200/30 rounded-2xl p-6 shadow-xl">
+          <div className={`backdrop-blur-md border rounded-2xl p-6 shadow-xl ${isDark ? 'bg-gray-800/40 border-gray-700/30' : 'bg-white/20 border-orange-200/30'}`}>
 
           <form onSubmit={handleSubmit} className="space-y-3 w-full">
             {/* Full Name */}
             <div>
-              <label htmlFor="fullName" className="block text-xs font-semibold text-gray-700 mb-1">Full Name</label>
+              <label htmlFor="fullName" className={`block text-xs font-semibold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Full Name</label>
               <div className="relative">
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
                   required
-                  className="w-full p-2.5 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className={`w-full p-2.5 pl-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
                   placeholder="Enter your full name"
                   onChange={handleChange}
                   value={formData.fullName}
@@ -134,7 +135,7 @@ const SignupNew = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+              <label htmlFor="email" className={`block text-xs font-semibold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Email Address</label>
               <div className="relative">
                 <input
                   id="email"
@@ -142,7 +143,7 @@ const SignupNew = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full p-2.5 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className={`w-full p-2.5 pl-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
                   placeholder="you@example.com"
                   onChange={handleChange}
                   value={formData.email}
@@ -156,14 +157,14 @@ const SignupNew = () => {
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
+              <label htmlFor="password" className={`block text-xs font-semibold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Password</label>
               <div className="relative">
                 <input
                   id="password"
                   name="password"
                   type={passwordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-2.5 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className={`w-full p-2.5 pl-10 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
                   placeholder="Create a strong password"
                   onChange={handleChange}
                   value={formData.password}
@@ -179,14 +180,14 @@ const SignupNew = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-xs font-semibold text-gray-700 mb-1">Confirm Password</label>
+              <label htmlFor="confirmPassword" className={`block text-xs font-semibold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Confirm Password</label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
                   type={confirmPasswordShown ? 'text' : 'password'}
                   required
-                  className="w-full p-2.5 pl-10 pr-12 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                  className={`w-full p-2.5 pl-10 pr-12 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
                   placeholder="Confirm your password"
                   onChange={handleChange}
                   value={formData.confirmPassword}
@@ -202,7 +203,7 @@ const SignupNew = () => {
 
             {/* Error */}
             {error && (
-              <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded text-xs">
+              <div className={`border p-2 rounded text-xs ${isDark ? 'bg-amber-900/30 border-amber-700 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-700'}`}>
                 {error}
               </div>
             )}
@@ -228,16 +229,16 @@ const SignupNew = () => {
           </form>
 
           {/* Social login */}
-          <div className="text-center my-3 text-gray-500 text-xs">or continue with</div>
+          <div className={`text-center my-3 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>or continue with</div>
           <div className="flex justify-center mb-3">
-            <button onClick={handleGoogleSignup} className="flex items-center gap-2 px-4 py-2 border border-orange-300 rounded-lg bg-orange-50 hover:bg-orange-100 hover:shadow-md transition-all duration-200" title="Sign up with Google">
+            <button onClick={handleGoogleSignup} className={`flex items-center gap-2 px-4 py-2 border rounded-lg hover:shadow-md transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-orange-300 bg-orange-50 hover:bg-orange-100'}`} title="Sign up with Google">
               <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-5 h-5" />
-              <span className="text-orange-800 font-medium text-sm">Continue with Google</span>
+              <span className={`font-medium text-sm ${isDark ? 'text-gray-200' : 'text-orange-800'}`}>Continue with Google</span>
             </button>
           </div>
 
-          <p className="text-center text-xs text-gray-600 font-medium mt-2">
-            Already have an account? <Link to="/login" className="text-orange-800 font-semibold hover:text-orange-900 transition-colors duration-200">Sign In</Link>
+          <p className={`text-center text-xs font-medium mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Already have an account? <Link to="/login" className={`font-semibold transition-colors duration-200 ${isDark ? 'text-orange-400 hover:text-orange-300' : 'text-orange-800 hover:text-orange-900'}`}>Sign In</Link>
           </p>
         </div>
       </div>

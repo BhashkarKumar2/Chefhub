@@ -168,7 +168,7 @@ const EditProfile = () => {
       const imageFormData = new FormData();
       imageFormData.append('profileImage', imageFile);
 
-      // console.log('ðŸ–¼ï¸ Uploading profile image...');
+      // console.log('🖼️ Uploading profile image...');
       const token = localStorage.getItem('token');
       const response = await fetch(buildApiEndpoint(`/user/upload-profile-image/${userId}`), {
         method: 'POST',
@@ -274,10 +274,10 @@ const EditProfile = () => {
   };
 
   const sections = [
-    { id: 'personal', label: 'Personal Info', icon: '👤' },
-    { id: 'address', label: 'Address', icon: '📍' },
-    { id: 'preferences', label: 'Preferences', icon: '🍽️' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' }
+    { id: 'personal', label: 'Personal Info', icon: '' },
+    { id: 'address', label: 'Address', icon: '' },
+    { id: 'preferences', label: 'Preferences', icon: '' },
+    { id: 'settings', label: 'Settings', icon: '' }
   ];
 
   return (

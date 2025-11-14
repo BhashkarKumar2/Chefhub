@@ -57,16 +57,16 @@ const Login = () => {
 
   return (
   <div className="relative min-h-screen overflow-hidden">
-      {/* Dynamic Saffron Animated Background - Same as Signup page */}
+      {/* Dynamic Saffron Animated Background */}
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100"></div>
+        <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100'}`}></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.3),rgba(255,255,255,0))]"></div>
         {/* Floating Saffron Elements */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-r from-orange-200/30 to-amber-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-        <div className="absolute top-3/4 right-1/4 w-72 h-72 bg-gradient-to-r from-yellow-200/30 to-orange-400/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '2s'}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r from-amber-200/30 to-yellow-300/30 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{animationDelay: '4s'}}></div>
-        <div className="absolute top-1/2 right-1/3 w-96 h-96 bg-gradient-to-r from-orange-100/25 to-amber-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-1/3 left-1/2 w-80 h-80 bg-gradient-to-r from-yellow-100/25 to-orange-200/25 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse" style={{animationDelay: '3s'}}></div>
+        <div className={`absolute top-1/4 left-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/20 to-amber-900/20' : 'bg-gradient-to-r from-orange-200/30 to-amber-300/30'}`}></div>
+        <div className={`absolute top-3/4 right-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/20 to-orange-900/20' : 'bg-gradient-to-r from-yellow-200/30 to-orange-400/30'}`} style={{animationDelay: '2s'}}></div>
+        <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-amber-900/20 to-yellow-900/20' : 'bg-gradient-to-r from-amber-200/30 to-yellow-300/30'}`} style={{animationDelay: '4s'}}></div>
+        <div className={`absolute top-1/2 right-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/15 to-amber-900/15' : 'bg-gradient-to-r from-orange-100/25 to-amber-200/25'}`} style={{animationDelay: '1s'}}></div>
+        <div className={`absolute bottom-1/3 left-1/2 w-80 h-80 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/15 to-orange-900/15' : 'bg-gradient-to-r from-yellow-100/25 to-orange-200/25'}`} style={{animationDelay: '3s'}}></div>
       </div>
 
       {/* Content */}
@@ -75,11 +75,10 @@ const Login = () => {
           {/* Logo Section */}
           <div className="text-center mb-8">
             <div className="inline-block relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-amber-400 rounded-full blur-lg opacity-60 animate-pulse"></div>
               <img 
                 src={logo} 
                 alt="ChefHub Logo" 
-                className="w-16 h-16 object-contain relative z-10 mx-auto"
+                className="w-20 h-30 object-contain relative z-10 mx-auto"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
@@ -89,12 +88,12 @@ const Login = () => {
                 CH
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-orange-900 mt-4 mb-2">Welcome Back</h1>
-            <p className="text-orange-700">Sign in to continue</p>
+            <h1 className={`text-3xl font-bold mt-4 mb-2 ${isDark ? 'text-orange-400' : 'text-orange-900'}`}>Welcome Back</h1>
+            <p className={isDark ? 'text-orange-300' : 'text-orange-700'}>Sign in to continue</p>
           </div>
 
           {/* Login Form Card */}
-          <div className="bg-white/20 backdrop-blur-md border border-orange-200/30 rounded-2xl p-8 shadow-xl">
+          <div className={`backdrop-blur-md border rounded-2xl p-8 shadow-xl ${isDark ? 'bg-gray-800/40 border-gray-700/30' : 'bg-white/20 border-orange-200/30'}`}>
             {error && (
               <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded mb-3 text-sm">
                 {error}
@@ -103,7 +102,7 @@ const Login = () => {
             <form onSubmit={handleSubmit} className="space-y-4 w-full">
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">Email Address</label>
+                <label htmlFor="email" className={`block text-sm font-semibold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Email Address</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -111,7 +110,7 @@ const Login = () => {
                     name="email"
                     autoComplete="email"
                     required
-                    className="w-full p-3 pl-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
+                    className={`w-full p-3 pl-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
                     placeholder="you@example.com"
                     value={credentials.email}
                     onChange={handleChange}
@@ -125,7 +124,7 @@ const Login = () => {
               {/* Password */}
               <div>
                 <div className="flex justify-between mb-1">
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-700">Password</label>
+                  <label htmlFor="password" className={`block text-sm font-semibold ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Password</label>
                   <Link to="/forgot-password" className="text-sm font-medium text-orange-600 hover:text-orange-700">Forgot password?</Link>
                 </div>
                 <div className="relative">
@@ -134,8 +133,8 @@ const Login = () => {
                     id="password"
                     name="password"
                     required
-                    className="w-full p-3 pl-10 pr-10 border border-gray-300 rounded-xl text-gray-900 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200"
-                    placeholder="••••••••"
+                    className={`w-full p-3 pl-10 pr-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 ${isDark ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                    placeholder="password"
                     value={credentials.password}
                     onChange={handleChange}
                   />
@@ -180,15 +179,15 @@ const Login = () => {
               </button>
             </form>
             {/* Social login */}
-            <div className="text-center my-4 text-gray-500 text-sm">or continue with</div>
+            <div className={`text-center my-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>or continue with</div>
             <div className="flex justify-center mb-4">
-              <button onClick={handleGoogleLogin} className="flex items-center gap-2 px-4 py-2 border border-orange-300 rounded-lg bg-orange-100 hover:bg-orange-100 hover:shadow-md transition-all duration-200" title="Sign in with Google">
+              <button onClick={handleGoogleLogin} className={`flex items-center gap-2 px-4 py-2 border rounded-lg hover:shadow-md transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-orange-300 bg-orange-100 hover:bg-orange-200'}`} title="Sign in with Google">
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-5 h-5" />
-                <span className="text-orange-800 font-medium">Continue with Google</span>
+                <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-orange-800'}`}>Continue with Google</span>
               </button>
             </div>
-            <p className="text-center text-sm text-gray-600 font-medium mt-2">
-              Don't have an account? <Link to="/signup" className="text-orange-800 font-semibold hover:text-orange-900 transition-colors duration-200">Sign up</Link>
+            <p className={`text-center text-sm font-medium mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Don't have an account? <Link to="/signup" className={`font-semibold transition-colors duration-200 ${isDark ? 'text-orange-400 hover:text-orange-300' : 'text-orange-800 hover:text-orange-900'}`}>Sign up</Link>
             </p>
           </div>
         </div>

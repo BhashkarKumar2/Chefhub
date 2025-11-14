@@ -264,7 +264,7 @@ const Home = () => {
                   <div className={`absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl blur ${isDark ? 'opacity-30' : 'opacity-20'} group-hover:opacity-${isDark ? '50' : '40'} transition-opacity duration-300`}></div>
                   <div className={`relative ${isDark ? 'bg-gray-800/70' : 'bg-white/20'} backdrop-blur-md border ${isDark ? 'border-orange-500/50' : 'border-orange-200/30'} rounded-2xl p-6 ${isDark ? 'hover:bg-gray-700/80' : 'hover:bg-white/30'} transition-all duration-300`}>
                     <div className={`text-4xl sm:text-5xl font-black ${isDark ? 'text-orange-400' : 'bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent'} mb-2`}>
-                      {useCountUp(500, 1200)}+
+                      {useCountUp(300, 1200)}+
                     </div>
                     <div className={`${isDark ? 'text-orange-300' : 'text-orange-800'} text-sm uppercase tracking-wider font-semibold`}>
                       Professional Chefs
@@ -277,7 +277,7 @@ const Home = () => {
                   <div className={`absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl blur ${isDark ? 'opacity-30' : 'opacity-20'} group-hover:opacity-${isDark ? '50' : '40'} transition-opacity duration-300`}></div>
                   <div className={`relative ${isDark ? 'bg-gray-800/70' : 'bg-white/20'} backdrop-blur-md border ${isDark ? 'border-orange-500/50' : 'border-orange-200/30'} rounded-2xl p-6 ${isDark ? 'hover:bg-gray-700/80' : 'hover:bg-white/30'} transition-all duration-300`}>
                     <div className={`text-4xl sm:text-5xl font-black ${isDark ? 'text-orange-400' : 'bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent'} mb-2`}>
-                      {useCountUp(10000, 1200)}k+
+                      {useCountUp(1000, 1200)}+
                     </div>
                     <div className={`${isDark ? 'text-orange-300' : 'text-orange-800'} text-sm uppercase tracking-wider font-semibold`}>
                       Happy Customers
@@ -450,7 +450,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center hover:bg-white/20 transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-400 to-amber-600 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all duration-300">
-                <span className="text-3xl">🎯</span>
+                <span className="text-3xl">👨‍🍳</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Smart Chef Matching</h3>
               <p className="text-white/80 leading-relaxed">
@@ -460,7 +460,7 @@ const Home = () => {
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center hover:bg-white/20 transition-all duration-300 group">
               <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-orange-500 to-amber-700 rounded-full flex items-center justify-center text-white group-hover:scale-110 transition-all duration-300">
-                <span className="text-3xl">🍽️</span>
+                <span className="text-3xl">📋</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Custom Menu Generation</h3>
               <p className="text-white/80 leading-relaxed">
