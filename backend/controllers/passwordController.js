@@ -1,22 +1,11 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import * as brevo from '@getbrevo/brevo';
 import User from '../models/User.js';
 
-// Create Gmail transporter
-const createEmailTransporter = () => {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    return null;
-  }
-  
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
-  });
-};
+// Initialize Brevo API client
+const apiInstance = new brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 // Request password reset
 export const forgotPassword = async (req, res) => {
@@ -45,115 +34,82 @@ export const forgotPassword = async (req, res) => {
     // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
     
-    // Send email if Gmail is configured
-    const transporter = createEmailTransporter();
-    if (transporter) {
-      try {
-        const mailOptions = {
-          from: `"ChefHub" <${process.env.GMAIL_USER}>`,
-          to: user.email,
-          subject: 'ChefHub - Password Reset Request',
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #f97316, #fb923c); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .header h1 { color: white; margin: 0; font-size: 28px; }
-                .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }
-                .button { display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
-                .button:hover { background: linear-gradient(135deg, #ea580c, #f97316); }
-                .footer { background: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px; }
-                .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 20px 0; }
-                .code { background: #f3f4f6; padding: 8px 12px; border-radius: 4px; font-family: monospace; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1>ChefHub</h1>
-                </div>
-                <div class="content">
-                  <h2>Password Reset Request</h2>
-                  <p>Hi ${user.name},</p>
-                  <p>We received a request to reset your password for your ChefHub account. Click the button below to reset your password:</p>
-                  
-                  <div style="text-align: center;">
-                    <a href="${resetUrl}" class="button">Reset Your Password</a>
-                  </div>
-                  
-                  <p>Or copy and paste this link into your browser:</p>
-                  <p class="code">${resetUrl}</p>
-                  
-                  <div class="warning">
-                    <strong>Important:</strong> This link will expire in <strong>10 minutes</strong> for security reasons.
-                  </div>
-                  
-                  <p>If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
-                  
-                  <p>For security reasons, we never send your password via email.</p>
-                  
-                  <p>Best regards,<br>The ChefHub Team</p>
-                </div>
-                <div class="footer">
-                  <p>This is an automated message from ChefHub. Please do not reply to this email.</p>
-                  <p>&copy; ${new Date().getFullYear()} ChefHub. All rights reserved.</p>
-                </div>
+    // Send email using Brevo
+    try {
+      const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
+      const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
+      
+      const sendSmtpEmail = new brevo.SendSmtpEmail();
+      sendSmtpEmail.sender = { name: fromName, email: fromEmail };
+      sendSmtpEmail.to = [{ email: user.email, name: user.name }];
+      sendSmtpEmail.subject = '🔐 Reset Your ChefHub Password';
+      sendSmtpEmail.htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+              <div style="background: linear-gradient(135deg, #f97316, #fb923c); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">🍽️ ChefHub</h1>
               </div>
-            </body>
-            </html>
-          `,
-          text: `ChefHub - Password Reset Request
+              
+              <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb;">
+                <h2 style="color: #1f2937; margin: 0 0 20px 0;">Password Reset Request</h2>
+                <p>Hi ${user.name},</p>
+                <p>We received a request to reset your password for your ChefHub account. Click the button below to reset your password:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetUrl}" style="display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Your Password</a>
+                </div>
+                
+                <p style="font-size: 14px; color: #6b7280;">Or copy and paste this link into your browser:</p>
+                <p style="background: #f3f4f6; padding: 12px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 13px; word-break: break-all;">${resetUrl}</p>
+                
+                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 25px 0; border-radius: 0 6px 6px 0;">
+                  <p style="margin: 0; font-weight: bold; color: #92400e; font-size: 14px;">
+                    ⏰ Important: This link expires in <strong>10 minutes</strong>
+                  </p>
+                </div>
+                
+                <p style="font-size: 14px; color: #6b7280;">If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
+                
+                <p>Best regards,<br>The ChefHub Team</p>
+              </div>
+              
+              <div style="background: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+                <p style="margin: 0;">© ${new Date().getFullYear()} ChefHub. All rights reserved.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
 
-Hi ${user.name},
+      const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+     // console.log('✅ Password reset email sent to:', user.email);
 
-We received a request to reset your password for your ChefHub account.
-
-Click the link below to reset your password:
-${resetUrl}
-
-This link will expire in 10 minutes for security reasons.
-
-If you didn't request a password reset, you can safely ignore this email.
-
-Best regards,
-The ChefHub Team`
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('✅ Password reset email sent to:', user.email);
-
-        res.json({ 
-          message: 'Password reset link has been sent to your email',
+      res.json({ 
+        message: 'Password reset link has been sent to your email',
+        success: true
+      });
+    } catch (emailError) {
+      console.error('❌ Error sending email:', emailError);
+      
+      // Fallback: Return reset URL in development mode
+      if (process.env.NODE_ENV === 'development') {
+        //console.log('📧 Development mode - Reset URL:', resetUrl);
+        return res.json({ 
+          message: 'Email service unavailable. Reset link generated.',
+          resetUrl: resetUrl,
           success: true
         });
-      } catch (emailError) {
-        console.error('❌ Error sending email:', emailError);
-        
-        // Fallback: Return reset URL in development mode
-        if (process.env.NODE_ENV === 'development') {
-          console.log('📧 Development mode - Reset URL:', resetUrl);
-          return res.json({ 
-            message: 'Email service unavailable. Reset link generated.',
-            resetUrl: resetUrl,
-            success: true
-          });
-        }
-        
-        return res.status(500).json({ 
-          message: 'Failed to send reset email. Please try again later.',
-          success: false
-        });
       }
-    } else {
-      // No Gmail configured - development mode
-      console.log('📧 Gmail not configured. Reset URL:', resetUrl);
-      res.json({ 
-        message: 'Password reset link generated (email service not configured)',
-        resetUrl: process.env.NODE_ENV === 'development' ? resetUrl : undefined,
-        success: true
+      
+      return res.status(500).json({ 
+        message: 'Failed to send reset email. Please try again later.',
+        success: false
       });
     }
   } catch (error) {

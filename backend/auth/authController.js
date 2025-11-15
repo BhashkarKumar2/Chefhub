@@ -4,7 +4,6 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import { verifyFirebaseToken, getFirebaseUserByPhone } from '../services/smsService.js';
 import { sendVerificationEmail } from '../controllers/emailVerificationController.js';
-import nodemailer from 'nodemailer';
 import redis from '../config/redis.js';
 
 // Helper functions for Redis-based pending registrations
