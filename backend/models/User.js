@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   
+  // Email verification fields
+  emailVerificationToken: String,
+  emailVerificationExpire: Date,
+  
   // Core functionality
   favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chef' }]
 }, {

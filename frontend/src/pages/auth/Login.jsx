@@ -9,6 +9,7 @@ import { useThemeAwareStyle } from '../../utils/themeUtils';
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -22,6 +23,24 @@ const Login = () => {
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
     if (error) setError('');
+  };
+
+  const handleResendVerification = async () => {
+    setResendingEmail(true);
+    try {
+      const response = await axios.post(buildApiEndpoint('auth/resend-verification'), {
+        email: credentials.email
+      });
+      
+      setError({
+        message: response.data.message || 'Verification email sent successfully!',
+        isSuccess: true
+      });
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to resend verification email');
+    } finally {
+      setResendingEmail(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -45,7 +64,17 @@ const Login = () => {
         navigate(from, { replace: true });
       }, 100);
     } catch (error) {
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      const errorData = error.response?.data;
+      
+      // Handle unverified email
+      if (errorData?.emailNotVerified) {
+        setError({
+          message: errorData.message,
+          canResend: true
+        });
+      } else {
+        setError(errorData?.message || 'Login failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -95,8 +124,36 @@ const Login = () => {
           {/* Login Form Card */}
           <div className={`backdrop-blur-md border rounded-2xl p-8 shadow-xl ${isDark ? 'bg-gray-800/40 border-gray-700/30' : 'bg-white/20 border-orange-200/30'}`}>
             {error && (
-              <div className="bg-amber-100 border border-amber-300 text-amber-700 p-2 rounded mb-3 text-sm">
-                {error}
+              <div className={`p-3 rounded-lg mb-4 text-sm ${
+                error.isSuccess 
+                  ? 'bg-green-50 border border-green-200 text-green-700'
+                  : error.canResend
+                    ? 'bg-yellow-50 border border-yellow-200 text-yellow-800'
+                    : 'bg-red-50 border border-red-200 text-red-700'
+              }`}>
+                <p className="mb-2">
+                  {typeof error === 'string' ? error : error.message}
+                </p>
+                {error.canResend && credentials.email && (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resendingEmail}
+                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                  >
+                    {resendingEmail ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending...
+                      </>
+                    ) : (
+                      '📧 Resend Verification Email'
+                    )}
+                  </button>
+                )}
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4 w-full">

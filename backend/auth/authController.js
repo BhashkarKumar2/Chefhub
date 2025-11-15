@@ -1,11 +1,47 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import { verifyFirebaseToken, getFirebaseUserByPhone } from '../services/smsService.js';
+import { sendVerificationEmail } from '../controllers/emailVerificationController.js';
+import nodemailer from 'nodemailer';
+import redis from '../config/redis.js';
+
+// Helper functions for Redis-based pending registrations
+export const storePendingRegistration = async (email, data) => {
+  const key = `pending:registration:${email}`;
+  await redis.setex(key, 600, JSON.stringify(data)); // 10 minutes TTL
+  // console.log(`[REDIS] Stored pending registration for: ${email}`);
+};
+
+export const getPendingRegistration = async (email) => {
+  const key = `pending:registration:${email}`;
+  const data = await redis.get(key);
+  return data ? JSON.parse(data) : null;
+};
+
+export const deletePendingRegistration = async (email) => {
+  const key = `pending:registration:${email}`;
+  await redis.del(key);
+  // console.log(`[REDIS] Deleted pending registration for: ${email}`);
+};
+
+// Fallback: In-memory store if Redis is unavailable
+export const pendingRegistrations = new Map();
+
+// Clean up expired in-memory registrations every minute (fallback only)
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, data] of pendingRegistrations.entries()) {
+    if (data.expiresAt < now) {
+      pendingRegistrations.delete(email);
+      // console.log(`[CLEANUP] Removed expired registration for: ${email}`);
+    }
+  }
+}, 60000);
 
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
-  // console.log('Registration request:', req.body);
   
   try {
     // Validate required fields
@@ -13,47 +49,85 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
+    // Check if user already exists
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ message: "User already exists" });
+    if (existing) {
+      return res.status(400).json({ message: "User already exists with this email" });
+    }
 
-    const hash = await bcrypt.hash(password, 10);
-    const newUser = new User({ 
-      name, 
-      email, 
-      password: hash,
-      isEmailVerified: false 
-    });
-    await newUser.save();
+    // Generate verification OTP (6-digit, 10-minute expiry)
+    const verificationOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOTP = crypto.createHash('sha256').update(verificationOTP).digest('hex');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Store registration data temporarily in Redis (or fallback to in-memory)
+    const registrationData = {
+      name,
+      email,
+      password: hashedPassword,
+      otp: hashedOTP,
+      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes for production
+    };
     
-    // console.log('âœ… User registered successfully:', newUser.email);
-    res.status(201).json({ 
-      message: "User registered successfully",
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email
+    try {
+      // Try Redis first
+      await storePendingRegistration(email, registrationData);
+    } catch (redisError) {
+      // Fallback to in-memory if Redis fails
+      // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
+      pendingRegistrations.set(email, registrationData);
+    }
+    
+    // console.log(`[REGISTER] Pending registration created for: ${email} (OTP expires in 10 minutes)`);
+
+    try {
+      // Send verification email
+      await sendVerificationEmail({ name, email }, verificationOTP);
+      
+      // console.log(`[REGISTER] ✅ Verification email sent to: ${email}`);
+      res.status(200).json({ 
+        message: "Verification code sent! Please check your email and enter the code within 10 minutes.",
+        emailSent: true,
+        expiresIn: "10 minutes"
+      });
+    } catch (emailError) {
+      // console.error(`[REGISTER] ❌ Error sending verification email to ${email}:`, emailError);
+      // Remove pending registration if email fails
+      try {
+        await deletePendingRegistration(email);
+      } catch {
+        pendingRegistrations.delete(email);
       }
-    });
+      return res.status(500).json({ 
+        message: 'Failed to send verification email. Please check your email address.',
+        emailSent: false
+      });
+    }
   } catch (err) {
-    // console.error('âŒ Registration error:', err);
+    // console.error(`[REGISTER] ❌ Registration error:`, err);
     res.status(500).json({ message: err.message });
   }
 };
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  // console.log('ðŸ” Login attempt for:', email);
   
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      // console.log('âŒ User not found:', email);
       return res.status(400).json({ message: "User not found" });
+    }
+
+    // Check if email is verified
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ 
+        message: "Please verify your email before logging in. Check your inbox for the verification link.",
+        emailNotVerified: true
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      // console.log('âŒ Invalid password for:', email);
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -66,13 +140,13 @@ export const loginUser = async (req, res) => {
       profileImage: user.profileImage
     };
     
-    // console.log('âœ… Login successful for:', email, 'User ID:', user._id);
+    // console.log('✅ Login successful for:', email, 'User ID:', user._id);
     res.json({ 
       token, 
       user: userResponse 
     });
   } catch (err) {
-    // console.error('âŒ Login error:', err);
+    // console.error('❌ Login error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -112,7 +186,6 @@ export const validateToken = async (req, res) => {
       }
     });
   } catch (error) {
-    // console.error('Token validation error:', error);
     
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
@@ -140,7 +213,6 @@ export const getCurrentUser = async (req, res) => {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
   } catch (error) {
-    // console.error('Get current user error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -183,7 +255,7 @@ export const verifyFirebaseOTP = async (req, res) => {
       });
       
       await user.save();
-      // console.log('âœ… New user created:', user.phone);
+      // console.log('✅ New user created:', user.phone);
     } else {
       // Update phone verification status and Firebase UID
       user.isPhoneVerified = true;
@@ -192,7 +264,7 @@ export const verifyFirebaseOTP = async (req, res) => {
         user.email = firebaseUser.email;
       }
       await user.save();
-      // console.log('âœ… Existing user updated:', user.phone);
+      // console.log('✅ Existing user updated:', user.phone);
     }
     
     // Generate JWT token for our application

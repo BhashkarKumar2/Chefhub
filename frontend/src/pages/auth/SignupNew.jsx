@@ -18,6 +18,8 @@ const SignupNew = () => {
   const [confirmPasswordShown, setConfirmPasswordShown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -40,8 +42,20 @@ const SignupNew = () => {
     e.preventDefault();
     setError('');
 
+    // Prevent re-submission after successful registration
+    if (success) {
+      // console.log('[SIGNUP] Already registered successfully, ignoring re-submission');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords don't match.");
+      return;
+    }
+
+    // Prevent duplicate submissions - check if already loading
+    if (loading) {
+      // console.log('[SIGNUP] Already processing, ignoring duplicate submission');
       return;
     }
 
@@ -60,12 +74,15 @@ const SignupNew = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Could not sign up.');
       }
-      navigate('/login');
+      
+      // Handle verification flow
+      setSuccess(true);
+      setEmailSent(data.emailSent || false);
     } catch (error) {
       setError(error.message);
-    } finally {
-      setLoading(false);
+      setLoading(false); // Reset loading on error
     }
+    // Don't reset loading on success - keeps button disabled
   };
 
   const handleGoogleSignup = () => {
@@ -205,6 +222,35 @@ const SignupNew = () => {
             {error && (
               <div className={`border p-2 rounded text-xs ${isDark ? 'bg-amber-900/30 border-amber-700 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-700'}`}>
                 {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className={`border p-3 rounded-lg text-sm ${emailSent ? 'bg-green-50 border-green-200 text-green-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                <div className="flex items-center mb-2">
+                  <span className="text-lg mr-2">{emailSent ? '📧' : '✅'}</span>
+                  <strong>{emailSent ? 'Check Your Email!' : 'Registration Initiated!'}</strong>
+                </div>
+                <p className="mb-2">
+                  {emailSent 
+                    ? `We've sent a 6-digit verification code to ${formData.email}. Please check your inbox and enter the code below.`
+                    : 'Your registration has been initiated. Please complete the verification process.'
+                  }
+                </p>
+                {emailSent && (
+                  <div className="bg-amber-50 border border-amber-200 rounded p-2 mb-2">
+                    <p className="text-amber-800 text-xs">
+                      ⏰ <strong>Important:</strong> Verification code expires in 10 minutes. If you don't verify within this time, you'll need to register again.
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={() => navigate('/verify-otp', { state: { email: formData.email } })}
+                  className="w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all duration-200 bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  Enter Verification Code
+                </button>
               </div>
             )}
 
