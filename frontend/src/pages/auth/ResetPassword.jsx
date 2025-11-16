@@ -118,8 +118,12 @@ const ResetPassword = () => {
       <div className="fixed inset-0 z-0">
         <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100'}`}></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.3),rgba(255,255,255,0))]"></div>
+        {/* Floating Saffron Elements */}
         <div className={`absolute top-1/4 left-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/20 to-amber-900/20' : 'bg-gradient-to-r from-orange-200/30 to-amber-300/30'}`}></div>
         <div className={`absolute top-3/4 right-1/4 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/20 to-orange-900/20' : 'bg-gradient-to-r from-yellow-200/30 to-orange-400/30'}`} style={{animationDelay: '2s'}}></div>
+        <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse ${isDark ? 'bg-gradient-to-r from-amber-900/20 to-yellow-900/20' : 'bg-gradient-to-r from-amber-200/30 to-yellow-300/30'}`} style={{animationDelay: '4s'}}></div>
+        <div className={`absolute top-1/2 right-1/3 w-96 h-96 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-orange-900/15 to-amber-900/15' : 'bg-gradient-to-r from-orange-100/25 to-amber-200/25'}`} style={{animationDelay: '1s'}}></div>
+        <div className={`absolute bottom-1/3 left-1/2 w-80 h-80 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse ${isDark ? 'bg-gradient-to-r from-yellow-900/15 to-orange-900/15' : 'bg-gradient-to-r from-yellow-100/25 to-orange-200/25'}`} style={{animationDelay: '3s'}}></div>
       </div>
 
       {/* Content */}
@@ -137,6 +141,9 @@ const ResetPassword = () => {
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
+              <div className="w-16 h-16 flex items-center justify-center rounded-full text-xl font-bold relative z-10 mx-auto bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600" style={{display: 'none'}}>
+                CH
+              </div>
             </div>
             <h1 className={`text-3xl font-bold mt-4 mb-2 ${isDark ? 'text-orange-400' : 'text-orange-900'}`}>Reset Password</h1>
             <p className={isDark ? 'text-orange-300' : 'text-orange-700'}>Enter your new password</p>

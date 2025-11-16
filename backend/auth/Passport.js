@@ -30,7 +30,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       let user = await User.findOne({ googleId: profile.id });
 
       if (user) {
-        // If user exists, pass them to the next middleware
+        // If user exists, ensure they're marked as email verified (fix for existing users)
+        if (!user.isEmailVerified) {
+          user.isEmailVerified = true;
+          await user.save();
+        }
         return done(null, user);
       } else {
         // If no user is found with that Google ID, check if one exists with the same email
@@ -39,6 +43,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         if (user) {
           // If they exist by email, link their Google ID and save
           user.googleId = profile.id;
+          user.isEmailVerified = true; // Mark as verified since Google verified the email
           await user.save();
           return done(null, user);
         }
@@ -48,6 +53,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           googleId: profile.id,
           name: profile.displayName,
           email: profile.emails[0].value,
+          isEmailVerified: true, // Google has already verified this email
         });
 
         await newUser.save();
@@ -87,6 +93,12 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
         let user = await User.findOne({ facebookId: profile.id });
 
         if (user) {
+          // If user exists, ensure they're marked as email verified (fix for existing users)
+          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+          if (email && !email.includes('facebook.temp') && !user.isEmailVerified) {
+            user.isEmailVerified = true;
+            await user.save();
+          }
           return done(null, user);
         } else {
           // Check if user exists with same email
@@ -96,6 +108,7 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
             if (user) {
               // Link Facebook ID to existing user
               user.facebookId = profile.id;
+              user.isEmailVerified = true; // Mark as verified since Facebook verified the email
               await user.save();
               return done(null, user);
             }
@@ -106,7 +119,8 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
             facebookId: profile.id,
             name: profile.displayName,
             email: email || `${profile.id}@facebook.temp`, // Fallback email
-            profilePicture: profile.photos && profile.photos[0] ? profile.photos[0].value : null
+            profilePicture: profile.photos && profile.photos[0] ? profile.photos[0].value : null,
+            isEmailVerified: email ? true : false, // Verify if email provided by Facebook
           });
 
           await newUser.save();
