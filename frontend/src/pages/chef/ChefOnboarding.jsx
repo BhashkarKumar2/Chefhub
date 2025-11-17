@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
+import { useAuth } from '../../context/AuthContext';
 import TextInput from '../../components/TextInput';
 import CheckboxGroup from '../../components/CheckboxGroup';
 import TextareaInput from '../../components/TextareaInput';
@@ -9,6 +10,7 @@ import { prepareImageForUpload } from '../../utils/imageOptimizer';
 
 const ChefOnboarding = () => {
   const { getClass, classes, isDark } = useThemeAwareStyle();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,7 +19,12 @@ const ChefOnboarding = () => {
     phone: '',
     specialties: [],
     bio: '',
-    rate: '',
+    serviceTypes: [], // New: Support for multiple service types
+    rates: {
+      birthday: '',
+      marriage: '',
+      daily: ''
+    },
     experience: '',
     profileImage: null,
     certifications: [],
@@ -34,6 +41,12 @@ const ChefOnboarding = () => {
     'Mediterranean', 'Japanese', 'Korean', 'Lebanese', 'Continental'
   ];
 
+  const serviceTypeOptions = [
+    { value: 'birthday', label: '🎂 Birthday Parties', description: 'Celebrate special birthdays with custom menus' },
+    { value: 'marriage', label: '💍 Wedding Events', description: 'Catering for weddings and receptions' },
+    { value: 'daily', label: '🍳 Daily Meal Service', description: 'Regular home cooking and meal prep' }
+  ];
+
   const certificationOptions = [
     'Culinary Arts Diploma', 'Food Safety Certification', 'Pastry Arts',
     'Wine Sommelier', 'Nutrition Specialist', 'Organic Cooking'
@@ -41,6 +54,13 @@ const ChefOnboarding = () => {
 
   const [locationError, setLocationError] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
+
+  // Auto-populate email from logged-in user
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({ ...prev, email: user.email }));
+    }
+  }, [user]);
 
   // Auto-generate complete address when city and state change
   useEffect(() => {
@@ -116,6 +136,25 @@ const ChefOnboarding = () => {
     });
   };
 
+  const handleServiceTypeChange = (serviceType) => {
+    setFormData((prev) => {
+      const updated = prev.serviceTypes.includes(serviceType)
+        ? prev.serviceTypes.filter((s) => s !== serviceType)
+        : [...prev.serviceTypes, serviceType];
+      return { ...prev, serviceTypes: updated };
+    });
+  };
+
+  const handleRateChange = (serviceType, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      rates: {
+        ...prev.rates,
+        [serviceType]: value
+      }
+    }));
+  };
+
   const handleFileChange = async (e) => {
     const { name, files } = e.target;
     const file = files[0];
@@ -167,6 +206,24 @@ const ChefOnboarding = () => {
     if (formData.specialties.length === 0) {
       errors.push('Please select at least one specialty');
     }
+
+    // Validate service types
+    if (formData.serviceTypes.length === 0) {
+      errors.push('Please select at least one service type');
+    }
+
+    // Validate rates for selected service types
+    formData.serviceTypes.forEach(serviceType => {
+      const rate = formData.rates[serviceType];
+      if (!rate || rate === '') {
+        const serviceLabel = serviceTypeOptions.find(s => s.value === serviceType)?.label || serviceType;
+        errors.push(`Rate is required for ${serviceLabel}`);
+      } else if (rate < 500 || rate > 50000) {
+        const serviceLabel = serviceTypeOptions.find(s => s.value === serviceType)?.label || serviceType;
+        errors.push(`Rate for ${serviceLabel} must be between Rs. 500 and Rs. 50,000`);
+      }
+    });
+
     // Validate address/location
     if (!formData.city) {
       errors.push('City is required');
@@ -191,12 +248,7 @@ const ChefOnboarding = () => {
       errors.push('Bio must not exceed 1000 characters');
     }
 
-    // Validate rate
-    if (!formData.rate) {
-      errors.push('Hourly rate is required');
-    } else if (formData.rate < 500 || formData.rate > 10000) {
-      errors.push('Hourly rate must be between Rs. 500 and Rs. 10,000');
-    }
+    // Remove individual rate validation (now handled in service types section)
 
     // Validate experience
     if (!formData.experience) {
@@ -211,14 +263,17 @@ const ChefOnboarding = () => {
   // Calculate actual completion based on filled fields (not just absence of errors)
   const getCompletionProgress = () => {
     let completed = 0;
-    // 9 required fields: name, email, phone, specialties, bio, rate, experience, address, location
-    const totalFields = 9;
+    // 10 required fields: name, email, phone, specialties, serviceTypes, bio, rates (for selected services), experience, address, location
+    const totalFields = 10;
     if (formData.fullName && formData.fullName.trim() !== '') completed++;
     if (formData.email && formData.email.trim() !== '') completed++;
     if (formData.phone && formData.phone.trim() !== '') completed++;
     if (formData.specialties.length > 0) completed++;
+    if (formData.serviceTypes.length > 0) completed++;
     if (formData.bio && formData.bio.trim() !== '' && formData.bio.length >= 50) completed++;
-    if (formData.rate && formData.rate !== '') completed++;
+    // Check if rates are filled for all selected service types
+    const allRatesFilled = formData.serviceTypes.length > 0 && formData.serviceTypes.every(st => formData.rates[st] && formData.rates[st] !== '');
+    if (allRatesFilled) completed++;
     if (formData.experience && formData.experience !== '') completed++;
     if (formData.address && formData.address.trim() !== '') completed++;
     if (formData.locationLat && formData.locationLon) completed++;
@@ -256,7 +311,16 @@ const ChefOnboarding = () => {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('specialty', formData.specialties.join(', '));
       formDataToSend.append('bio', formData.bio);
-      formDataToSend.append('pricePerHour', Number(formData.rate));
+      
+      // Add service types and rates
+      formDataToSend.append('serviceTypes', JSON.stringify(formData.serviceTypes));
+      formDataToSend.append('rates', JSON.stringify(formData.rates));
+      
+      // Calculate average rate for backward compatibility
+      const selectedRates = formData.serviceTypes.map(st => Number(formData.rates[st])).filter(r => !isNaN(r));
+      const avgRate = selectedRates.length > 0 ? Math.round(selectedRates.reduce((a, b) => a + b, 0) / selectedRates.length) : 0;
+      formDataToSend.append('pricePerHour', avgRate);
+      
       formDataToSend.append('experienceYears', Number(formData.experience));
       formDataToSend.append('certifications', formData.certifications.join(', '));
       formDataToSend.append('availability', formData.availability);
@@ -334,7 +398,7 @@ const ChefOnboarding = () => {
 
 
   return (
-  <div className={getClass('min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100', 'min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900')}>'
+  <div className={getClass('min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100', 'min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900')}>
       {/* Header */}
   <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-16">
   <div className="absolute inset-0 bg-black/20"></div>
@@ -358,7 +422,7 @@ const ChefOnboarding = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className={getClass('bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-orange-100', 'bg-gray-900 rounded-3xl shadow-xl p-8 md:p-12 border border-gray-800')}>'
+        <div className={getClass('bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-orange-100', 'bg-gray-900 rounded-3xl shadow-xl p-8 md:p-12 border border-gray-800')}>
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-2">
               Chef Registration
@@ -373,13 +437,13 @@ const ChefOnboarding = () => {
                   {Math.round((getCompletionProgress().completed / getCompletionProgress().total) * 100)}%
                 </span>
               </div>
-              <div className={getClass('w-full bg-gray-200 rounded-full h-2', 'w-full bg-gray-700 rounded-full h-2')}>'
+              <div className={getClass('w-full bg-gray-200 rounded-full h-2', 'w-full bg-gray-700 rounded-full h-2')}>
                 <div 
                   className="bg-gradient-to-r from-orange-600 to-amber-600 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.round((getCompletionProgress().completed / getCompletionProgress().total) * 100)}%` }}
                 ></div>
               </div>
-              <p className={getClass('text-xs text-gray-500 mt-1', 'text-xs text-gray-400 mt-1')}>'
+              <p className={getClass('text-xs text-gray-500 mt-1', 'text-xs text-gray-400 mt-1')}>
                 {getCompletionProgress().completed} of {getCompletionProgress().total} required fields completed
               </p>
             </div>
@@ -414,14 +478,15 @@ const ChefOnboarding = () => {
                   type="email"
                   maxLength="100"
                   pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                  title="Please enter a valid email address"
+                  readOnly
+                  disabled
                   required
                 />
               </div>
               {/* Location Input */}
               <div>
-                <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>'
-                  ðŸ“ Service Location Details
+                <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>
+                  Location
                 </label>
                 
                 {/* City and State Row */}
@@ -433,7 +498,7 @@ const ChefOnboarding = () => {
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
-                      placeholder="e.g., Mumbai, Delhi, Bangalore"
+                      placeholder="Mumbai"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       required
                     />
@@ -445,7 +510,7 @@ const ChefOnboarding = () => {
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
-                      placeholder="e.g., Maharashtra, Delhi, Karnataka"
+                      placeholder="Maharashtra"
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                       required
                     />
@@ -455,14 +520,11 @@ const ChefOnboarding = () => {
                 {/* Auto-Generated Address Display */}
                 <div className="mb-4">
                   <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>
-                    Complete Service Address (Auto-generated)
+                    Address
                   </label>
-                  <div className={getClass('w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700', 'w-full px-4 py-3 border border-gray-700 rounded-xl bg-gray-800 text-gray-300')}>'
-                    {formData.address || 'Address will be auto-generated from city and state'}
+                  <div className={getClass('w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700', 'w-full px-4 py-3 border border-gray-700 rounded-xl bg-gray-800 text-gray-300')}>
+                    {formData.address || 'Address will be auto-generated'}
                   </div>
-                  <p className={getClass('text-xs text-amber-600 mt-1', 'text-xs text-amber-400 mt-1')}>'
-                    ✨ Address is automatically created from your city and state for consistency
-                  </p>
                 </div>
 
                 {/* Geocode Button */}
@@ -493,18 +555,10 @@ const ChefOnboarding = () => {
                     {locationLoading ? 'Setting...' : 'Set Location'}
                   </button>
                   {formData.locationLat && formData.locationLon && (
-                    <span className="text-green-600 text-sm flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-                      </svg>
-                      Location verified!
-                    </span>
+                    <span className="text-green-600 text-sm">Location verified</span>
                   )}
                 </div>
                 {locationError && <p className="text-red-500 text-xs mt-2">{locationError}</p>}
-                <p className={getClass('text-xs text-orange-600 mt-2', 'text-xs text-orange-400 mt-2')}>'
-                  ðŸ’¡ Enter city and state - we'll automatically create the complete address for location mapping and geocoding
-                </p>
               </div>
               
               <TextInput
@@ -529,74 +583,101 @@ const ChefOnboarding = () => {
               </h3>
               
               <CheckboxGroup
-                label="Select Your Specialties (Choose multiple)"
+                label="Specialties"
                 options={cuisineOptions}
                 selectedOptions={formData.specialties}
                 onChange={handleCheckboxChange}
               />
               
               <TextareaInput
-                label="Professional Bio"
+                label="Bio"
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                placeholder="Tell us about your culinary journey, cooking philosophy, and what makes you unique as a chef... (minimum 50 characters)"
+                placeholder="Describe your culinary experience and expertise (50-1000 characters)"
                 minLength="50"
                 maxLength="1000"
                 required
                 rows={5}
               />
-              
-              <div className="flex justify-between items-center text-sm">
-                {formData.bio.length > 0 && formData.bio.length < 50 && (
-                  <p className="text-red-500">Bio must be at least 50 characters long</p>
-                )}
-                {formData.bio.length >= 50 && formData.bio.length <= 1000 && (
-                  <p className="text-green-500">âœ“ Bio length is good</p>
-                )}
-                {formData.bio.length > 1000 && (
-                  <p className="text-red-500">Bio is too long (maximum 1000 characters)</p>
-                )}
-                <span className={`text-sm ${formData.bio.length > 1000 ? 'text-red-500' : getClass('text-gray-500', 'text-gray-400')}`}>
-                  {formData.bio.length}/1000 characters
-                </span>
-              </div>
             </div>
 
             {/* Professional Details Section */}
             <div className="space-y-6">
               <h3 className={getClass('text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2', 'text-xl font-semibold text-orange-300 border-b border-gray-700 pb-2')}>
-                Professional Details
+                Service Types & Pricing
               </h3>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                <TextInput
-                  label="Hourly Rate (INR)"
-                  name="rate"
-                  value={formData.rate}
-                  onChange={handleChange}
-                  placeholder="e.g., 1500"
-                  type="number"
-                  min="500"
-                  max="10000"
-                  step="50"
-                  title="Hourly rate should be between Rs.500 and Rs.10,000"
-                  required
-                />
-                <TextInput
-                  label="Years of Experience"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleChange}
-                  placeholder="e.g., 5"
-                  type="number"
-                  min="1"
-                  max="50"
-                  step="1"
-                  title="Experience should be between 1 and 50 years"
-                  required
-                />
+              {/* Service Type Selection */}
+              <div>
+                <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>
+                  Service Types <span className="text-red-500">*</span>
+                </label>
+                <div className="grid gap-4">
+                  {serviceTypeOptions.map((service) => (
+                    <div
+                      key={service.value}
+                      className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                        formData.serviceTypes.includes(service.value)
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                          : 'border-gray-300 hover:border-orange-300 dark:border-gray-700 dark:hover:border-orange-700'
+                      }`}
+                      onClick={() => handleServiceTypeChange(service.value)}
+                    >
+                      <div className="flex items-start gap-4">
+                        <input
+                          type="checkbox"
+                          checked={formData.serviceTypes.includes(service.value)}
+                          onChange={() => handleServiceTypeChange(service.value)}
+                          className="mt-1 w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                        />
+                        <div className="flex-1">
+                          <h4 className={getClass('font-semibold text-gray-900', 'font-semibold text-gray-100')}>
+                            {service.label}
+                          </h4>
+                          
+                          {/* Rate Input for Selected Service */}
+                          {formData.serviceTypes.includes(service.value) && (
+                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                              <label className={getClass('block text-xs font-medium text-gray-600 mb-2', 'block text-xs font-medium text-gray-300 mb-2')}>
+                                Rate (INR) <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-500">₹</span>
+                                <input
+                                  type="number"
+                                  min="500"
+                                  max="50000"
+                                  step="100"
+                                  value={formData.rates[service.value] || ''}
+                                  onChange={(e) => handleRateChange(service.value, e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  placeholder="2000"
+                                  className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                                  required
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+              
+              <TextInput
+                label="Experience (Years)"
+                name="experience"
+                value={formData.experience}
+                onChange={handleChange}
+                placeholder="5"
+                type="number"
+                min="1"
+                max="50"
+                step="1"
+                required
+              />
               
               <div>
                 <label className={getClass('block text-sm font-medium text-gray-700 mb-2', 'block text-sm font-medium text-gray-200 mb-2')}>
@@ -623,7 +704,7 @@ const ChefOnboarding = () => {
               </h3>
               
               <CheckboxGroup
-                label="Certifications & Qualifications (Optional)"
+                label="Certifications (Optional)"
                 options={certificationOptions}
                 selectedOptions={formData.certifications}
                 onChange={handleCertificationChange}
@@ -633,62 +714,34 @@ const ChefOnboarding = () => {
                 <label className={getClass('block text-sm font-medium text-gray-700 mb-2', 'block text-sm font-medium text-gray-200 mb-2')}>
                   Profile Picture (Optional)
                 </label>
-                <div className="space-y-4">
-                  <input
-                    type="file"
-                    name="profileImage"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
-                  />
-                  {formData.profileImage && (
-                    <div className={getClass('flex items-center gap-4 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200', 'flex items-center gap-4 p-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl border border-gray-700')}>
-                      <img
-                        src={URL.createObjectURL(formData.profileImage)}
-                        alt="Profile preview"
-                        className={getClass('w-16 h-16 rounded-full object-cover border-2 border-orange-300', 'w-16 h-16 rounded-full object-cover border-2 border-orange-500')}
-                      />
-                      <div>
-                        <p className={getClass('font-medium text-gray-800', 'font-medium text-gray-200')}>{formData.profileImage.name}</p>
-                        <p className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>
-                          Size: {(formData.profileImage.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, profileImage: null }))}
-                        className="ml-auto text-red-500 hover:text-red-700 transition-colors duration-300"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <p className={getClass('text-sm text-gray-500 mt-2', 'text-sm text-gray-400 mt-2')}>Upload a professional photo (JPG, PNG up to 5MB)</p>
+                <input
+                  type="file"
+                  name="profileImage"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                />
+                {formData.profileImage && (
+                  <div className="mt-2">
+                    <p className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>
+                      {formData.profileImage.name}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Validation Status Section */}
-            {!validateForm() && (
-              <div className={getClass('bg-yellow-50 border border-yellow-200 rounded-xl p-6', 'bg-yellow-900/20 border border-yellow-700 rounded-xl p-6')}>
-                <div className="flex items-center mb-4">
-                  <svg className="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
-                  </svg>
-                  <h4 className={getClass('text-lg font-semibold text-yellow-800', 'text-lg font-semibold text-yellow-300')}>Please complete the following to enable registration:</h4>
-                </div>
-                <div className="grid md:grid-cols-2 gap-2">
+            {!validateForm() && getValidationErrors().length > 0 && (
+              <div className={getClass('bg-yellow-50 border border-yellow-200 rounded-xl p-4', 'bg-yellow-900/20 border border-yellow-700 rounded-xl p-4')}>
+                <p className={getClass('text-sm font-medium text-yellow-800 mb-2', 'text-sm font-medium text-yellow-300 mb-2')}>Please complete required fields:</p>
+                <ul className="list-disc list-inside space-y-1">
                   {getValidationErrors().map((error, index) => (
-                    <div key={index} className={getClass('flex items-center text-sm text-yellow-700', 'flex items-center text-sm text-yellow-300')}>
-                      <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
-                      </svg>
+                    <li key={index} className={getClass('text-sm text-yellow-700', 'text-sm text-yellow-300')}>
                       {error}
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
@@ -703,29 +756,7 @@ const ChefOnboarding = () => {
                     : 'bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-lg hover:scale-105'
                 }`}
               >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Creating Profile...
-                  </>
-                ) : validateForm() ? (
-                  <>
-                    Complete Registration
-                    <svg className="w-5 h-5 inline ml-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
-                    </svg>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
-                    </svg>
-                    Complete Required Fields ({getValidationErrors().length} remaining)
-                  </>
-                )}
+                {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
           </form>

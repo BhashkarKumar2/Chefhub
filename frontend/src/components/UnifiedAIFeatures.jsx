@@ -336,7 +336,7 @@ const AIChatAssistant = () => {
                 onClick={() => setInput("What are healthy alternatives to sugar?")}
                 className={`text-left p-3 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:bg-stone-50'} transition-colors text-sm ${classes.text.secondary}`}
               >
-                🥗 Healthy swaps
+                Healthy swaps
               </button>
             </div>
           </div>

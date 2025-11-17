@@ -13,17 +13,43 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           
           // UI libraries chunk
-          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'ui-vendor': ['framer-motion', 'lucide-react', 'react-icons'],
           
           // Query library chunk
           'query-vendor': ['@tanstack/react-query'],
+          
+          // Firebase chunk (large library)
+          'firebase-vendor': ['firebase'],
+          
+          // Other heavy libraries
+          'heavy-vendor': ['socket.io-client', 'axios'],
         },
       },
     },
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,
+    // Enable minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+      },
+    },
+    // Enable source maps for debugging (optional, remove in production)
+    sourcemap: false,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', 'axios'],
+  },
+  // Enable CSS code splitting
+  css: {
+    devSourcemap: false,
+  },
+  server: {
+    // Optimize dev server
+    hmr: {
+      overlay: true,
+    },
   },
 })

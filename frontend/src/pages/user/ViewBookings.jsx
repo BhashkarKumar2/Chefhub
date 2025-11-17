@@ -354,11 +354,11 @@ const ViewBookings = () => {
   }
 
   return (
-    <div className={`min-h-screen ${getClass('bgPrimary')}`}>
+    <div className={`min-h-screen ${getClass('bgPrimary')} lg:ml-32`}>
       {/* Header */}
   <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-16">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-6xl mx-auto px-6 text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-6 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full backdrop-blur-sm mb-6">
             <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
@@ -377,12 +377,12 @@ const ViewBookings = () => {
         <div className="absolute bottom-20 right-20 w-8 h-8 bg-white/15 rounded-full animate-bounce"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-1">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
         {/* Enhanced Stats Overview */}
       
 
         {/* Enhanced Filters and Sorting */}
-  <div className={`rounded-2xl shadow-lg p-6 mt-5 mb-8 border border-orange-100 ${getClass('bgSecondary')} ${isDark ? 'border-orange-700' : ''}`}>
+  <div className={`rounded-2xl shadow-lg p-6 mt-5 mb-4 border border-orange-100 ${getClass('bgSecondary')} ${isDark ? 'border-orange-700' : ''}`}>
           <div className="flex flex-col gap-6">
             {/* Status Filter with Visual Cards */}
             <div>

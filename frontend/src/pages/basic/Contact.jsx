@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
 import emailjs from '@emailjs/browser';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
+import { useAuth } from '../../context/AuthContext';
 
 const Contact = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
+  const { user } = useAuth();
   const form = useRef();
   const [status, setStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -176,6 +178,7 @@ const Contact = () => {
                     id="user_email"
                     name="user_email"
                     required
+                    defaultValue={user?.email || ''}
                     className={`w-full p-4 pl-12 border ${isDark ? 'border-gray-600 text-gray-100 bg-gray-700' : 'border-gray-300 text-gray-900 bg-gray-50'} rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200`}
                     placeholder="you@example.com"
                   />

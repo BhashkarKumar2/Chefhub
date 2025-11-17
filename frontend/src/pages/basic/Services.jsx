@@ -1,212 +1,379 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
+import { 
+  Cake, 
+  Heart, 
+  UtensilsCrossed, 
+  Users, 
+  Star,
+  Clock,
+  ChefHat,
+  Sparkles,
+  Calendar,
+  ArrowRight,
+  Check,
+  Zap,
+  Award,
+  Shield,
+  TrendingUp
+} from 'lucide-react';
 
 const Services = () => {
-  const { theme, classes, isDark, getClass } = useThemeAwareStyle();
+  const { getClass } = useThemeAwareStyle();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-
-  // Navigation functions
-  const handleBookNow = () => {
-    if (isAuthenticated) {
-      navigate('/book-chef');
-    } else {
-      navigate('/login', { state: { from: { pathname: '/book-chef' } } });
-    }
-  };
-
-  const handleBrowseChefs = () => {
-    if (isAuthenticated) {
-      navigate('/book-chef');
-    } else {
-      navigate('/login', { state: { from: { pathname: '/book-chef' } } });
-    }
-  };
-
-  const handleCustomQuote = () => {
-    navigate('/contact');
-  };
+  const [hoveredService, setHoveredService] = useState(null);
 
   const services = [
     {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      title: "Private Chef Experience",
-      description: "Hire professional chefs for intimate dining experiences at home",
-      features: ["Personal menu consultation", "Fresh ingredient sourcing", "Professional cooking service", "Table service & presentation"],
-      price: "Starting from $150",
-  gradient: "from-orange-600 to-amber-600"
+      id: 'birthday',
+      title: 'Birthday Celebrations',
+      icon: Cake,
+      gradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
+      glowColor: 'shadow-violet-500/50',
+      description: 'Make birthdays unforgettable with personalized chef services',
+      features: [
+        'Customized birthday menus',
+        'Themed cuisine options',
+        'Professional presentation',
+        'Kids-friendly options',
+        'Dietary accommodations',
+        'Interactive cooking sessions'
+      ],
+      price: '₹2,999',
+      priceLabel: 'Starting from',
+      popular: true,
+      stats: { chefs: '150+', events: '500+', rating: '4.8' }
     },
     {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"></path>
-        </svg>
-      ),
-      title: "Event Catering",
-      description: "Full-service catering for special occasions and celebrations",
-      features: ["Custom menu design", "Event planning assistance", "Professional staff", "Setup & cleanup service"],
-      price: "Starting from $25/person",
-  gradient: "from-orange-400 to-amber-400"
+      id: 'marriage',
+      title: 'Wedding & Events',
+      icon: Heart,
+      gradient: 'from-rose-500 via-pink-600 to-red-600',
+      glowColor: 'shadow-rose-500/50',
+      description: 'Elevate your special day with exquisite culinary experiences',
+      features: [
+        'Multi-cuisine wedding menus',
+        'Large-scale catering',
+        'Professional staff',
+        'Traditional & modern fusion',
+        'Pre-wedding consultations',
+        'Live cooking stations'
+      ],
+      price: '₹15,999',
+      priceLabel: 'Starting from',
+      popular: false,
+      stats: { chefs: '80+', events: '200+', rating: '4.9' }
     },
     {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      title: "Corporate Catering",
-      description: "Professional catering solutions for business events and meetings",
-      features: ["Business-friendly menus", "Flexible scheduling", "Professional presentation", "Dietary accommodations"],
-      price: "Custom pricing",
-  gradient: "from-orange-600 to-amber-600"
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-        </svg>
-      ),
-      title: "Premium Experiences",
-      description: "Luxury dining experiences with celebrity chefs and exclusive menus",
-      features: ["Celebrity chef access", "Exclusive wine pairings", "Multi-course tasting menus", "Personalized service"],
-      price: "Starting from $500",
-  gradient: "from-orange-500 to-amber-500"
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      title: "Special Occasions",
-      description: "Memorable dining for birthdays, anniversaries, and romantic dinners",
-      features: ["Romantic table settings", "Special dietary options", "Surprise coordination", "Photography assistance"],
-      price: "Starting from $200",
-  gradient: "from-orange-400 to-amber-400"
-    },
-    {
-      icon: (
-        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-        </svg>
-      ),
-      title: "Add-On Services",
-      description: "Enhanced services to make your event truly spectacular",
-      features: ["Professional decoration", "Complete cleanup service", "Mixology & bar service", "Live cooking demonstrations"],
-      price: "À la carte pricing",
-  gradient: "from-orange-400 to-amber-400"
+      id: 'daily',
+      title: 'Daily Meals',
+      icon: UtensilsCrossed,
+      gradient: 'from-orange-500 via-amber-500 to-yellow-500',
+      glowColor: 'shadow-orange-500/50',
+      description: 'Enjoy healthy, home-cooked meals prepared by expert chefs daily',
+      features: [
+        'Weekly meal planning',
+        'Breakfast, lunch & dinner',
+        'Nutritionist-approved menus',
+        'Fresh ingredients daily',
+        'Flexible scheduling',
+        'Special diet plans'
+      ],
+      price: '₹499/day',
+      priceLabel: 'Starting from',
+      popular: false,
+      stats: { chefs: '200+', customers: '1000+', rating: '4.7' }
     }
   ];
 
+  const benefits = [
+    {
+      icon: Shield,
+      title: 'Verified Expert Chefs',
+      description: 'All our chefs are professionally trained and background-verified',
+      gradient: 'from-blue-500 to-cyan-500'
+    },
+    {
+      icon: Award,
+      title: 'Quality Guaranteed',
+      description: 'Premium ingredients and hygiene standards maintained',
+      gradient: 'from-amber-500 to-orange-500'
+    },
+    {
+      icon: Zap,
+      title: 'Instant Booking',
+      description: 'Book services at your preferred time with real-time availability',
+      gradient: 'from-purple-500 to-pink-500'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Flexible Options',
+      description: 'From intimate gatherings to large events, we scale with you',
+      gradient: 'from-green-500 to-emerald-500'
+    }
+  ];
+
+  const handleBookService = (serviceId) => {
+    navigate(`/chefs?service=${serviceId}`);
+  };
+
   return (
-    <div className={`min-h-screen ${getClass('bgPrimary')}`}>
+    <div className={`min-h-screen ${getClass('bgPrimary')} lg:ml-10`}>
       {/* Hero Section */}
-  <div className={`relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-20`}>
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-6xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm mb-8">
-            <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-          <h1 className={`text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent ${isDark ? 'from-yellow-100 to-yellow-300' : ''}`}>
-            Our Services
-          </h1>
-          <p className={`text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-95`}>
-            From intimate dinners to grand celebrations, we deliver exceptional culinary experiences tailored to your needs
-          </p>
-        </div>
-        
-        {/* Floating elements */}
-        <div className="absolute top-20 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
-      </div>
-
-      {/* Services Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent mb-6">
-            Choose Your Experience
-          </h2>
-          <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto`}>
-            Every service is designed to exceed your expectations with professional chefs, premium ingredients, and exceptional attention to detail.
-          </p>
+      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 py-20">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8">
-          {services.map((service, index) => (
-            <div 
-              key={index} 
-              className={`group ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'} rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border`}
-            >
-              {/* Service Icon */}
-              <div className={`w-16 h-16 bg-gradient-to-r ${service.gradient} rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                {service.icon}
-              </div>
-
-              {/* Service Title */}
-              <h3 className={`text-2xl font-bold ${isDark ? 'text-gray-100 group-hover:text-orange-400' : 'text-gray-800 group-hover:text-orange-600'} mb-4 transition-colors duration-300`}>
-                {service.title}
-              </h3>
-
-              {/* Service Description */}
-              <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} mb-6 leading-relaxed`}>
-                {service.description}
-              </p>
-
-              {/* Features List */}
-              <ul className="space-y-3 mb-6">
-                {service.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start text-sm">
-                    <svg className="w-4 h-4 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
-                    </svg>
-                    <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Pricing */}
-              <div className="flex items-center justify-between">
-                <span className={`text-2xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{service.price}</span>
-                <button 
-                  className={`px-6 py-2 bg-gradient-to-r ${service.gradient} text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 text-sm font-semibold`}
-                  onClick={handleBookNow}
-                >
-                  Book Now
-                </button>
-              </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-white" />
+              <span className="text-white text-sm font-medium">Premium Chef Services</span>
             </div>
-          ))}
-        </div>
 
-        {/* CTA Section */}
-        <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-8 text-white">
-            <h3 className="text-3xl font-bold mb-4">Ready to Create Something Amazing?</h3>
-            <p className="text-xl mb-8 opacity-95">Let our expert chefs transform your next meal into an unforgettable experience</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                className="px-8 py-3 bg-white text-orange-600 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
-                onClick={handleBrowseChefs}
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              Culinary Excellence
+              <br />
+              <span className="bg-gradient-to-r from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                For Every Occasion
+              </span>
+            </h1>
+
+            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+              From intimate birthday celebrations to grand wedding feasts and daily meal prep,
+              our expert chefs bring restaurant-quality cuisine to your doorstep
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              <button
+                onClick={() => navigate('/chefs')}
+                className="px-8 py-4 bg-white text-orange-600 rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
               >
                 Browse Chefs
               </button>
-              <button 
-                className="px-8 py-3 border-2 border-white text-white rounded-xl hover:bg-white hover:text-orange-600 transition-all duration-300 hover:scale-105 font-semibold"
-                onClick={handleCustomQuote}
+              <button
+                onClick={() => document.getElementById('services-section').scrollIntoView({ behavior: 'smooth' })}
+                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white rounded-full font-semibold hover:bg-white/20 transition-all"
               >
-                Custom Quote
+                Explore Services
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
+      </div>
+
+      {/* Modern Services Section */}
+      <div id="services-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className={`text-4xl md:text-5xl font-black mb-4 ${getClass('textPrimary')}`}>
+            Our Services
+          </h2>
+          <p className={`text-xl ${getClass('textSecondary')} max-w-2xl mx-auto`}>
+            Premium chef experiences tailored to your occasion
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+          {services.map((service, index) => {
+            const Icon = service.icon;
+            return (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                whileHover={{ y: -8 }}
+                onMouseEnter={() => setHoveredService(service.id)}
+                onMouseLeave={() => setHoveredService(null)}
+                className={`group relative rounded-2xl overflow-hidden ${getClass('bgSecondary')} border ${
+                  hoveredService === service.id 
+                    ? 'border-transparent shadow-2xl ' + service.glowColor
+                    : 'border-gray-200 dark:border-gray-700 shadow-lg'
+                } transition-all duration-300`}
+              >
+                {/* Popular Badge */}
+                {service.popular && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center gap-1.5 shadow-lg">
+                      <Star className="w-3.5 h-3.5 text-white fill-current" />
+                      <span className="text-white text-xs font-bold">POPULAR</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Gradient Header */}
+                <div className={`relative h-2 bg-gradient-to-r ${service.gradient}`}></div>
+
+                <div className="p-8">
+                  {/* Icon */}
+                  <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${service.gradient} shadow-lg ${service.glowColor} mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className={`text-2xl font-bold mb-3 ${getClass('textPrimary')}`}>
+                    {service.title}
+                  </h3>
+
+                  <p className={`${getClass('textSecondary')} mb-6 leading-relaxed`}>
+                    {service.description}
+                  </p>
+
+                  {/* Features */}
+                  <ul className="space-y-3 mb-8">
+                    {service.features.map((feature, idx) => (
+                      <li key={idx} className={`flex items-start gap-2.5 text-sm ${getClass('textSecondary')}`}>
+                        <div className={`mt-0.5 p-0.5 rounded-full bg-gradient-to-r ${service.gradient}`}>
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Stats */}
+                  <div className={`grid grid-cols-3 gap-3 p-4 rounded-xl ${getClass('bgPrimary')} border border-gray-200 dark:border-gray-700 mb-6`}>
+                    {Object.entries(service.stats).map(([key, value]) => (
+                      <div key={key} className="text-center">
+                        <div className={`text-lg font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
+                          {value}
+                        </div>
+                        <div className={`text-xs ${getClass('textMuted')} capitalize mt-1`}>{key}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Price & CTA */}
+                  <div className="space-y-4">
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-sm ${getClass('textMuted')}`}>{service.priceLabel}</span>
+                      <span className={`text-3xl font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
+                        {service.price}
+                      </span>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleBookService(service.id)}
+                      className={`w-full py-4 bg-gradient-to-r ${service.gradient} text-white rounded-xl font-bold shadow-lg ${service.glowColor} hover:shadow-2xl transition-all flex items-center justify-center gap-2 group`}
+                    >
+                      Book Now
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Modern Benefits Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-20"
+        >
+          <h3 className={`text-3xl md:text-4xl font-black text-center mb-12 ${getClass('textPrimary')}`}>
+            Why Choose ChefHub?
+          </h3>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {benefits.map((benefit, index) => {
+              const Icon = benefit.icon;
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                  className={`relative rounded-2xl ${getClass('bgSecondary')} p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group`}
+                >
+                  <div className={`inline-flex p-3 bg-gradient-to-br ${benefit.gradient} rounded-xl mb-4 group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h4 className={`text-lg font-bold mb-2 ${getClass('textPrimary')}`}>
+                    {benefit.title}
+                  </h4>
+                  <p className={`text-sm ${getClass('textSecondary')} leading-relaxed`}>
+                    {benefit.description}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+        {/* Modern CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative rounded-3xl overflow-hidden"
+        >
+          {/* Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+          
+          {/* Animated Pattern */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          </div>
+
+          {/* Glowing Orbs */}
+          <div className="absolute top-0 right-0 w-72 h-72 bg-orange-500/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl"></div>
+
+          <div className="relative px-8 py-16 md:py-20 text-center">
+            <motion.div
+              initial={{ scale: 0.9 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="inline-flex p-4 bg-white/10 backdrop-blur-md rounded-full mb-6">
+                <Calendar className="w-12 h-12 text-orange-400" />
+              </div>
+              
+              <h3 className="text-3xl md:text-5xl font-black text-white mb-4">
+                Ready to Book Your
+                <br />
+                <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                  Perfect Chef?
+                </span>
+              </h3>
+              
+              <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                Browse our curated selection of expert chefs and find the perfect match for your event
+              </p>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/chefs')}
+                className="group px-10 py-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full text-lg font-bold shadow-2xl shadow-orange-500/50 hover:shadow-orange-500/70 transition-all inline-flex items-center gap-3"
+              >
+                Explore Chefs
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

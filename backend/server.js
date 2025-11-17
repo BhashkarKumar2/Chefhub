@@ -17,6 +17,8 @@ import healthRoutes from './routes/healthRoutes.js';
 import geocodeRoutes from './routes/geocodeRoutes.js';
 import socketService from './services/socketService.js';
 import redis from './config/redis.js';
+import compression from 'compression';
+import helmet from 'helmet';
 
 const RedisStore = connectRedis(session);
 
@@ -61,6 +63,11 @@ app.use(session({
   }
 }));
 
+//optimizers
+
+app.use(compression());
+app.use(helmet());
+
 // Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
@@ -75,6 +82,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api', healthRoutes);
+
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)

@@ -412,7 +412,7 @@ const Dashboard = () => {
             <div className={`lg:col-span-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border ${getClass('bgSecondary')} ${isDark ? 'border-gray-700' : 'border-stone-200'}`}>
               <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${getClass('textPrimary')}`}>Upcoming Bookings</h3>
-                <Link to="/bookings" className="text-orange-600 hover:text-orange-700 font-semibold text-xs sm:text-sm flex items-center">
+                <Link to="/my-bookings" className="text-orange-600 hover:text-orange-700 font-semibold text-xs sm:text-sm flex items-center">
                   View All
                   <svg className="w-3 h-3 sm:w-4 sm:h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path>

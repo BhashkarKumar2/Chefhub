@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -41,6 +42,8 @@ const Favorites = lazy(() => import('./pages/user/Favorites'));
 const EditProfile = lazy(() => import('./pages/user/EditProfile'));
 const SetPassword = lazy(() => import('./pages/user/SetPassword'));
 const ViewBookings = lazy(() => import('./pages/user/ViewBookings'));
+const MyBookings = lazy(() => import('./pages/user/MyBookings'));
+const ChefBookings = lazy(() => import('./pages/chef/ChefBookings'));
 const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
@@ -56,6 +59,30 @@ const App = () => {
         <FavoritesProvider>
           <SocketProvider>
             <Router>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
+                  duration: 3000,
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
+                  },
+                  success: {
+                    duration: 3000,
+                    iconTheme: {
+                      primary: '#f97316',
+                      secondary: '#fff',
+                    },
+                  },
+                  error: {
+                    duration: 4000,
+                    iconTheme: {
+                      primary: '#ef4444',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
+              />
               <div className="min-h-screen overflow-x-hidden max-w-full no-overflow">
                 <MainLayout>
                   <main className="flex-1">
@@ -137,6 +164,16 @@ const App = () => {
                       <Route path="/bookings" element={
                         <ProtectedRoute>
                           <ViewBookings />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/my-bookings" element={
+                        <ProtectedRoute>
+                          <MyBookings />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chef/bookings" element={
+                        <ProtectedRoute>
+                          <ChefBookings />
                         </ProtectedRoute>
                       } />
                       {/* Auth-related routes */}

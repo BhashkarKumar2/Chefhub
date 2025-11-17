@@ -8,20 +8,8 @@ import logo from '../assets/logo.png'
 const Sidebar = () => {
   // Use global theme context
   const { theme, setTheme } = useTheme();
-  // Collapse sidebar by default on mobile screens
-  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 1024);
-  // Collapse sidebar automatically on mobile resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Don't collapse sidebar on desktop, only hide on mobile
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated: isLoggedIn, user: userData, logout } = useAuth();
@@ -72,10 +60,20 @@ const Sidebar = () => {
     },
     {
       name: 'My Bookings',
-      href: '/bookings',
+      href: '/my-bookings',
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0a2 2 0 00-2 2v6a2 2 0 002 2h6a2 2 0 002-2V9a2 2 0 00-2-2" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      requiresAuth: true
+    },
+    {
+      name: 'Chef Bookings',
+      href: '/chef/bookings',
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
         </svg>
       ),
       requiresAuth: true
@@ -206,21 +204,21 @@ const Sidebar = () => {
         />
       )}
 
-      {/* Sidebar - Dynamic width with collapse toggle */}
+      {/* Sidebar - Dynamic width with collapse toggle (desktop only) */}
       <div className={`
         fixed h-full z-50 
         ${theme === 'dark' ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-gray-700 shadow-black' : 'bg-gradient-to-b from-orange-50/95 via-amber-50/95 to-orange-100/95 border-orange-200/30 shadow-2xl'}
         backdrop-blur-xl border-r 
         transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        ${isCollapsed ? 'w-32 pt-16 ' : 'w-64'}
+        ${isCollapsed && window.innerWidth >= 1024 ? 'w-32 pt-16' : 'w-64'}
         
         overflow-y-auto
         scrollbar-thin ${theme === 'dark' ? 'scrollbar-thumb-gray-700 scrollbar-track-gray-900' : 'scrollbar-thumb-orange-300 scrollbar-track-orange-100'}
       `}>
-        {/* Collapse/Expand Toggle Button */}
+        {/* Collapse/Expand Toggle Button - Desktop Only */}
         <button
-          className="fixed top-4 right-4 z-50 bg-orange-200 hover:bg-orange-300 text-orange-800 rounded-full p-2 shadow-md transition-all duration-300"
+          className="hidden lg:block fixed top-4 right-4 z-50 bg-orange-200 hover:bg-orange-300 text-orange-800 rounded-full p-2 shadow-md transition-all duration-300"
           onClick={() => setIsCollapsed((prev) => !prev)}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -236,31 +234,30 @@ const Sidebar = () => {
         </button>
         
         {/* Logo Section */}
-        {/* Logo Section - hidden when collapsed */}
-        {!isCollapsed && (
-          <div className="p-4 border-b border-orange-200/30">
-            <Link 
-              to="/" 
-              className="flex items-center space-x-3"
-              onClick={() => setIsMobileOpen(false)}
-            >
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0">
-                <img 
-                                  src={logo} 
-                                  alt="ChefHub Logo" 
-                                  className="w-20 h-30 object-contain relative z-10"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                  }}
-                                />
-              </div>
+        <div className="p-4 border-b border-orange-200/30">
+          <Link 
+            to="/" 
+            className="flex items-center space-x-3"
+            onClick={() => setIsMobileOpen(false)}
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex-shrink-0">
+              <img 
+                                src={logo} 
+                                alt="ChefHub Logo" 
+                                className="w-20 h-30 object-contain relative z-10"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+            </div>
+            {(!isCollapsed || window.innerWidth < 1024) && (
               <span className="text-xl font-bold text-orange-800 whitespace-nowrap">
                 ChefHub
               </span>
-            </Link>
-          </div>
-        )}
+            )}
+          </Link>
+        </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1">
@@ -277,7 +274,7 @@ const Sidebar = () => {
                   <span className="flex-shrink-0 text-current">
                     {item.icon}
                   </span>
-                  {!isCollapsed && (
+                  {(!isCollapsed || window.innerWidth < 1024) && (
                     <span className="ml-3 font-medium whitespace-nowrap">
                       {item.name}
                     </span>
@@ -301,7 +298,7 @@ const Sidebar = () => {
               >
                 <button
                   onClick={handleProfileClick}
-                  className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}
+                  className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 ${isCollapsed && window.innerWidth >= 1024 ? 'justify-center' : ''}`}
                   style={{
                     background: location.pathname === '/profile' ? 'linear-gradient(to right, #f97316, #fbbf24)' : undefined,
                     color: location.pathname === '/profile' ? '#fff' : undefined,
@@ -313,7 +310,7 @@ const Sidebar = () => {
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover border-2 border-white dark:border-gray-800 flex-shrink-0"
                   />
-                  {!isCollapsed && (
+                  {(!isCollapsed || window.innerWidth < 1024) && (
                     <span className="ml-3 font-medium whitespace-nowrap">
                       {formatName(userData?.name)}
                     </span>
@@ -328,13 +325,13 @@ const Sidebar = () => {
               >
                 <button
                   onClick={handleLogout}
-                  className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}
+                  className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 ${isCollapsed && window.innerWidth >= 1024 ? 'justify-center' : ''}`}
                   style={{ color: theme === 'dark' ? '#fda4af' : '#e11d48' }}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  {!isCollapsed && (
+                  {(!isCollapsed || window.innerWidth < 1024) && (
                     <span className="ml-3 font-medium whitespace-nowrap">
                       Logout
                     </span>
@@ -365,12 +362,12 @@ const Sidebar = () => {
                   <Link
                     to="/login"
                     onClick={() => setIsMobileOpen(false)}
-                    className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg hover:shadow-xl hover:scale-105 ${isCollapsed ? 'justify-center w-14 h-14 px-0 py-0' : ''}`}
+                    className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg hover:shadow-xl hover:scale-105`}
                   >
                     <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
-                    {!isCollapsed && (
+                    {(!isCollapsed || window.innerWidth < 1024) && (
                       <span className="ml-3 font-medium whitespace-nowrap">Login</span>
                     )}
                   </Link>
@@ -407,12 +404,12 @@ const Sidebar = () => {
                   <Link
                     to="/register"
                     onClick={() => setIsMobileOpen(false)}
-                    className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white hover:scale-105 ${isCollapsed ? 'justify-center w-14 h-14 px-0 py-0' : ''}`}
+                    className={`relative flex items-center w-full px-4 py-3 rounded-2xl transition-all duration-300 border-2 border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white hover:scale-105`}
                   >
                     <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                    {!isCollapsed && (
+                    {(!isCollapsed || window.innerWidth < 1024) && (
                       <span className="ml-3 font-medium whitespace-nowrap">Sign Up</span>
                     )}
                   </Link>
