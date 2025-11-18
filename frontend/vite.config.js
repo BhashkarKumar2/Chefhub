@@ -19,7 +19,7 @@ export default defineConfig({
           'query-vendor': ['@tanstack/react-query'],
           
           // Firebase chunk (large library)
-          'firebase-vendor': ['firebase'],
+          'firebase-vendor': ['firebase/app', 'firebase/auth'],
           
           // Other heavy libraries
           'heavy-vendor': ['socket.io-client', 'axios'],
