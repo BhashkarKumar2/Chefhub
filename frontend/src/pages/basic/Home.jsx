@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 import BackgroundCarousel from '../../components/BackgroundCarousel';
 import TestimonialCarousel from '../../components/TestimonialCarousel';
 import logo from '../../assets/logo.png'
-const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
 
 
 // Animated counter hook
@@ -31,20 +31,19 @@ function useCountUp(target, duration = 1200) {
 const geocodeAddress = async (address) => {
   try {
     const response = await fetch(
-      `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`
+      `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`
     );
     const data = await response.json();
-    if (data.features && data.features.length > 0) {
-      const coordinates = data.features[0].geometry.coordinates;
+    if (data.success && data.data) {
       return {
-        latitude: coordinates[1],
-        longitude: coordinates[0],
-        address: data.features[0].properties.label
+        latitude: data.data.latitude,
+        longitude: data.data.longitude,
+        address: data.data.fullResponse?.features?.[0]?.properties?.label || address
       };
     }
     return null;
   } catch (error) {
-    // console.error('Geocoding error:', error);
+    console.error('Geocoding error:', error);
     return null;
   }
 };

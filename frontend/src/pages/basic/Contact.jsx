@@ -1,7 +1,9 @@
 import React, { useRef, useState } from 'react';
-import emailjs from '@emailjs/browser';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Contact = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
@@ -15,18 +17,24 @@ const Contact = () => {
     setIsLoading(true);
 
     try {
-      const result = await emailjs.sendForm(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        form.current,
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
+      const formData = new FormData(form.current);
+      const data = {
+        name: formData.get('user_name'),
+        email: formData.get('user_email'),
+        subject: formData.get('subject'),
+        message: formData.get('message')
+      };
+
+      const response = await axios.post(`${API_URL}/api/proxy/send-email`, data);
       
-      // console.log('Admin email sent:', result.text);
-      setStatus('success');
-      form.current.reset();
+      if (response.data.success) {
+        setStatus('success');
+        form.current.reset();
+      } else {
+        throw new Error(response.data.error);
+      }
     } catch (error) {
-      // console.error('Failed to send email:', error.text);
+      console.error('Failed to send email:', error);
       setStatus('error');
     } finally {
       setIsLoading(false);

@@ -9,9 +9,6 @@ import { LuCakeSlice } from "react-icons/lu";
 import { MdOutlineCleanHands } from "react-icons/md";
 import { RiCake3Line } from "react-icons/ri";
 
-// OpenRouteService API key (store securely in production)
-const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
-
 const BookChef = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const { id } = useParams();
@@ -19,6 +16,7 @@ const BookChef = () => {
   const [chefs, setChefs] = useState([]);
   const [selectedChef, setSelectedChef] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [razorpayKeyId, setRazorpayKeyId] = useState('');
   const [userLocation, setUserLocation] = useState({ 
     address: '', 
     city: '', 
@@ -36,6 +34,22 @@ const BookChef = () => {
       setUserLocation(prev => ({ ...prev, address: autoAddress }));
     }
   }, [userLocation.city, userLocation.state]);
+
+  // Fetch Razorpay configuration from backend
+  useEffect(() => {
+    const fetchRazorpayConfig = async () => {
+      try {
+        const res = await fetch(`${buildApiEndpoint('')}proxy/razorpay-config`);
+        const data = await res.json();
+        if (data.success && data.keyId) {
+          setRazorpayKeyId(data.keyId);
+        }
+      } catch (error) {
+        console.error('Failed to fetch Razorpay config:', error);
+      }
+    };
+    fetchRazorpayConfig();
+  }, []);
 
   const [bookingDetails, setBookingDetails] = useState({
     serviceType: '', // New field for service type
@@ -110,41 +124,41 @@ const BookChef = () => {
     return [...baseAddOns, ...(serviceSpecificAddOns[serviceType] || [])];
   };
 
-  // Geocode address to lat/lon using OpenRouteService
+  // Geocode address to lat/lon using backend proxy
   const geocodeAddress = async (address) => {
     try {
       setLocationLoading(true);
-      const res = await fetch(`https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`);
+      const res = await fetch(`${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`);
       const data = await res.json();
-      if (data.features && data.features.length > 0) {
-        const coords = data.features[0].geometry.coordinates;
-        return { lat: coords[1], lon: coords[0] };
+      if (data.success && data.data) {
+        return { lat: data.data.latitude, lon: data.data.longitude };
       }
       return null;
     } catch (e) {
+      console.error('Geocoding error:', e);
       return null;
     } finally {
       setLocationLoading(false);
     }
   };
 
-  // Calculate distance (meters) between two [lon, lat] points using OpenRouteService
+  // Calculate distance (meters) between two [lon, lat] points using backend proxy
   const getDistance = async (from, to) => {
     try {
-      const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+      const res = await fetch(`${buildApiEndpoint('')}proxy/directions`, {
         method: 'POST',
         headers: {
-          'Authorization': ORS_API_KEY,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ coordinates: [from, to] })
       });
       const data = await res.json();
-      if (data.routes && data.routes[0]) {
-        return data.routes[0].summary.distance;
+      if (data.success && data.data.routes && data.data.routes[0]) {
+        return data.data.routes[0].summary.distance;
       }
       return null;
     } catch (e) {
+      console.error('Distance calculation error:', e);
       return null;
     }
   };
@@ -467,8 +481,13 @@ const BookChef = () => {
   const initializeRazorpay = (paymentData, bookingData) => {
     // console.log('Initializing Razorpay with:', paymentData);
     
+    if (!razorpayKeyId) {
+      alert('Payment configuration not loaded. Please refresh the page.');
+      return;
+    }
+    
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: razorpayKeyId,
       amount: paymentData.amount,
       currency: paymentData.currency,
       name: "AaharSetu",

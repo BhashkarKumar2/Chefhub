@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
-const ORS_API_KEY = import.meta.env.VITE_ORS_API_KEY;
+import { buildApiEndpoint } from '../utils/apiConfig';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in kilometers
@@ -17,19 +16,18 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 const geocodeAddress = async (address) => {
   try {
     const response = await fetch(
-      `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`
+      `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`
     );
     const data = await response.json();
-    if (data.features && data.features.length > 0) {
-      const coordinates = data.features[0].geometry.coordinates;
+    if (data.success && data.data) {
       return {
-        latitude: coordinates[1],
-        longitude: coordinates[0]
+        latitude: data.data.latitude,
+        longitude: data.data.longitude
       };
     }
     return null;
   } catch (error) {
-    // console.error('Geocoding error:', error);
+    console.error('Geocoding error:', error);
     return null;
   }
 };
