@@ -2,8 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { API_BASE_URL } from '../../utils/apiConfig';
 
 const Contact = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
@@ -25,7 +24,7 @@ const Contact = () => {
         message: formData.get('message')
       };
 
-      const response = await axios.post(`${API_URL}/api/proxy/send-email`, data);
+      const response = await axios.post(`${API_BASE_URL}/api/proxy/send-email`, data);
       
       if (response.data.success) {
         setStatus('success');
