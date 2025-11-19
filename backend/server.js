@@ -15,6 +15,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import geocodeRoutes from './routes/geocodeRoutes.js';
+import proxyRoutes from './routes/proxyRoutes.js';
 import socketService from './services/socketService.js';
 import redis from './config/redis.js';
 import compression from 'compression';
@@ -81,6 +82,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/geocode', geocodeRoutes);
+app.use('/api/proxy', proxyRoutes);
 app.use('/api', healthRoutes);
 
 
