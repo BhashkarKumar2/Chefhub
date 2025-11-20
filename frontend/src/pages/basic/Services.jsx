@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 const Services = () => {
-  const { getClass } = useThemeAwareStyle();
+  const { getClass, isDark } = useThemeAwareStyle();
   const navigate = useNavigate();
   const [hoveredService, setHoveredService] = useState(null);
 
@@ -30,8 +30,8 @@ const Services = () => {
       id: 'birthday',
       title: 'Birthday Celebrations',
       icon: Cake,
-      gradient: 'from-violet-600 via-purple-600 to-fuchsia-600',
-      glowColor: 'shadow-violet-500/50',
+      gradient: 'from-orange-500 via-orange-600 to-orange-700',
+      glowColor: 'shadow-orange-500/50',
       description: 'Make birthdays unforgettable with personalized chef services',
       features: [
         'Customized birthday menus',
@@ -50,8 +50,8 @@ const Services = () => {
       id: 'marriage',
       title: 'Wedding & Events',
       icon: Heart,
-      gradient: 'from-rose-500 via-pink-600 to-red-600',
-      glowColor: 'shadow-rose-500/50',
+      gradient: 'from-orange-600 via-orange-700 to-amber-600',
+      glowColor: 'shadow-orange-600/50',
       description: 'Elevate your special day with exquisite culinary experiences',
       features: [
         'Multi-cuisine wedding menus',
@@ -70,8 +70,8 @@ const Services = () => {
       id: 'daily',
       title: 'Daily Meals',
       icon: UtensilsCrossed,
-      gradient: 'from-orange-500 via-amber-500 to-yellow-500',
-      glowColor: 'shadow-orange-500/50',
+      gradient: 'from-amber-500 via-orange-500 to-orange-600',
+      glowColor: 'shadow-amber-500/50',
       description: 'Enjoy healthy, home-cooked meals prepared by expert chefs daily',
       features: [
         'Weekly meal planning',
@@ -92,26 +92,22 @@ const Services = () => {
     {
       icon: Shield,
       title: 'Verified Expert Chefs',
-      description: 'All our chefs are professionally trained and background-verified',
-      gradient: 'from-blue-500 to-cyan-500'
+      description: 'All our chefs are professionally trained and background-verified'
     },
     {
       icon: Award,
       title: 'Quality Guaranteed',
-      description: 'Premium ingredients and hygiene standards maintained',
-      gradient: 'from-amber-500 to-orange-500'
+      description: 'Premium ingredients and hygiene standards maintained'
     },
     {
       icon: Zap,
       title: 'Instant Booking',
-      description: 'Book services at your preferred time with real-time availability',
-      gradient: 'from-purple-500 to-pink-500'
+      description: 'Book services at your preferred time with real-time availability'
     },
     {
       icon: TrendingUp,
       title: 'Flexible Options',
-      description: 'From intimate gatherings to large events, we scale with you',
-      gradient: 'from-green-500 to-emerald-500'
+      description: 'From intimate gatherings to large events, we scale with you'
     }
   ];
 
@@ -120,14 +116,13 @@ const Services = () => {
   };
 
   return (
-    <div className={`min-h-screen ${getClass('bgPrimary')} lg:ml-10`}>
+    <div className={`min-h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'} lg:ml-10`}>
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600 py-20">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
+      <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-20">
+        <div className="absolute inset-0 bg-black/10"></div>
+        {/* Floating decorative elements */}
+        <div className="absolute top-20 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
@@ -135,20 +130,20 @@ const Services = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+            <div className={`inline-flex items-center gap-2 px-4 py-2 ${isDark ? 'bg-white/10' : 'bg-white/30'} backdrop-blur-sm rounded-full mb-6`}>
               <Sparkles className="w-4 h-4 text-white" />
               <span className="text-white text-sm font-medium">Premium Chef Services</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-6">
               Culinary Excellence
               <br />
-              <span className="bg-gradient-to-r from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
                 For Every Occasion
               </span>
             </h1>
 
-            <p className="text-xl text-white/90 max-w-3xl mx-auto mb-8">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-95">
               From intimate birthday celebrations to grand wedding feasts and daily meal prep,
               our expert chefs bring restaurant-quality cuisine to your doorstep
             </p>
@@ -156,13 +151,13 @@ const Services = () => {
             <div className="flex flex-wrap justify-center gap-4">
               <button
                 onClick={() => navigate('/chefs')}
-                className="px-8 py-4 bg-white text-orange-600 rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
+                className={`px-8 py-4 ${isDark ? 'bg-white text-orange-600' : 'bg-white text-orange-600'} rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg`}
               >
                 Browse Chefs
               </button>
               <button
                 onClick={() => document.getElementById('services-section').scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white border-2 border-white rounded-full font-semibold hover:bg-white/20 transition-all"
+                className={`px-8 py-4 ${isDark ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-sm text-white border-2 border-white rounded-full font-semibold hover:bg-white/20 transition-all`}
               >
                 Explore Services
               </button>
@@ -179,10 +174,10 @@ const Services = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className={`text-4xl md:text-5xl font-black mb-4 ${getClass('textPrimary')}`}>
+          <h2 className={`text-4xl md:text-5xl font-black mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Our Services
           </h2>
-          <p className={`text-xl ${getClass('textSecondary')} max-w-2xl mx-auto`}>
+          <p className={`text-xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-2xl mx-auto`}>
             Premium chef experiences tailored to your occasion
           </p>
         </motion.div>
@@ -200,7 +195,7 @@ const Services = () => {
                 whileHover={{ y: -8 }}
                 onMouseEnter={() => setHoveredService(service.id)}
                 onMouseLeave={() => setHoveredService(null)}
-                className={`group relative rounded-2xl overflow-hidden ${getClass('bgSecondary')} border ${
+                className={`group relative rounded-2xl overflow-hidden ${isDark ? 'bg-gray-800' : 'bg-white'} border ${
                   hoveredService === service.id 
                     ? 'border-transparent shadow-2xl ' + service.glowColor
                     : 'border-gray-200 dark:border-gray-700 shadow-lg'
@@ -209,7 +204,7 @@ const Services = () => {
                 {/* Popular Badge */}
                 {service.popular && (
                   <div className="absolute top-4 right-4 z-20">
-                    <div className="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center gap-1.5 shadow-lg">
+                    <div className="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center gap-1.5 shadow-lg">
                       <Star className="w-3.5 h-3.5 text-white fill-current" />
                       <span className="text-white text-xs font-bold">POPULAR</span>
                     </div>
@@ -226,18 +221,18 @@ const Services = () => {
                   </div>
 
                   {/* Title */}
-                  <h3 className={`text-2xl font-bold mb-3 ${getClass('textPrimary')}`}>
+                  <h3 className={`text-2xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {service.title}
                   </h3>
 
-                  <p className={`${getClass('textSecondary')} mb-6 leading-relaxed`}>
+                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} mb-6 leading-relaxed`}>
                     {service.description}
                   </p>
 
                   {/* Features */}
                   <ul className="space-y-3 mb-8">
                     {service.features.map((feature, idx) => (
-                      <li key={idx} className={`flex items-start gap-2.5 text-sm ${getClass('textSecondary')}`}>
+                      <li key={idx} className={`flex items-start gap-2.5 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                         <div className={`mt-0.5 p-0.5 rounded-full bg-gradient-to-r ${service.gradient}`}>
                           <Check className="w-3.5 h-3.5 text-white" />
                         </div>
@@ -247,13 +242,13 @@ const Services = () => {
                   </ul>
 
                   {/* Stats */}
-                  <div className={`grid grid-cols-3 gap-3 p-4 rounded-xl ${getClass('bgPrimary')} border border-gray-200 dark:border-gray-700 mb-6`}>
+                  <div className={`grid grid-cols-3 gap-3 p-4 rounded-xl ${isDark ? 'bg-gray-900' : 'bg-gray-50'} border border-gray-200 dark:border-gray-700 mb-6`}>
                     {Object.entries(service.stats).map(([key, value]) => (
                       <div key={key} className="text-center">
                         <div className={`text-lg font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
                           {value}
                         </div>
-                        <div className={`text-xs ${getClass('textMuted')} capitalize mt-1`}>{key}</div>
+                        <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} capitalize mt-1`}>{key}</div>
                       </div>
                     ))}
                   </div>
@@ -261,7 +256,7 @@ const Services = () => {
                   {/* Price & CTA */}
                   <div className="space-y-4">
                     <div className="flex items-baseline gap-2">
-                      <span className={`text-sm ${getClass('textMuted')}`}>{service.priceLabel}</span>
+                      <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{service.priceLabel}</span>
                       <span className={`text-3xl font-black bg-gradient-to-r ${service.gradient} bg-clip-text text-transparent`}>
                         {service.price}
                       </span>
@@ -289,7 +284,7 @@ const Services = () => {
           viewport={{ once: true }}
           className="mb-20"
         >
-          <h3 className={`text-3xl md:text-4xl font-black text-center mb-12 ${getClass('textPrimary')}`}>
+          <h3 className={`text-3xl md:text-4xl font-black text-center mb-12 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             Why Choose ChefHub?
           </h3>
 
@@ -304,15 +299,15 @@ const Services = () => {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ scale: 1.05 }}
-                  className={`relative rounded-2xl ${getClass('bgSecondary')} p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group`}
+                  className={`relative rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} p-6 border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl transition-all group`}
                 >
-                  <div className={`inline-flex p-3 bg-gradient-to-br ${benefit.gradient} rounded-xl mb-4 group-hover:scale-110 transition-transform`}>
+                  <div className={`inline-flex p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl mb-4 group-hover:scale-110 transition-transform`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className={`text-lg font-bold mb-2 ${getClass('textPrimary')}`}>
+                  <h4 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     {benefit.title}
                   </h4>
-                  <p className={`text-sm ${getClass('textSecondary')} leading-relaxed`}>
+                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'} leading-relaxed`}>
                     {benefit.description}
                   </p>
                 </motion.div>
@@ -328,16 +323,12 @@ const Services = () => {
           className="relative rounded-3xl overflow-hidden"
         >
           {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700"></div>
+          <div className="absolute inset-0 bg-black/10"></div>
           
-          {/* Animated Pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808020_1px,transparent_1px),linear-gradient(to_bottom,#80808020_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          </div>
-
-          {/* Glowing Orbs */}
-          <div className="absolute top-0 right-0 w-72 h-72 bg-orange-500/30 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-500/30 rounded-full blur-3xl"></div>
+          {/* Floating decorative elements */}
+          <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+          <div className="absolute bottom-10 right-10 w-16 h-16 bg-white/15 rounded-full animate-bounce"></div>
 
           <div className="relative px-8 py-16 md:py-20 text-center">
             <motion.div
@@ -346,19 +337,19 @@ const Services = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex p-4 bg-white/10 backdrop-blur-md rounded-full mb-6">
-                <Calendar className="w-12 h-12 text-orange-400" />
+              <div className={`inline-flex p-4 ${isDark ? 'bg-white/10' : 'bg-white/20'} backdrop-blur-md rounded-full mb-6`}>
+                <Calendar className="w-12 h-12 text-orange-300" />
               </div>
               
-              <h3 className="text-3xl md:text-5xl font-black text-white mb-4">
+              <h3 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
                 Ready to Book Your
                 <br />
-                <span className="bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
                   Perfect Chef?
                 </span>
               </h3>
               
-              <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              <p className="text-lg md:text-xl text-white opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
                 Browse our curated selection of expert chefs and find the perfect match for your event
               </p>
               
@@ -366,7 +357,7 @@ const Services = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigate('/chefs')}
-                className="group px-10 py-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full text-lg font-bold shadow-2xl shadow-orange-500/50 hover:shadow-orange-500/70 transition-all inline-flex items-center gap-3"
+                className={`group px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full text-lg font-bold shadow-2xl ${isDark ? 'shadow-orange-500/30' : 'shadow-orange-500/50'} hover:shadow-orange-500/70 transition-all inline-flex items-center gap-3`}
               >
                 Explore Chefs
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />

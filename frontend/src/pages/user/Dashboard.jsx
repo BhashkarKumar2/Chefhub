@@ -513,7 +513,7 @@ const Dashboard = () => {
             { 
               label: "Reviews Given", 
               value: dashboardData.stats.reviewsGiven.toString(), 
-              icon: "⭐", 
+              icon: "⭐", 
               color: "text-amber-600" 
             }
           ].map((stat, index) => (
