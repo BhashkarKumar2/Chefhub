@@ -94,6 +94,17 @@ export const createBooking = async (req, res) => {
 
   } catch (error) {
     // console.error('Error creating booking:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to create booking',
@@ -125,6 +136,17 @@ export const getUserBookings = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching user bookings:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -159,6 +181,17 @@ export const getChefBookings = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching chef bookings:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -194,6 +227,17 @@ export const getBookingById = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching booking:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking',
@@ -241,6 +285,17 @@ export const updateBookingStatus = async (req, res) => {
 
   } catch (error) {
     // console.error('Error updating booking status:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -279,6 +334,17 @@ export const deleteBooking = async (req, res) => {
 
   } catch (error) {
     // console.error('Error deleting booking:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -328,6 +394,17 @@ export const getBookingStats = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching booking stats:', error);
+    
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Internal server error',

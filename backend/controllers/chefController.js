@@ -385,6 +385,23 @@ export const updateChefProfile = async (req, res) => {
       chef: updatedChef
     });
   } catch (err) {
+    // Handle Mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ 
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      return res.status(400).json({ 
+        message: `This ${field} is already registered`
+      });
+    }
+    
     res.status(500).json({ message: err.message });
   }
 };

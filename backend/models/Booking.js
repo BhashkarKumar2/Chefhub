@@ -9,102 +9,245 @@ const bookingSchema = new mongoose.Schema({
   chef: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chef',
-    required: true
+    required: [true, 'Chef is required for booking']
   },
   date: {
     type: Date,
-    required: true
+    required: [true, 'Booking date is required'],
+    validate: {
+      validator: function(value) {
+        return value >= new Date();
+      },
+      message: 'Booking date cannot be in the past'
+    }
   },
   time: {
     type: String,
-    required: true
+    required: [true, 'Booking time is required'],
+    trim: true,
+    match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format']
   },
   duration: {
     type: Number,
-    required: true,
-    min: 1
+    required: [true, 'Duration is required'],
+    min: [1, 'Duration must be at least 1 hour'],
+    max: [24, 'Duration cannot exceed 24 hours']
   },
   guestCount: {
     type: Number,
-    required: true,
-    min: 1
+    required: [true, 'Guest count is required'],
+    min: [1, 'Guest count must be at least 1'],
+    max: [1000, 'Guest count cannot exceed 1000']
   },
   location: {
     type: String,
-    required: true
+    required: [true, 'Location is required'],
+    trim: true,
+    minlength: [5, 'Location must be at least 5 characters'],
+    maxlength: [300, 'Location cannot exceed 300 characters']
   },
   locationCoords: {
     lat: {
-      type: Number
+      type: Number,
+      min: [-90, 'Latitude must be between -90 and 90'],
+      max: [90, 'Latitude must be between -90 and 90']
     },
     lon: {
-      type: Number
+      type: Number,
+      min: [-180, 'Longitude must be between -180 and 180'],
+      max: [180, 'Longitude must be between -180 and 180']
     }
   },
   serviceType: {
     type: String,
-    required: true,
-    enum: ['birthday', 'marriage', 'daily'],
+    required: [true, 'Service type is required'],
+    enum: {
+      values: ['birthday', 'marriage', 'daily'],
+      message: '{VALUE} is not a valid service type'
+    },
     index: true
   },
   specialRequests: {
     type: String,
-    default: ''
+    default: '',
+    trim: true,
+    maxlength: [1000, 'Special requests cannot exceed 1000 characters']
   },
-  addOns: [{
-    type: String
-  }],
+  addOns: {
+    type: [{
+      type: String,
+      trim: true,
+      maxlength: 100
+    }],
+    validate: {
+      validator: function(arr) {
+        return arr.length <= 20;
+      },
+      message: 'Cannot have more than 20 add-ons'
+    }
+  },
   totalPrice: {
     type: Number,
-    required: true,
-    min: 0
+    required: [true, 'Total price is required'],
+    min: [0, 'Price cannot be negative'],
+    max: [10000000, 'Price cannot exceed 10,000,000']
   },
   contactInfo: {
-    name: String,
-    email: String,
-    phone: String
+    name: {
+      type: String,
+      trim: true,
+      minlength: [2, 'Contact name must be at least 2 characters'],
+      maxlength: [100, 'Contact name cannot exceed 100 characters']
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
+    },
+    phone: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function(v) {
+          if (!v) return true; // Allow empty phone (optional field)
+          return /^\+?[1-9]\d{9,14}$/.test(v); // Min 10 digits, max 15 with country code
+        },
+        message: 'Please provide a valid phone number'
+      }
+    }
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    enum: {
+      values: ['pending', 'confirmed', 'cancelled', 'completed'],
+      message: '{VALUE} is not a valid status'
+    },
     default: 'pending',
     index: true
   },
   paymentStatus: {
     type: String,
-    enum: ['pending', 'paid', 'failed', 'refunded'],
+    enum: {
+      values: ['pending', 'paid', 'failed', 'refunded'],
+      message: '{VALUE} is not a valid payment status'
+    },
     default: 'pending'
   },
   paymentId: {
-    type: String
+    type: String,
+    trim: true,
+    maxlength: [200, 'Payment ID cannot exceed 200 characters']
   },
   notes: {
-    type: String
+    type: String,
+    trim: true,
+    maxlength: [2000, 'Notes cannot exceed 2000 characters']
   },
   // Service-specific details
   serviceDetails: {
     // For birthday parties
     birthday: {
-      ageGroup: String, // child, teen, adult
-      theme: String,
+      ageGroup: {
+        type: String,
+        enum: {
+          values: ['child', 'teen', 'adult'],
+          message: '{VALUE} is not a valid age group'
+        }
+      },
+      theme: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Theme cannot exceed 100 characters']
+      },
       cakeRequired: Boolean,
-      decorationLevel: String // basic, premium, luxury
+      decorationLevel: {
+        type: String,
+        enum: {
+          values: ['basic', 'premium', 'luxury'],
+          message: '{VALUE} is not a valid decoration level'
+        }
+      }
     },
     // For marriage ceremonies
     marriage: {
-      ceremonyType: String, // sangam, reception, mehendi, etc.
-      cuisineStyle: String, // north-indian, south-indian, continental, etc.
-      servingStyle: String, // buffet, plated, family-style
+      ceremonyType: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Ceremony type cannot exceed 100 characters']
+      },
+      cuisineStyle: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Cuisine style cannot exceed 100 characters']
+      },
+      servingStyle: {
+        type: String,
+        enum: {
+          values: ['buffet', 'plated', 'family-style'],
+          message: '{VALUE} is not a valid serving style'
+        }
+      },
       vegetarianOnly: Boolean
     },
     // For daily cooking
     daily: {
-      mealTypes: [String], // breakfast, lunch, dinner
-      dietaryRestrictions: [String],
-      cuisinePreference: String,
-      frequency: String, // daily, weekly, monthly
-      startDate: Date,
-      endDate: Date
+      mealTypes: {
+        type: [{
+          type: String,
+          enum: {
+            values: ['breakfast', 'lunch', 'dinner', 'snacks'],
+            message: '{VALUE} is not a valid meal type'
+          }
+        }],
+        validate: {
+          validator: function(arr) {
+            // Only validate if mealTypes array exists and has items
+            if (!arr || arr.length === 0) return true;
+            return arr.length <= 4;
+          },
+          message: 'Cannot select more than 4 meal types'
+        }
+      },
+      dietaryRestrictions: {
+        type: [String],
+        validate: {
+          validator: function(arr) {
+            return arr.length <= 10;
+          },
+          message: 'Cannot have more than 10 dietary restrictions'
+        }
+      },
+      cuisinePreference: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Cuisine preference cannot exceed 100 characters']
+      },
+      frequency: {
+        type: String,
+        enum: {
+          values: ['daily', 'weekly', 'bi-weekly', 'monthly'],
+          message: '{VALUE} is not a valid frequency'
+        }
+      },
+      startDate: {
+        type: Date,
+        validate: {
+          validator: function(value) {
+            return !value || value >= new Date();
+          },
+          message: 'Start date cannot be in the past'
+        }
+      },
+      endDate: {
+        type: Date,
+        validate: {
+          validator: function(value) {
+            return !value || !this.serviceDetails?.daily?.startDate || value > this.serviceDetails.daily.startDate;
+          },
+          message: 'End date must be after start date'
+        }
+      }
     }
   },
   // Legacy fields for backward compatibility
@@ -116,7 +259,11 @@ const bookingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Chef'
   },
-  chefName: String,
+  chefName: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Chef name cannot exceed 100 characters']
+  },
   createdAt: {
     type: Date,
     default: Date.now

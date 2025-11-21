@@ -120,9 +120,27 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
       user: updatedUser
     });
   } catch (err) {
-    // console.error('\nâŒ === USER PROFILE UPDATE FAILED ===');
-    // console.error('ðŸš¨ Error:', err);
-    // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
+    // console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
+    // console.error('🚨 Error:', err);
+    // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
+    
+    // Handle Mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ 
+        message: errors[0] || 'Validation failed',
+        errors: errors
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      return res.status(400).json({ 
+        message: `This ${field} is already registered`
+      });
+    }
+    
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
