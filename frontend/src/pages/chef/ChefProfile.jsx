@@ -72,7 +72,7 @@ const ChefProfile = () => {
           </svg>
           <h3 className="text-xl font-semibold text-gray-600 mb-2">Chef Not Found</h3>
           <p className="text-gray-500 mb-6">{error || 'The chef profile you are looking for does not exist.'}</p>
-          <Link to="/chefs" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300">
+          <Link to="/book-chef" className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300">
             Browse All Chefs
           </Link>
         </div>

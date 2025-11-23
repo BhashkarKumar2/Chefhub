@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { testAuthState, clearAllAuthData } from '../../utils/authTest.js';
 import { setToken, getToken } from '../../utils/auth.js';
 
@@ -23,7 +24,7 @@ const AuthDebug = () => {
     localStorage.setItem('userId', '688f1698011794190d7203f6');
     localStorage.setItem('userEmail', 'test@example.com');
     localStorage.setItem('userName', 'Bhashkar Kumar');
-    alert('Token set! Now test auth.');
+    toast.success('Token set! Now test auth.');
   };
 
   return (

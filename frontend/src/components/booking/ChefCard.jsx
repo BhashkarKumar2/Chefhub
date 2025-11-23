@@ -2,7 +2,7 @@ import React from 'react';
 import { FaStar, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import FavoriteButton from '../FavoriteButton';
 
-const ChefCard = ({ chef, onSelect, isDark, getClass }) => {
+const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
   return (
     <div className={`group rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border overflow-hidden flex flex-col ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
       <div className="relative">
@@ -59,9 +59,13 @@ const ChefCard = ({ chef, onSelect, isDark, getClass }) => {
         
         <button
           onClick={() => onSelect(chef)}
-          className="w-full mt-auto px-6 py-3 bg-orange-600 text-white rounded-lg font-semibold shadow-md hover:bg-orange-700 transition-all duration-300 transform group-hover:scale-105"
+          disabled={!canBook}
+          title={!canBook ? 'Set your service location to enable booking' : undefined}
+          className={`w-full mt-auto px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-300 transform
+            ${canBook ? 'bg-orange-600 text-white hover:bg-orange-700 group-hover:scale-105' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}
+          `}
         >
-          Book Now
+          {canBook ? 'Book Now' : 'Set Location to Book'}
         </button>
       </div>
     </div>

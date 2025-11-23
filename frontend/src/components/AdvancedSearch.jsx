@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { buildApiEndpoint } from '../utils/apiConfig';
 
@@ -81,11 +82,11 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
       if (coordinates) {
         setUserLocation(coordinates);
       } else {
-        alert('Location not found. Please try a different address.');
+        toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
       // console.error('Location search error:', error);
-      alert('Error searching for location. Please try again.');
+      toast.error('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);
   };

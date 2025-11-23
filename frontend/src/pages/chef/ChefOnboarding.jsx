@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -170,7 +171,7 @@ const ChefOnboarding = () => {
         
         setFormData(prev => ({ ...prev, [name]: optimizedFile }));
       } catch (error) {
-        alert(error.message || 'Failed to process image');
+        toast.error(error.message || 'Failed to process image');
       }
     }
   };
@@ -293,7 +294,7 @@ const ChefOnboarding = () => {
     const validationErrors = getValidationErrors();
     if (validationErrors.length > 0) {
       // console.log('âŒ Form validation failed:', validationErrors);
-      alert('Please fix the following errors:\n\n' + validationErrors.join('\n'));
+      toast.error('Please fix the following errors: ' + validationErrors.join('; '));
       return;
     }
     // console.log('âœ… Form validation passed');
@@ -373,7 +374,7 @@ const ChefOnboarding = () => {
       // console.log('ðŸ”¥ === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
       
       // Success message and redirect
-      alert('Chef profile created successfully! Redirecting to dashboard...');
+      toast.success('Chef profile created successfully! Redirecting to dashboard...');
       navigate('/dashboard');
       
     } catch (error) {
@@ -390,7 +391,7 @@ const ChefOnboarding = () => {
         userMessage = 'This email is already registered. Please use a different email address.';
       }
       
-      alert(`Error: ${userMessage}`);
+      toast.error(`Error: ${userMessage}`);
     } finally {
       setIsSubmitting(false);
     }

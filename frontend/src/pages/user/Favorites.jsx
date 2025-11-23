@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import FavoriteButton from '../../components/FavoriteButton';
@@ -52,11 +53,11 @@ const Favorites = () => {
       if (coordinates) {
         setUserLocation(coordinates);
       } else {
-        alert('Location not found. Please try a different address.');
+        toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
       // console.error('Location search error:', error);
-      alert('Error searching for location. Please try again.');
+      toast.error('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);
   };

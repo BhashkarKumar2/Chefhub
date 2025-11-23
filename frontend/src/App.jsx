@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
@@ -27,7 +27,6 @@ import Signup from './pages/auth/SignupNew';
 // Heavy pages - lazy load to reduce initial bundle size
 const Dashboard = lazy(() => import('./pages/user/Dashboard'));
 const ChefProfile = lazy(() => import('./pages/chef/ChefProfile'));
-const Chefs = lazy(() => import('./pages/chef/Chefs'));
 const BookChef = lazy(() => import('./pages/chef/BookChef'));
 const ChefOnboarding = lazy(() => import('./pages/chef/ChefOnboarding'));
 const UnifiedAIFeatures = lazy(() => import('./components/UnifiedAIFeatures'));
@@ -100,11 +99,7 @@ const App = () => {
                         <Route path="/services" element={<Services />} />
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/search" element={<AdvancedSearch />} />
-                        <Route path="/chefs" element={
-                          <ProtectedRoute>
-                            <Chefs />
-                          </ProtectedRoute>
-                        } />
+                        <Route path="/chefs" element={<Navigate to="/book-chef" replace />} />
                         {/* Protected routes - require authentication */}
                         <Route path="/dashboard" element={
                           <ProtectedRoute>

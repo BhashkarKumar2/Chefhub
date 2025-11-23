@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -260,14 +261,14 @@ const EditProfile = () => {
         localStorage.setItem('user', JSON.stringify(result.user));
       }
       
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
       navigate('/profile');
     } catch (error) {
       // console.error('\nâŒ === USER PROFILE UPDATE FAILED ===');
       // console.error('ðŸš¨ Error:', error.message);
       // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
       
-      alert(`Error updating profile: ${error.message}`);
+      toast.error(`Error updating profile: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

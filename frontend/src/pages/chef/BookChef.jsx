@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -154,25 +155,25 @@ const BookChef = () => {
   };
 
   const handleBooking = async () => {
-    if (!selectedChef) return alert("No chef selected");
+    if (!selectedChef) return toast.error("No chef selected");
     
     if (!bookingDetails.serviceType) {
-      alert("Please select a service type");
+      toast.error("Please select a service type");
       return;
     }
     
     if (!bookingDetails.date) {
-      alert("Please select a date");
+      toast.error("Please select a date");
       return;
     }
     
     if (!bookingDetails.time) {
-      alert("Please select a time");
+      toast.error("Please select a time");
       return;
     }
     
     if (!bookingDetails.guestCount || bookingDetails.guestCount <= 0) {
-      alert("Please enter the number of guests");
+      toast.error("Please enter the number of guests");
       return;
     }
 
@@ -180,13 +181,13 @@ const BookChef = () => {
     const selectedDate = new Date(bookingDetails.date + 'T' + bookingDetails.time);
     const now = new Date();
     if (selectedDate <= now) {
-      alert("Please select a future date and time");
+      toast.error("Please select a future date and time");
       return;
     }
 
     // Validate user location
     if (!userLocation.city || !userLocation.state || !userLocation.lat || !userLocation.lon) {
-      alert("Please enter city, state and set your service location before booking.");
+      toast.error("Please enter city, state and set your service location before booking.");
       return;
     }
 
@@ -194,7 +195,7 @@ const BookChef = () => {
       const token = localStorage.getItem('token');
       
       if (!token) {
-        alert("Please log in to make a booking");
+        toast.error("Please log in to make a booking");
         navigate('/login');
         return;
       }
@@ -229,7 +230,7 @@ const BookChef = () => {
 
       if (!bookingRes.ok) {
         const error = await bookingRes.json();
-        alert(error.message || "Failed to create booking!");
+        toast.error(error.message || "Failed to create booking!");
         return;
       }
 
@@ -252,7 +253,7 @@ const BookChef = () => {
 
       if (!paymentRes.ok) {
         const error = await paymentRes.json();
-        alert(error.message || "Failed to create payment order!");
+        toast.error(error.message || "Failed to create payment order!");
         return;
       }
 
@@ -260,14 +261,14 @@ const BookChef = () => {
       initializeRazorpay(paymentResult.data, bookingResult.booking);
 
     } catch (err) {
-      alert("Error booking chef. Please try again.");
+      toast.error("Error booking chef. Please try again.");
     }
   };
 
   // Initialize Razorpay payment
   const initializeRazorpay = (paymentData, bookingData) => {
     if (!razorpayKeyId) {
-      alert('Payment configuration not loaded. Please refresh the page.');
+      toast.error('Payment configuration not loaded. Please refresh the page.');
       return;
     }
     
@@ -315,7 +316,7 @@ const BookChef = () => {
         rzp.open();
       };
       script.onerror = () => {
-        alert('Failed to load payment gateway. Please try again.');
+        toast.error('Failed to load payment gateway. Please try again.');
       };
       document.body.appendChild(script);
     } else {
@@ -343,13 +344,13 @@ const BookChef = () => {
       const verifyResult = await verifyRes.json();
 
       if (verifyResult.success) {
-        alert("Payment successful! Your booking is confirmed.");
+        toast.success("Payment successful! Your booking is confirmed.");
         navigate('/dashboard');
       } else {
-        alert("Payment verification failed. Please contact support.");
+        toast.error("Payment verification failed. Please contact support.");
       }
     } catch (error) {
-      alert("Error verifying payment. Please contact support.");
+      toast.error("Error verifying payment. Please contact support.");
     }
   };
 
@@ -425,6 +426,7 @@ const BookChef = () => {
                     onSelect={setSelectedChef}
                     isDark={isDark}
                     getClass={getClass}
+                    canBook={Boolean(userLocation.lat && userLocation.lon)}
                   />
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { Link } from 'react-router-dom';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -76,13 +77,13 @@ const ViewBookings = () => {
       if (data.success) {
         // Refresh bookings list
         await fetchBookings();
-        alert('Booking cancelled successfully');
+        toast.success('Booking cancelled successfully');
       } else {
-        alert(data.message || 'Failed to cancel booking');
+        toast.error(data.message || 'Failed to cancel booking');
       }
     } catch (error) {
       // console.error('Error cancelling booking:', error);
-      alert('Failed to cancel booking. Please try again.');
+      toast.error('Failed to cancel booking. Please try again.');
     }
   };
 
@@ -104,13 +105,13 @@ const ViewBookings = () => {
       if (data.success) {
         // Refresh bookings list
         await fetchBookings();
-        alert('Booking updated successfully');
+        toast.success('Booking updated successfully');
       } else {
-        alert(data.message || 'Failed to update booking');
+        toast.error(data.message || 'Failed to update booking');
       }
     } catch (error) {
       // console.error('Error updating booking:', error);
-      alert('Failed to update booking. Please try again.');
+      toast.error('Failed to update booking. Please try again.');
     }
   };
 

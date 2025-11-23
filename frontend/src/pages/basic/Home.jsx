@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -127,7 +128,7 @@ const Home = () => {
   const handleLocationSearch = async (e) => {
     e.preventDefault();
     if (!searchLocation.trim()) {
-      alert('Please enter a location');
+      toast.error('Please enter a location');
       return;
     }
 
@@ -146,11 +147,11 @@ const Home = () => {
           }
         });
       } else {
-        alert('Location not found. Please try a different address.');
+        toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
       // console.error('Search error:', error);
-      alert('Error searching for location. Please try again.');
+      toast.error('Error searching for location. Please try again.');
     }
     setIsSearching(false);
   };
@@ -565,7 +566,7 @@ const Home = () => {
                     {isLoading ? 'Loading...' : (isAuthenticated ? 'Start Booking Now' : 'Sign Up to Start Booking')}
                   </button>
                   <Link 
-                    to="/chefs" 
+                    to="/book-chef" 
                     className={`border-2 ${isDark ? 'border-orange-400 text-orange-400 hover:bg-orange-400' : 'border-orange-600 text-orange-600 hover:bg-orange-600'} px-10 py-4 rounded-xl text-lg font-bold hover:text-white transition-all duration-300`}
                   >
                     Browse Chefs

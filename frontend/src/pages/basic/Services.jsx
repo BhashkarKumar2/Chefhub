@@ -112,7 +112,7 @@ const Services = () => {
   ];
 
   const handleBookService = (serviceId) => {
-    navigate(`/chefs?service=${serviceId}`);
+    navigate(`/book-chef?service=${serviceId}`);
   };
 
   return (
@@ -150,7 +150,7 @@ const Services = () => {
 
             <div className="flex flex-wrap justify-center gap-4">
               <button
-                onClick={() => navigate('/chefs')}
+                onClick={() => navigate('/book-chef')}
                 className={`px-8 py-4 ${isDark ? 'bg-white text-orange-600' : 'bg-white text-orange-600'} rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg`}
               >
                 Browse Chefs
@@ -356,7 +356,7 @@ const Services = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/chefs')}
+                onClick={() => navigate('/book-chef')}
                 className={`group px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full text-lg font-bold shadow-2xl ${isDark ? 'shadow-orange-500/30' : 'shadow-orange-500/50'} hover:shadow-orange-500/70 transition-all inline-flex items-center gap-3`}
               >
                 Explore Chefs
