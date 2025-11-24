@@ -1,186 +1,106 @@
-# ChefHub — AI‑Enhanced Private Chef Booking
+# Chefhub - AI-Powered Culinary Marketplace
 
-Connect with verified private chefs, explore menus, and book curated culinary experiences. ChefHub blends a modern UX with AI features, location awareness, and secure payments.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/Node.js-v18%2B-green)
+![React](https://img.shields.io/badge/React-v19-blue)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18+-blue)](https://react.dev/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-5.0+-green)](https://mongodb.com)
-[![Razorpay](https://img.shields.io/badge/Payments-Razorpay-orange)](https://razorpay.com)
-[![Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)](https://ai.google.dev)
+**Chefhub** is a full-stack web application that bridges the gap between culinary professionals and food enthusiasts. It features a robust booking system, real-time communication, and an AI-powered chef assistant to democratize access to professional culinary advice.
 
-## Features
+---
 
-- AI recommendations, AI menu generation, and assistant tools
-- Advanced search and filters with location awareness
-- Realtime updates (bookings, notifications) via Socket.io
-- Secure authentication (email/password, OAuth/OTP)
-- Chef profiles, portfolios, certificates, galleries, reviews
-- Secure payments with Razorpay Checkout
-- Responsive UI with Tailwind and dark/light themes
-- Toast notifications across the app (non‑blocking)
+##  Key Features
 
-## Live
+*   **Smart Chef Discovery:** Advanced filtering to find chefs by cuisine, location, and availability.
+*   **AI Chef Assistant:** Integrated **Google Gemini** for intelligent recipe suggestions and culinary tips.
+*   **Seamless Booking:** Complete booking flow with status updates and history.
+*   **Secure Payments:** Integrated **Razorpay** for safe and easy transactions.
+*   **High Performance:** **Redis** caching for lightning-fast data retrieval.
+*   **Live Tracking:** Real-time location updates for chef arrival tracking.
 
-- Frontend: `https://chefhub-poou.vercel.app`
-- Backend API: `https://chefhub.onrender.com`
-- Health: `https://chefhub.onrender.com/api/health`
+---
 
 ## Tech Stack
 
-- Frontend: React 18, Vite, Tailwind CSS, React Router, Socket.io Client
-- Backend: Node.js, Express, MongoDB (Mongoose), Socket.io, JWT, Multer
-- AI/External: Google Gemini, Firebase, Cloudinary, Razorpay, OpenRouteService
+### Frontend
+*   **Framework:** React 19 (Vite)
+*   **Styling:** Tailwind CSS 4, Framer Motion
+*   **State Management:** TanStack Query
+*   **Real-time:** Socket.io Client
 
-## Monorepo Layout
+### Backend
+*   **Runtime:** Node.js
+*   **Framework:** Express.js
+*   **Database:** MongoDB (Mongoose)
+*   **Caching:** Redis
+*   **Authentication:** Passport.js (Google/Facebook OAuth), JWT
+*   **AI:** Google Generative AI (Gemini)
+*   **Payments:** Razorpay
+*   **Storage:** Cloudinary
 
-```
-./
-├─ backend/
-│  ├─ auth/                # auth controller, middleware, routes
-│  ├─ config/              # cloudinary, passport, env loaders
-│  ├─ controllers/         # booking, chef, payment, etc.
-│  ├─ models/              # Booking, Chef, User
-│  ├─ routes/              # api route modules
-│  └─ server.js            # express entry
-└─ frontend/
-   └─ src/
-      ├─ components/       # UI, booking flow, shared widgets
-      ├─ pages/            # auth, chef, user, basic
-      ├─ context/          # auth, theme
-      ├─ utils/            # apiConfig, theme, etc.
-      └─ App.jsx           # router
-```
+---
 
-## Key UX Notes
-
-- Canonical booking route is `/book-chef`. Navigating to `/chefs` redirects to `/book-chef`.
-- On the booking page, “Book Now” buttons are disabled until the user sets a valid service location (geocoded lat/lon).
-- Toasts (react-hot-toast) replace blocking alerts globally.
-
-## Getting Started
+##  Getting Started
 
 ### Prerequisites
+*   Node.js (v18 or higher)
+*   MongoDB (Local or Atlas)
+*   Redis Server
 
-- Node.js 16+
-- MongoDB 5.0+
-- Accounts/keys: Google Gemini, Firebase, Cloudinary, Razorpay, OpenRouteService
+### Installation
 
-### Setup
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yourusername/chefhub.git
+    cd chefhub
+    ```
 
-1) Clone
-```bash
-git clone https://github.com/yourusername/chefhub.git
-cd chefhub
-```
+2.  **Backend Setup**
+    ```bash
+    cd backend
+    npm install
+    # Create .env file (see Environment Variables below)
+    npm start
+    ```
 
-2) Backend
-```bash
-cd backend
-npm install
-copy .env.example .env  # or manually create .env
-# Fill .env with your secrets
-```
+3.  **Frontend Setup**
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
 
-3) Frontend
-```bash
-cd ../frontend
-npm install
-```
+---
 
-### Run (two terminals)
+##  Environment Variables
 
-```bash
-# Terminal 1
-cd backend
-npm start
+Create a `.env` file in the `backend` directory with the following:
 
-# Terminal 2
-cd frontend
-npm run dev
-```
-
-## Environment Variables
-
-### Backend `.env`
-
-```bash
+```env
 PORT=5000
-NODE_ENV=development
-
-# Mongo
-MONGODB_URI=mongodb://localhost:27017/chefhub
-
-# Auth
+MONGO_URI=your_mongodb_uri
+REDIS_URL=redis://localhost:6379
+SESSION_SECRET=your_session_secret
 JWT_SECRET=your_jwt_secret
 
-# Google Gemini
-GEMINI_API_KEY=your_gemini_api_key
-
-# Firebase (if used)
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=service@acct.iam.gserviceaccount.com
-
-# Google OAuth (optional)
+# OAuth
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
+FACEBOOK_APP_ID=...
+FACEBOOK_APP_SECRET=...
 
-# Cloudinary
+# Services
+GEMINI_API_KEY=...
+RAZORPAY_KEY_ID=...
+RAZORPAY_KEY_SECRET=...
 CLOUDINARY_CLOUD_NAME=...
 CLOUDINARY_API_KEY=...
 CLOUDINARY_API_SECRET=...
-
-# Razorpay
-RAZORPAY_KEY_ID=...
-RAZORPAY_KEY_SECRET=...
-
-# OpenRouteService
-ORS_API_KEY=...
-
-# Sessions
-SESSION_SECRET=...
 ```
 
-### Frontend `.env`
+---
 
-```bash
-# Payments
-VITE_RAZORPAY_KEY_ID=...
 
-# OpenRouteService
-VITE_ORS_API_KEY=...
+## Contributing
 
-# EmailJS (if used)
-VITE_EMAILJS_SERVICE_ID=...
-VITE_EMAILJS_TEMPLATE_ID=...
-VITE_EMAILJS_PUBLIC_KEY=...
-```
-
-## API Overview
-
-- Base: `https://chefhub.onrender.com/api`
-- Auth: `/auth/register`, `/auth/login`, `/auth/verify-firebase-otp`
-- Chefs: `/chefs`, `/chefs/search`, `/chefs/:id`
-- Bookings: `/bookings` (POST), `/bookings/user/:id` (GET)
-- Payments: `/payments/create-order`, `/payments/verify`
-- AI: `/ai/chef-recommendations`, `/ai/generate-menu`
-
-## Scripts
-
-- Backend: `npm start`, `npm test`
-- Frontend: `npm run dev`, `npm run build`, `npm run preview`
-
-## License
-
-MIT — see `LICENSE`.
-
-## Support
-
-- Issues: GitHub Issues
-- Email: support@chefhub.com
-
-—
-
-Last Updated: November 23, 2025
-Version: 2.1.0
-Status: Active
+Contributions are welcome! Please feel free to submit a Pull Request.
