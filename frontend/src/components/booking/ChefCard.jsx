@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaStar, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import FavoriteButton from '../FavoriteButton';
+import FavoriteButton from '../features/FavoriteButton';
 
 const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
   return (

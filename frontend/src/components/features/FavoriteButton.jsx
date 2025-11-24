@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFavorites } from '../contexts/FavoritesContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 const FavoriteButton = ({ 
   chef, 
@@ -175,3 +175,4 @@ const FavoriteButton = ({
 };
 
 export default FavoriteButton;
+

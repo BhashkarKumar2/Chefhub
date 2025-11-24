@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useAuth } from '../../context/AuthContext';
-import TextInput from '../../components/TextInput';
-import CheckboxGroup from '../../components/CheckboxGroup';
-import TextareaInput from '../../components/TextareaInput';
+import TextInput from '../../components/inputs/TextInput';
+import CheckboxGroup from '../../components/inputs/CheckboxGroup';
+import TextareaInput from '../../components/inputs/TextareaInput';
 import { prepareImageForUpload } from '../../utils/imageOptimizer';
 
 const ChefOnboarding = () => {

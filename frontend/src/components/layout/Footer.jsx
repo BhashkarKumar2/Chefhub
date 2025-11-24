@@ -1,5 +1,5 @@
 import React from 'react';
-import { useThemeAwareStyle } from '../utils/themeUtils';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const Footer = () => {
   const { classes } = useThemeAwareStyle();
@@ -12,4 +12,3 @@ const Footer = () => {
 };
 
 export default Footer;
-  

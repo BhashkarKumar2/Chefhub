@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
-import FavoriteButton from '../../components/FavoriteButton';
+import FavoriteButton from '../../components/features/FavoriteButton';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 

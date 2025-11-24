@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { io } from 'socket.io-client';
-import { SOCKET_URL } from '../utils/apiConfig';
+import { SOCKET_URL } from '../../utils/apiConfig';
 
 const SocketContext = createContext();
 
@@ -346,3 +346,4 @@ export const RealTimeChat = ({ recipientId, bookingId }) => {
 };
 
 export default SocketProvider;
+

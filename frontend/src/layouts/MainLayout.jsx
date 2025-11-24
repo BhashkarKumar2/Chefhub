@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import ThemeToggleButton from '../components/ThemeToggleButton';
+import { ThemeToggleButton } from '../components/inputs';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Sidebar from '../components/Sidebar';
+import { Sidebar } from '../components/layout';
 import { useTheme } from '../context/ThemeContext';
-import Footer from '../components/Footer';
+import { Footer } from '../components/layout';
 
 const MainLayout = ({ children }) => {
   const { theme } = useTheme();
@@ -45,7 +45,7 @@ const MainLayout = ({ children }) => {
     </React.Suspense>
       {/* Sidebar - handles its own responsive behavior */}
       {showSidebar && <Sidebar />}
-{/* import ThemeToggleButton from '../components/ThemeToggleButton'; */}
+{/* import { ThemeToggleButton } from '../components/inputs'; */}
 
       {/* Page content */}
       <div

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useThemeAwareStyle } from '../utils/themeUtils';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const TextareaInput = ({ label, name, value, onChange, placeholder, required = false }) => {
   const { getClass, classes } = useThemeAwareStyle();

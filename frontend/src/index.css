@@ -85,6 +85,68 @@ html, body {
   100% { background-position: 0% 50%; }
 }
 
+/* Themed Scrollbar for Sidebar */
+.sidebar-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--orange-600) var(--orange-100); /* Firefox */
+}
+
+.dark .sidebar-scrollbar {
+  /* Neutral dark base, reduce saturation */
+  scrollbar-color: #374151 #111827; /* Firefox dark neutral */
+}
+
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-track {
+  background: var(--orange-100);
+}
+
+.dark .sidebar-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--orange-500), var(--amber-500));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, var(--orange-600), var(--amber-600));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 0 6px rgba(249,115,22,0.35);
+}
+
+.dark .sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #4b5563, #374151); /* slate/neutral */
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+}
+
+.dark .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  /* Accent only on hover */
+  background: linear-gradient(to bottom, var(--orange-600), var(--amber-600));
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.6), 0 0 6px rgba(249,115,22,0.35);
+}
+
+/* Hover expansion effect: increase perceived width without layout shift */
+.sidebar-scrollbar:hover::-webkit-scrollbar {
+  width: 10px;
+}
+.sidebar-scrollbar:hover::-webkit-scrollbar-thumb {
+  border: 2px solid transparent; /* preserve grip */
+}
+.dark .sidebar-scrollbar:hover::-webkit-scrollbar {
+  width: 10px;
+}
+/* Firefox hover width adjustment */
+.sidebar-scrollbar:hover {
+  scrollbar-width: auto;
+}
+
 /* Appetizing Text Gradients */
 .text-saffron-gradient {
   background: linear-gradient(135deg, var(--orange-600), var(--amber-600));

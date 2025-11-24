@@ -17,7 +17,7 @@ import Favorites from '../pages/user/Favorites'
 import ChefOnboarding from '../pages/chef/ChefOnboarding'
 import ViewBookings from '../pages/user/ViewBookings'
 import AdvancedSearch from '../components/AdvancedSearch'
-import UnifiedAIFeatures from '../components/UnifiedAIFeatures'
+import { UnifiedAIFeatures } from '../components/ai';
 
 export default function Router() {
   return (

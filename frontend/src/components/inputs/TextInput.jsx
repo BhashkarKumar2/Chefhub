@@ -1,5 +1,5 @@
 import React from 'react';
-import { useThemeAwareStyle } from '../utils/themeUtils';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const TextInput = ({ label, name, value, onChange, placeholder, type = 'text', required = false }) => {
   const { getClass, classes } = useThemeAwareStyle();
@@ -23,12 +23,3 @@ const TextInput = ({ label, name, value, onChange, placeholder, type = 'text', r
 };
 
 export default TextInput;
-
-// <TextInput
-//   label="Full Name"
-//   name="fullName"
-//   value={form.fullName}
-//   onChange={handleChange}
-//   placeholder="Enter your full name"
-//   required
-// />

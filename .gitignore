@@ -144,7 +144,6 @@ dist
 
 # Gatsby files
 .cache/
-public
 
 # Storybook build outputs
 .out
@@ -209,6 +208,9 @@ Thumbs.db
 # Application specific
 uploads/
 public/uploads/
+
+# Backup files
+**/old backup files/
 
 # Project-specific test and debug files
 test-*.js

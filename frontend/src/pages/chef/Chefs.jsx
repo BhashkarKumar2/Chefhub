@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-import FavoriteButton from '../../components/FavoriteButton';
+import FavoriteButton from '../../components/features/FavoriteButton';
 import { cachedFetch, invalidateCache } from '../../utils/apiCache';
 import { debounce } from '../../utils/debounce';
 

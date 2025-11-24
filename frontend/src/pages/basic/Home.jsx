@@ -4,8 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { buildApiEndpoint } from '../../utils/apiConfig';
-import BackgroundCarousel from '../../components/BackgroundCarousel';
-import TestimonialCarousel from '../../components/TestimonialCarousel';
+import BackgroundCarousel from '../../components/carousel/BackgroundCarousel';
+import TestimonialCarousel from '../../components/carousel/TestimonialCarousel';
 import logo from '../../assets/logo.png'
 
 

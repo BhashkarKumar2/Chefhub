@@ -4,8 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { SocketProvider } from './components/RealTimeFeatures';
-import ProtectedRoute from './components/ProtectedRoute';
+import { SocketProvider } from './components/features/RealTimeFeatures';
+import ProtectedRoute from './components/layout/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
 
 // Loading component
@@ -29,7 +29,7 @@ const Dashboard = lazy(() => import('./pages/user/Dashboard'));
 const ChefProfile = lazy(() => import('./pages/chef/ChefProfile'));
 const BookChef = lazy(() => import('./pages/chef/BookChef'));
 const ChefOnboarding = lazy(() => import('./pages/chef/ChefOnboarding'));
-const UnifiedAIFeatures = lazy(() => import('./components/UnifiedAIFeatures'));
+const UnifiedAIFeatures = lazy(() => import('./components/ai/UnifiedAIFeatures'));
 const AdvancedSearch = lazy(() => import('./components/AdvancedSearch'));
 
 // Smaller pages - lazy load but less critical

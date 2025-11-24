@@ -11,3 +11,4 @@ const FeatureCard = ({ icon, title, description }) => (
 );
 
 export default React.memo(FeatureCard);
+

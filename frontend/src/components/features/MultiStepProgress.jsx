@@ -1,5 +1,4 @@
 import React from 'react';
-
 const MultiStepProgress = ({ currentStep, totalSteps }) => {
   return (
     <div className="w-full mb-6">

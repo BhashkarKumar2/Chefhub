@@ -1,5 +1,5 @@
 import React from 'react';
-import { useThemeAwareStyle } from '../utils/themeUtils';
+import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const CheckboxGroup = ({ label, options, selectedOptions, onChange }) => {
   const { getClass, classes } = useThemeAwareStyle();
