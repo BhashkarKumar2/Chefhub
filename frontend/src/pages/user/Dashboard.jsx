@@ -120,13 +120,7 @@ const Dashboard = () => {
               const now = new Date();
               return bookingDate > now && ['confirmed', 'pending'].includes(booking.status?.toLowerCase());
             })
-            .slice(0, 3) // Show only first 3
-            .map(booking => ({
-              chef: booking.chef?.fullName || booking.chef?.name || 'Unknown Chef',
-              date: formatBookingDate(booking.date, booking.time),
-              event: booking.serviceType || 'Chef Service',
-              status: booking.status || 'Pending'
-            }));
+            .slice(0, 3); // Show only first 3
           
           setDashboardData(prev => ({
             ...prev,
@@ -423,25 +417,98 @@ const Dashboard = () => {
               {dashboardData.upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {dashboardData.upcomingBookings.map((booking, index) => (
-                    <div key={index} className={`border rounded-xl p-6 hover:shadow-md transition-shadow duration-300 ${isDark ? 'bg-gray-900 border-gray-700' : 'bg-stone-50 border-stone-200'}`}> 
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className={`text-lg font-semibold mb-1 ${getClass('textPrimary')}`}>{booking.chef}</h4>
-                          <p className={`mb-2 ${getClass('textSecondary')}`}>{booking.event}</p>
-                          <div className={`flex items-center text-sm ${getClass('textMuted')}`}>
-                            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd"></path>
-                            </svg>
-                            {booking.date}
+                    <div key={booking._id || index} className={`group border rounded-xl p-6 hover:shadow-md transition-all duration-300 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-stone-200'}`}>
+                      {/* Chef Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={booking.chef?.profilePicture || booking.chef?.profileImage?.url || 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&auto=format&fit=crop&q=60'}
+                              alt={booking.chef?.name || 'Chef'}
+                              className="w-14 h-14 rounded-full object-cover ring-4 ring-orange-100 dark:ring-orange-900/30 group-hover:scale-110 transition-transform duration-300"
+                              onError={(e) => {
+                                if (!e.target.dataset.errorHandled) {
+                                  e.target.dataset.errorHandled = 'true';
+                                  e.target.src = 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&auto=format&fit=crop&q=60';
+                                }
+                              }}
+                            />
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center shadow-lg">
+                              <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                              </svg>
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className={`text-lg font-bold mb-1 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                              {booking.chef?.name || booking.chef?.fullName || 'Chef'}
+                            </h4>
+                            <p className={`text-sm font-semibold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
+                              {booking.serviceType || 'Booking'}
+                            </p>
                           </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                          booking.status?.toLowerCase() === 'confirmed' 
-                            ? `bg-green-100 text-green-800 ${isDark ? 'bg-green-900 text-green-200' : ''}` 
-                            : `bg-yellow-100 text-yellow-800 ${isDark ? 'bg-yellow-900 text-yellow-200' : ''}`
-                        }`}>
-                          {booking.status}
+                        
+                        {/* Status Badge */}
+                        <div>
+                          {booking.status?.toLowerCase() === 'pending' && (
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-700' : 'bg-yellow-100 text-yellow-800'}`}>
+                              <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></span>
+                              Pending
+                            </span>
+                          )}
+                          {booking.status?.toLowerCase() === 'confirmed' && (
+                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-green-100 text-green-800'}`}>
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                              </svg>
+                              Confirmed
+                            </span>
+                          )}
                         </div>
+                      </div>
+
+                      {/* Booking Details */}
+                      <div className="space-y-2.5 mb-4">
+                        <div className={`flex items-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <svg className="w-5 h-5 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium">{new Date(booking.date).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </div>
+                        <div className={`flex items-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          <svg className="w-5 h-5 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-medium">{booking.time || 'Time not specified'}</span>
+                        </div>
+                        {booking.guestCount && (
+                          <div className={`flex items-center text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <svg className="w-5 h-5 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span className="font-medium">{booking.guestCount} Guest{booking.guestCount !== 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                        {booking.location && (
+                          <div className={`flex items-start text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            <svg className="w-5 h-5 mr-3 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="font-medium">{booking.location}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Price */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                        {booking.totalPrice && (
+                          <div>
+                            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total Amount</p>
+                            <p className={`text-xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{booking.totalPrice.toLocaleString()}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

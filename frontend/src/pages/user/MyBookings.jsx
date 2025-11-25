@@ -6,25 +6,45 @@ import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { Link } from 'react-router-dom';
 
 const MyBookings = () => {
-  const { user } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { getClass, isDark } = useThemeAwareStyle();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, upcoming, past
 
   useEffect(() => {
-    fetchMyBookings();
-  }, []);
+    if (!authLoading && isAuthenticated && user) {
+      fetchMyBookings();
+    } else if (!authLoading && !isAuthenticated) {
+      setLoading(false);
+    }
+  }, [authLoading, isAuthenticated, user]);
 
   const fetchMyBookings = async () => {
     try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('No authentication token available');
+        setLoading(false);
+        return;
+      }
+      
+      // Use the general bookings endpoint like Dashboard does
       const response = await axios.get(
-        buildApiEndpoint(`bookings/user/${user._id}`),
-        { withCredentials: true }
+        buildApiEndpoint('bookings'),
+        { 
+          withCredentials: true,
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
       setBookings(response.data.bookings || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      console.error('Error details:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -43,16 +63,24 @@ const MyBookings = () => {
   const filterBookings = () => {
     const now = new Date();
     if (filter === 'upcoming') {
-      return bookings.filter(b => new Date(b.date) >= now && b.status !== 'completed');
+      return bookings.filter(b => 
+        new Date(b.date) >= now && 
+        b.status !== 'completed' && 
+        b.status !== 'cancelled'
+      );
     } else if (filter === 'past') {
-      return bookings.filter(b => new Date(b.date) < now || b.status === 'completed');
+      return bookings.filter(b => 
+        new Date(b.date) < now || 
+        b.status === 'completed' || 
+        b.status === 'cancelled'
+      );
     }
     return bookings;
   };
 
   const filteredBookings = filterBookings();
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className={`min-h-screen flex justify-center items-center ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-600"></div>
@@ -106,9 +134,9 @@ const MyBookings = () => {
                 }`}
               >
                 {tab}
-                {tab === 'upcoming' && bookings.filter(b => new Date(b.date) >= new Date() && b.status !== 'completed').length > 0 && (
+                {tab === 'upcoming' && bookings.filter(b => new Date(b.date) >= new Date() && b.status !== 'completed' && b.status !== 'cancelled').length > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {bookings.filter(b => new Date(b.date) >= new Date() && b.status !== 'completed').length}
+                    {bookings.filter(b => new Date(b.date) >= new Date() && b.status !== 'completed' && b.status !== 'cancelled').length}
                   </span>
                 )}
               </button>
@@ -147,11 +175,14 @@ const MyBookings = () => {
                     <div className="flex items-center gap-4 flex-1">
                       <div className="relative flex-shrink-0">
                         <img
-                          src={booking.chef?.profilePicture || '/default-avatar.png'}
+                          src={booking.chef?.profilePicture || booking.chef?.profileImage?.url || 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&auto=format&fit=crop&q=60'}
                           alt={booking.chef?.name}
                           className="w-16 h-16 rounded-full object-cover ring-4 ring-orange-100 dark:ring-orange-900/30 group-hover:scale-110 transition-transform duration-300"
                           onError={(e) => {
-                            e.target.src = '/default-avatar.png';
+                            if (!e.target.dataset.errorHandled) {
+                              e.target.dataset.errorHandled = 'true';
+                              e.target.src = 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&auto=format&fit=crop&q=60';
+                            }
                           }}
                         />
                         <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center shadow-lg">
@@ -238,7 +269,7 @@ const MyBookings = () => {
                     )}
                   </div>
 
-                  {/* Price & Action */}
+                  {/* Price */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                     {booking.totalPrice && (
                       <div>
@@ -246,13 +277,6 @@ const MyBookings = () => {
                         <p className={`text-2xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{booking.totalPrice.toLocaleString()}</p>
                       </div>
                     )}
-                    
-                    <button className={`inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm`}>
-                      View Details
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
                   </div>
                 </div>
               </div>
