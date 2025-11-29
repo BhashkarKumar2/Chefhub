@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import api from '../utils/api';
 
 /**
  * React Query Hooks for Chef Data
@@ -26,17 +24,17 @@ export const chefKeys = {
 
 // ===== Fetch Functions =====
 const fetchAllChefs = async () => {
-  const { data } = await axios.get(`${API_URL}/chefs`);
+  const { data } = await api.get('/chefs');
   return data.chefs || data;
 };
 
 const fetchChefById = async (id) => {
-  const { data } = await axios.get(`${API_URL}/chefs/${id}`);
+  const { data } = await api.get(`/chefs/${id}`);
   return data;
 };
 
 const searchChefs = async (searchParams) => {
-  const { data } = await axios.get(`${API_URL}/chefs/search`, { params: searchParams });
+  const { data } = await api.get('/chefs/search', { params: searchParams });
   return data;
 };
 
@@ -97,12 +95,10 @@ export const useToggleFavorite = () => {
 
   return useMutation({
     mutationFn: async ({ chefId, isFavorite }) => {
-      const token = localStorage.getItem('authToken');
       const endpoint = isFavorite ? 'remove' : 'add';
-      const { data } = await axios.post(
-        `${API_URL}/users/favorites/${endpoint}`,
-        { chefId },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const { data } = await api.post(
+        `/users/favorites/${endpoint}`,
+        { chefId }
       );
       return data;
     },
@@ -123,7 +119,7 @@ export const useCreateChef = () => {
 
   return useMutation({
     mutationFn: async (chefData) => {
-      const { data } = await axios.post(`${API_URL}/chefs`, chefData);
+      const { data } = await api.post('/chefs', chefData);
       return data;
     },
     onSuccess: () => {
@@ -142,7 +138,7 @@ export const useUpdateChef = () => {
 
   return useMutation({
     mutationFn: async ({ id, chefData }) => {
-      const { data } = await axios.put(`${API_URL}/chefs/${id}`, chefData);
+      const { data } = await api.put(`/chefs/${id}`, chefData);
       return data;
     },
     onSuccess: (_, variables) => {

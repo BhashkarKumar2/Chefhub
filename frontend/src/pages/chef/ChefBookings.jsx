@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { toast } from 'react-hot-toast';
@@ -18,10 +17,7 @@ const ChefBookings = () => {
 
   const fetchChefBookings = async () => {
     try {
-      const response = await axios.get(
-        buildApiEndpoint(`bookings/chef/${user._id}`),
-        { withCredentials: true }
-      );
+      const response = await api.get(`/bookings/chef/${user._id}`);
       setBookings(response.data.bookings || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -33,11 +29,7 @@ const ChefBookings = () => {
 
   const handleAcceptBooking = async (bookingId) => {
     try {
-      await axios.patch(
-        buildApiEndpoint(`bookings/${bookingId}/status`),
-        { status: 'confirmed' },
-        { withCredentials: true }
-      );
+      await api.patch(`/bookings/${bookingId}/status`, { status: 'confirmed' });
       toast.success('Booking accepted!');
       fetchChefBookings(); // Refresh
     } catch (error) {
@@ -48,11 +40,7 @@ const ChefBookings = () => {
 
   const handleDeclineBooking = async (bookingId) => {
     try {
-      await axios.patch(
-        buildApiEndpoint(`bookings/${bookingId}/status`),
-        { status: 'cancelled' },
-        { withCredentials: true }
-      );
+      await api.patch(`/bookings/${bookingId}/status`, { status: 'cancelled' });
       toast.success('Booking declined');
       fetchChefBookings(); // Refresh
     } catch (error) {
@@ -63,11 +51,7 @@ const ChefBookings = () => {
 
   const handleCompleteBooking = async (bookingId) => {
     try {
-      await axios.patch(
-        buildApiEndpoint(`bookings/${bookingId}/status`),
-        { status: 'completed' },
-        { withCredentials: true }
-      );
+      await api.patch(`/bookings/${bookingId}/status`, { status: 'completed' });
       toast.success('Booking marked as completed!');
       fetchChefBookings(); // Refresh
     } catch (error) {

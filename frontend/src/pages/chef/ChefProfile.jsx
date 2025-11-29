@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 
 const ChefProfile = () => {
   const { isDark, getClass } = useThemeAwareStyle();
@@ -16,8 +16,6 @@ const ChefProfile = () => {
   useEffect(() => {
     const loadChefProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        
         if (!id) {
           setError('Chef ID not provided');
           setLoading(false);
@@ -26,24 +24,14 @@ const ChefProfile = () => {
 
         // console.log('ðŸ” Loading chef profile for ID:', id);
         
-        const response = await fetch(buildApiEndpoint(`/chefs/${id}`), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const chefData = await response.json();
-          // console.log('âœ… Chef data loaded:', chefData);
-          setChef(chefData);
-        } else {
-          const errorData = await response.json();
-          setError(errorData.message || 'Failed to load chef profile');
-        }
+        const response = await api.get(`/chefs/${id}`);
+        const chefData = response.data;
+        
+        // console.log('âœ… Chef data loaded:', chefData);
+        setChef(chefData);
       } catch (error) {
         // console.error('Error loading chef profile:', error);
-        setError('Failed to load chef profile');
+        setError(error.response?.data?.message || 'Failed to load chef profile');
       } finally {
         setLoading(false);
       }
@@ -386,4 +374,3 @@ const ChefProfile = () => {
 };
 
 export default ChefProfile;
-  

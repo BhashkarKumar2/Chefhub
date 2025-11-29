@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { FaArrowLeft, FaUsers } from 'react-icons/fa';
 import LocationInput from '../../components/booking/LocationInput';
@@ -55,8 +55,8 @@ const BookChef = () => {
   useEffect(() => {
     const fetchRazorpayConfig = async () => {
       try {
-        const res = await fetch(`${buildApiEndpoint('')}proxy/razorpay-config`);
-        const data = await res.json();
+        const res = await api.get('/proxy/razorpay-config');
+        const data = res.data;
         if (data.success && data.keyId) {
           setRazorpayKeyId(data.keyId);
         }
@@ -71,21 +71,11 @@ const BookChef = () => {
     const fetchAndSortChefs = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
         
-        const res = await fetch(buildApiEndpoint('/chefs'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const res = await api.get('/chefs');
         
-        if (!res.ok) {
-          throw new Error(`Failed to fetch chefs: ${res.status}`);
-        }
-        
-        const response = await res.json();
-        // console.log('ðŸ“‹ BookChef - Full API response:', response);
+        const response = res.data;
+        // console.log('📋 BookChef - Full API response:', response);
         
         const chefsData = response.chefs || response.data || [];
         // console.log('ðŸ“Š BookChef - Extracted chefs data:', chefsData);
@@ -219,22 +209,9 @@ const BookChef = () => {
         }
       };
 
-      const bookingRes = await fetch(buildApiEndpoint('bookings'), {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(bookingPayload)
-      });
+      const bookingRes = await api.post('/bookings', bookingPayload);
 
-      if (!bookingRes.ok) {
-        const error = await bookingRes.json();
-        toast.error(error.message || "Failed to create booking!");
-        return;
-      }
-
-      const bookingResult = await bookingRes.json();
+      const bookingResult = bookingRes.data;
 
       const paymentPayload = {
         amount: calculateTotal(selectedChef, bookingDetails),
@@ -242,26 +219,14 @@ const BookChef = () => {
         currency: 'INR'
       };
 
-      const paymentRes = await fetch(buildApiEndpoint('payments/create-order'), {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(paymentPayload)
-      });
+      const paymentRes = await api.post('/payments/create-order', paymentPayload);
 
-      if (!paymentRes.ok) {
-        const error = await paymentRes.json();
-        toast.error(error.message || "Failed to create payment order!");
-        return;
-      }
-
-      const paymentResult = await paymentRes.json();
+      const paymentResult = paymentRes.data;
       initializeRazorpay(paymentResult.data, bookingResult.booking);
 
     } catch (err) {
-      toast.error("Error booking chef. Please try again.");
+      const errorMessage = err.response?.data?.message || "Error booking chef. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -335,13 +300,9 @@ const BookChef = () => {
         bookingId: bookingId
       };
 
-      const verifyRes = await fetch(buildApiEndpoint('payments/verify'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(verificationPayload)
-      });
+      const verifyRes = await api.post('/payments/verify', verificationPayload);
 
-      const verifyResult = await verifyRes.json();
+      const verifyResult = verifyRes.data;
 
       if (verifyResult.success) {
         toast.success("Payment successful! Your booking is confirmed.");
@@ -362,11 +323,7 @@ const BookChef = () => {
         error: error
       };
 
-      await fetch(buildApiEndpoint('payments/failure'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(failurePayload)
-      });
+      await api.post('/payments/failure', failurePayload);
     } catch (err) {
       // Silent error
     }

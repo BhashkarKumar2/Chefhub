@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const EditProfile = () => {
@@ -49,57 +49,46 @@ const EditProfile = () => {
     const loadUserData = async () => {
       try {
         const userId = localStorage.getItem('userId');
-        const token = localStorage.getItem('token');
         
-        if (!userId || !token) {
-          // console.log('âŒ No user ID or token found, redirecting to login');
+        if (!userId) {
+          // console.log('❌ No user ID or token found, redirecting to login');
           navigate('/login');
           return;
         }
         
-        // console.log('ðŸ” Loading user data for editing...');
-        // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
+        // console.log('🔍 Loading user data for editing...');
         
-        const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const response = await api.get(`/user/profile/${userId}`);
+        const userData = response.data;
+        // console.log('✅ User data loaded for editing:', userData);
+        
+        // Map backend data to form structure
+        setFormData({
+          name: userData.name || '',
+          email: userData.email || '',
+          phone: userData.phone || '',
+          dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth.split('T')[0] : '',
+          gender: userData.gender || '',
+          address: userData.address || '',
+          city: userData.city || '',
+          state: userData.state || '',
+          zipCode: userData.zipCode || '',
+          country: userData.country || '',
+          dietaryPreferences: userData.dietaryPreferences || [],
+          cuisinePreferences: userData.cuisinePreferences || [],
+          allergens: userData.allergens || [],
+          profileImage: userData.profileImage || null,
+          bio: userData.bio || '',
+          notifications: userData.notifications || {
+            email: true,
+            sms: false,
+            push: true
           }
         });
-        if (response.ok) {
-          const userData = await response.json();
-          // console.log('âœ… User data loaded for editing:', userData);
-          
-          // Map backend data to form structure
-          setFormData({
-            name: userData.name || '',
-            email: userData.email || '',
-            phone: userData.phone || '',
-            dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth.split('T')[0] : '',
-            gender: userData.gender || '',
-            address: userData.address || '',
-            city: userData.city || '',
-            state: userData.state || '',
-            zipCode: userData.zipCode || '',
-            country: userData.country || '',
-            dietaryPreferences: userData.dietaryPreferences || [],
-            cuisinePreferences: userData.cuisinePreferences || [],
-            allergens: userData.allergens || [],
-            profileImage: userData.profileImage || null,
-            bio: userData.bio || '',
-            notifications: userData.notifications || {
-              email: true,
-              sms: false,
-              push: true
-            }
-          });
-          
-          // Set current profile image preview
-          if (userData.profileImage) {
-            setImagePreview(userData.profileImage);
-          }
-        } else {
-          // console.error('âŒ Failed to load user data');
+        
+        // Set current profile image preview
+        if (userData.profileImage) {
+          setImagePreview(userData.profileImage);
         }
       } catch (error) {
         // console.error('Error loading user data:', error);
@@ -169,30 +158,22 @@ const EditProfile = () => {
       const imageFormData = new FormData();
       imageFormData.append('profileImage', imageFile);
 
-      // console.log('🖼️ Uploading profile image...');
-      const token = localStorage.getItem('token');
-      const response = await fetch(buildApiEndpoint(`/user/upload-profile-image/${userId}`), {
-        method: 'POST',
+      // console.log('🖼️ Uploading profile image...');
+      const response = await api.post(`/user/upload-profile-image/${userId}`, imageFormData, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: imageFormData,
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        // console.log('âœ… Image uploaded successfully:', result);
-        // console.log('ðŸ”— Cloudinary URL:', result.imageUrl);
-        // console.log('ðŸ“„ Full response:', result);
-        return result.imageUrl;
-      } else {
-        const error = await response.json();
-        // console.error('âŒ Image upload response error:', error);
-        throw new Error(error.message || 'Failed to upload image');
-      }
+      const result = response.data;
+      // console.log('✅ Image uploaded successfully:', result);
+      // console.log('🔗 Cloudinary URL:', result.imageUrl);
+      // console.log('📄 Full response:', result);
+      return result.imageUrl;
     } catch (error) {
-      // console.error('âŒ Image upload failed:', error);
-      throw error;
+      // console.error('❌ Image upload failed:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to upload image';
+      throw new Error(errorMessage);
     } finally {
       setUploadingImage(false);
     }
@@ -229,32 +210,16 @@ const EditProfile = () => {
         delete updateData.profileImage;
       }
       
-      // console.log('ðŸ†” Using User ID:', userId);
-      // console.log('ðŸŒ Sending update request to backend...');
+      // console.log('🆔 Using User ID:', userId);
+      // console.log('🌐 Sending update request to backend...');
       
-      const token = localStorage.getItem('token');
-      // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
-      
-      const response = await fetch(buildApiEndpoint(`/user/profile/${userId}`), {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(updateData),
-      });
+      const response = await api.put(`/user/profile/${userId}`, updateData);
 
-      // console.log('ðŸ“¡ Response received:', response.status, response.statusText);
+      // console.log('📡 Response received:', response.status, response.statusText);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        // console.error('âŒ Backend returned error:', errorData);
-        throw new Error(errorData.message || 'Failed to update profile');
-      }
-
-      const result = await response.json();
-      // console.log('âœ… Profile updated successfully:', result);
-      // console.log('ðŸ”¥ === USER PROFILE UPDATE COMPLETED ===\n');
+      const result = response.data;
+      // console.log('✅ Profile updated successfully:', result);
+      // console.log('🔥 === USER PROFILE UPDATE COMPLETED ===\n');
       
       // Update localStorage if user data is stored there
       if (result.user) {
@@ -264,11 +229,12 @@ const EditProfile = () => {
       toast.success('Profile updated successfully!');
       navigate('/profile');
     } catch (error) {
-      // console.error('\nâŒ === USER PROFILE UPDATE FAILED ===');
-      // console.error('ðŸš¨ Error:', error.message);
-      // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
+      // console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
+      // console.error('🚨 Error:', error.message);
+      // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
       
-      toast.error(`Error updating profile: ${error.message}`);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
+      toast.error(`Error updating profile: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }

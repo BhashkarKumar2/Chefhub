@@ -1,6 +1,5 @@
-
 import express from 'express';
-import fetch from 'node-fetch';
+import axios from 'axios';
 const router = express.Router();
 
 // POST /api/geocode
@@ -25,24 +24,21 @@ router.post('/', async (req, res) => {
   // console.log('ðŸŒ Making request to OpenRouteService for address:', address);
   
   try {
-    const orsRes = await fetch(geocodeUrl);
+    const orsRes = await axios.get(geocodeUrl);
     // console.log('ðŸ“¡ OpenRouteService response status:', orsRes.status);
     
-    if (!orsRes.ok) {
-      const errorText = await orsRes.text();
-      // console.log('âŒ OpenRouteService error response:', errorText);
-      return res.status(orsRes.status).json({ 
-        error: 'Failed to fetch geocode data', 
-        details: `OpenRouteService returned ${orsRes.status}`,
-        response: errorText 
-      });
-    }
-    
-    const data = await orsRes.json();
+    const data = orsRes.data;
     // console.log('âœ… Geocoding successful, found', data.features?.length || 0, 'results');
     res.json(data);
   } catch (err) {
     // console.log('âŒ Server error during geocoding:', err.message);
+    if (err.response) {
+        return res.status(err.response.status).json({ 
+            error: 'Failed to fetch geocode data', 
+            details: `OpenRouteService returned ${err.response.status}`,
+            response: err.response.data 
+        });
+    }
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 });

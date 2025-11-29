@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-import { buildApiEndpoint } from '../../utils/apiConfig';
 import BackgroundCarousel from '../../components/carousel/BackgroundCarousel';
 import TestimonialCarousel from '../../components/carousel/TestimonialCarousel';
 import logo from '../../assets/logo.png'
@@ -31,10 +31,8 @@ function useCountUp(target, duration = 1200) {
 
 const geocodeAddress = async (address) => {
   try {
-    const response = await fetch(
-      `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`
-    );
-    const data = await response.json();
+    const response = await api.get(`/proxy/geocode?address=${encodeURIComponent(address)}`);
+    const data = response.data;
     if (data.success && data.data) {
       return {
         latitude: data.data.latitude,

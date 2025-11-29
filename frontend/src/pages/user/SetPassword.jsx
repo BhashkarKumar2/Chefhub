@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
@@ -30,10 +29,7 @@ const SetPassword = () => {
 
   const checkPasswordStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(buildApiEndpoint('auth/password-status'), {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await api.get('/auth/password-status');
       setHasPassword(response.data.hasPassword);
       setIsOAuthUser(response.data.isOAuthUser);
       setLoading(false);
@@ -67,15 +63,12 @@ const SetPassword = () => {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = hasPassword ? 'auth/change-password' : 'auth/set-password';
+      const endpoint = hasPassword ? '/auth/change-password' : '/auth/set-password';
       const payload = hasPassword 
         ? { currentPassword, newPassword: formData.password, confirmPassword: formData.confirmPassword }
         : { password: formData.password, confirmPassword: formData.confirmPassword };
 
-      await axios.post(buildApiEndpoint(endpoint), payload, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      await api.post(endpoint, payload);
 
       setSuccess(hasPassword ? 'Password changed successfully!' : 'Password set successfully! You can now login with email and password.');
       setFormData({ password: '', confirmPassword: '' });

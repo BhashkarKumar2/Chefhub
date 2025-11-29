@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useAuth } from '../../context/AuthContext';
 import TextInput from '../../components/inputs/TextInput';
@@ -75,31 +75,18 @@ const ChefOnboarding = () => {
   const geocodeAddress = async (address) => {
     try {
       setLocationLoading(true);
-      // console.log('ðŸŒ Geocoding address:', address);
+      // console.log('🌍 Geocoding address:', address);
       
-      const res = await fetch(buildApiEndpoint('geocode'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address }),
-      });
+      const response = await api.post('/geocode', { address });
       
-      // console.log('ðŸ“¡ Geocode response status:', res.status);
+      // console.log('📡 Geocode response status:', response.status);
       
-      if (!res.ok) {
-        const errorData = await res.json();
-        // console.error('âŒ Geocoding error:', errorData);
-        setLocationError(`Geocoding failed: ${errorData.error || 'Unknown error'}`);
-        return null;
-      }
-      
-      const data = await res.json();
-      // console.log('âœ… Geocoding successful:', data);
+      const data = response.data;
+      // console.log('✅ Geocoding successful:', data);
       
       if (data.features && data.features.length > 0) {
         const coords = data.features[0].geometry.coordinates;
-        // console.log('ðŸ“ Coordinates found:', { lat: coords[1], lon: coords[0] });
+        // console.log('📍 Coordinates found:', { lat: coords[1], lon: coords[0] });
         setLocationError(''); // Clear any previous errors
         return { lat: coords[1], lon: coords[0] };
       } else {
@@ -107,8 +94,9 @@ const ChefOnboarding = () => {
         return null;
       }
     } catch (e) {
-      // console.error('âŒ Geocoding fetch error:', e);
-      setLocationError('Network error. Please check your connection and try again.');
+      // console.error('❌ Geocoding fetch error:', e);
+      const errorMessage = e.response?.data?.error || 'Network error. Please check your connection and try again.';
+      setLocationError(`Geocoding failed: ${errorMessage}`);
       return null;
     } finally {
       setLocationLoading(false);
@@ -288,21 +276,21 @@ const ChefOnboarding = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // console.log('\nðŸ”¥ === CHEF ONBOARDING FORM SUBMISSION STARTED ===');
-    // console.log('ðŸ“ Form Data:', formData);
+    // console.log('\n🔥 === CHEF ONBOARDING FORM SUBMISSION STARTED ===');
+    // console.log('📝 Form Data:', formData);
     
     const validationErrors = getValidationErrors();
     if (validationErrors.length > 0) {
-      // console.log('âŒ Form validation failed:', validationErrors);
+      // console.log('❌ Form validation failed:', validationErrors);
       toast.error('Please fix the following errors: ' + validationErrors.join('; '));
       return;
     }
-    // console.log('âœ… Form validation passed');
+    // console.log('✅ Form validation passed');
     
     setIsSubmitting(true);
 
     try {
-      // console.log('ðŸ“¦ Creating FormData for submission...');
+      // console.log('📦 Creating FormData for submission...');
       // Create FormData to handle file upload
       const formDataToSend = new FormData();
       
@@ -339,14 +327,14 @@ const ChefOnboarding = () => {
       
       // Add profile image if uploaded
       if (formData.profileImage) {
-        // console.log('🖼️ Adding profile image to FormData:', formData.profileImage.name);
+        // console.log('🖼️ Adding profile image to FormData:', formData.profileImage.name);
         formDataToSend.append('profileImage', formData.profileImage);
       } else {
-        // console.log('ðŸ“· No profile image selected');
+        // console.log('📷 No profile image selected');
       }
 
       // Log FormData contents
-      // console.log('ðŸ“‹ FormData contents:');
+      // console.log('📋 FormData contents:');
       for (let [key, value] of formDataToSend.entries()) {
         if (key === 'profileImage') {
           // console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
@@ -355,39 +343,40 @@ const ChefOnboarding = () => {
         }
       }
 
-      // console.log('ðŸŒ Sending request to backend...');
-      const response = await fetch(buildApiEndpoint('chefs'), {
-        method: 'POST',
-        body: formDataToSend, // Don't set Content-Type header when using FormData
+      // console.log('🌐 Sending request to backend...');
+      const response = await api.post('/chefs', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      // console.log('ðŸ“¡ Response received:', response.status, response.statusText);
+      // console.log('📡 Response received:', response.status, response.statusText);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        // console.error('âŒ Backend returned error:', errorData);
-        throw new Error(errorData.error || errorData.message || 'Failed to create chef profile');
-      }
-
-      const savedChef = await response.json();
-      // console.log('âœ… Chef profile saved successfully:', savedChef);
-      // console.log('ðŸ”¥ === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
+      const savedChef = response.data;
+      // console.log('✅ Chef profile saved successfully:', savedChef);
+      // console.log('🔥 === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
       
       // Success message and redirect
       toast.success('Chef profile created successfully! Redirecting to dashboard...');
       navigate('/dashboard');
       
     } catch (error) {
-      // console.error('\nâŒ === CHEF ONBOARDING FAILED ===');
-      // console.error('ðŸš¨ Error message:', error.message);
-      // console.error('ðŸ“Š Full error:', error);
-      // console.error('ðŸ”¥ === ERROR HANDLING COMPLETED ===\n');
+      // console.error('\n❌ === CHEF ONBOARDING FAILED ===');
+      // console.error('🚨 Error message:', error.message);
+      // console.error('📊 Full error:', error);
+      // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
       
       // More user-friendly error messages
       let userMessage = error.message;
-      if (error.message.includes('fetch')) {
+      if (error.message && error.message.includes('Network Error')) {
         userMessage = 'Unable to connect to server. Please check if the backend is running on port 5000.';
-      } else if (error.message.includes('email already exists')) {
+      } else if (error.response?.data?.message) {
+        userMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        userMessage = error.response.data.error;
+      }
+      
+      if (userMessage && userMessage.includes('email already exists')) {
         userMessage = 'This email is already registered. Please use a different email address.';
       }
       

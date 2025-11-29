@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { Link } from 'react-router-dom';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
@@ -20,27 +20,12 @@ const ViewBookings = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      // Token check is handled by api interceptor mostly, but we can keep it if we want to avoid call
+      // But api.js handles it.
       
-      if (!token) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch(buildApiEndpoint('bookings'), {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await api.get('/bookings');
+      const data = response.data;
+      
       // console.log('Bookings fetched:', data);
       
       if (data.success) {
@@ -50,7 +35,7 @@ const ViewBookings = () => {
       }
     } catch (error) {
       // console.error('Error fetching bookings:', error);
-      setError(error.message || 'Failed to load bookings');
+      setError(error.response?.data?.message || error.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
     }
@@ -63,16 +48,8 @@ const ViewBookings = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(buildApiEndpoint(`bookings/${bookingId}`), {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
+      const response = await api.delete(`/bookings/${bookingId}`);
+      const data = response.data;
       
       if (data.success) {
         // Refresh bookings list
@@ -83,24 +60,15 @@ const ViewBookings = () => {
       }
     } catch (error) {
       // console.error('Error cancelling booking:', error);
-      toast.error('Failed to cancel booking. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
     }
   };
 
   // Handle booking status update
   const handleUpdateBooking = async (bookingId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(buildApiEndpoint(`bookings/${bookingId}`), {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      const data = await response.json();
+      const response = await api.put(`/bookings/${bookingId}`, { status: newStatus });
+      const data = response.data;
       
       if (data.success) {
         // Refresh bookings list
@@ -111,7 +79,7 @@ const ViewBookings = () => {
       }
     } catch (error) {
       // console.error('Error updating booking:', error);
-      toast.error('Failed to update booking. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to update booking. Please try again.');
     }
   };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { Link } from 'react-router-dom';
@@ -31,16 +30,7 @@ const MyBookings = () => {
       }
       
       // Use the general bookings endpoint like Dashboard does
-      const response = await axios.get(
-        buildApiEndpoint('bookings'),
-        { 
-          withCredentials: true,
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await api.get('/bookings');
       setBookings(response.data.bookings || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);

@@ -1,5 +1,5 @@
 // JWT utility functions for frontend authentication
-import { buildApiEndpoint, API_BASE_URL } from './apiConfig.js';
+import api from './api';
 
 // Check if token exists in localStorage
 export const getToken = () => {
@@ -37,46 +37,34 @@ export const isTokenExpired = (token) => {
 export const validateToken = async () => {
   const token = getToken();
   
-  // console.log('ðŸ” Validating token:', token ? 'Token exists' : 'No token found');
+  // console.log('🔍 Validating token:', token ? 'Token exists' : 'No token found');
   
   if (!token) {
-    // console.log('âŒ No token found');
+    // console.log('❌ No token found');
     return { valid: false, error: 'No token found' };
   }
 
   // Check if token is expired client-side first
   if (isTokenExpired(token)) {
-    // console.log('âŒ Token expired (client-side check)');
+    // console.log('❌ Token expired (client-side check)');
     removeToken();
     return { valid: false, error: 'Token expired' };
   }
 
   try {
-    // console.log('ðŸ”„ Sending validation request to backend...');
-    const response = await fetch(buildApiEndpoint('/auth/validate-token'), {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    // console.log('🔄 Sending validation request to backend...');
+    const response = await api.post('/auth/validate-token');
 
-    const data = await response.json();
-    // console.log('ðŸ“¡ Backend validation response:', { status: response.status, data });
+    const data = response.data;
+    // console.log('📡 Backend validation response:', { status: response.status, data });
 
-    if (!response.ok) {
-      // Token is invalid, remove it
-      // console.log('âŒ Token validation failed:', data.message);
-      removeToken();
-      return { valid: false, error: data.message };
-    }
-
-    // console.log('âœ… Token validation successful:', data.user);
+    // console.log('✅ Token validation successful:', data.user);
     return { valid: true, user: data.user };
   } catch (error) {
-    // console.error('âŒ Token validation error:', error);
+    // console.error('❌ Token validation error:', error);
     removeToken();
-    return { valid: false, error: 'Network error' };
+    const errorMessage = error.response?.data?.message || 'Network error';
+    return { valid: false, error: errorMessage };
   }
 };
 
@@ -89,19 +77,8 @@ export const getCurrentUser = async () => {
   }
 
   try {
-    const response = await fetch(buildApiEndpoint('/auth/me'), {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      removeToken();
-      return null;
-    }
-
-    return await response.json();
+    const response = await api.get('/auth/me');
+    return response.data;
   } catch (error) {
     // console.error('Error fetching current user:', error);
     removeToken();
@@ -131,79 +108,38 @@ export const setupTokenExpirationCheck = (onExpired) => {
 };
 
 // Make authenticated API request
-export const authenticatedFetch = async (url, options = {}) => {
-  const token = getToken();
-  
-  if (!token || isTokenExpired(token)) {
-    throw new Error('No valid token available');
-  }
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    }
-  });
-};
+// Deprecated: Use api.js instead
+// export const authenticatedFetch = async (url, options = {}) => { ... }
 
 // Mobile OTP API functions
 export const authAPI = {
   // Verify Firebase OTP token
   verifyFirebaseOTP: async (idToken, name = '') => {
-    const response = await fetch(buildApiEndpoint('/auth/verify-firebase-otp'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ idToken, name })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw { response: { data } };
+    try {
+      const response = await api.post('/auth/verify-firebase-otp', { idToken, name });
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data } };
     }
-
-    return data;
   },
 
   // Regular email login
   login: async (email, password) => {
-    const response = await fetch(buildApiEndpoint('/auth/login'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw { response: { data } };
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data } };
     }
-
-    return data;
   },
 
   // Register
   register: async (email, password) => {
-    const response = await fetch(buildApiEndpoint('/auth/register'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw { response: { data } };
+    try {
+      const response = await api.post('/auth/register', { email, password });
+      return response.data;
+    } catch (error) {
+      throw { response: { data: error.response?.data } };
     }
-
-    return data;
   }
 };

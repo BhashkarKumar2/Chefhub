@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { cachedFetch } from '../../utils/apiCache';
@@ -56,21 +56,13 @@ const Dashboard = () => {
           return;
         }
 
-        // console.log(`ðŸ” Dashboard: Making API call to user/profile/${user.id}`);
-        
         // Load user profile
-        const userResponse = await fetch(buildApiEndpoint(`user/profile/${user.id}`), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
+        try {
+          const userResponse = await api.get(`/user/profile/${user.id}`);
+          const userData = userResponse.data;
           // console.log('âœ… Dashboard: User data loaded:', userData);
           setUserData(userData);
-        } else {
+        } catch (error) {
           // console.error('âŒ Dashboard: Failed to load user data from API');
           // Fall back to AuthContext user data
           setUserData({
@@ -81,9 +73,9 @@ const Dashboard = () => {
 
         // Load dashboard statistics and recent data
         await Promise.all([
-          loadBookingsData(token),
-          loadRecentActivity(token),
-          loadStats(token)
+          loadBookingsData(),
+          loadRecentActivity(),
+          loadStats()
         ]);
 
       } catch (error) {
@@ -100,114 +92,78 @@ const Dashboard = () => {
       }
     };
 
-    const loadBookingsData = async (token) => {
+    const loadBookingsData = async () => {
       try {
-        const response = await fetch(buildApiEndpoint('bookings'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await api.get('/bookings');
+        const data = response.data;
+        const bookings = data.bookings || [];
+          
+        // Filter upcoming bookings (confirmed or pending, and future dates)
+        const upcoming = bookings
+          .filter(b => {
+            const bookingDate = new Date(b.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return bookingDate >= today && (b.status === 'confirmed' || b.status === 'pending');
+          })
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 3); // Show only first 3
         
-        if (response.ok) {
-          const data = await response.json();
-          const bookings = data.bookings || [];
-          
-          // Filter upcoming bookings (confirmed or pending, and future dates)
-          const upcoming = bookings
-            .filter(booking => {
-              const bookingDate = new Date(booking.date);
-              const now = new Date();
-              return bookingDate > now && ['confirmed', 'pending'].includes(booking.status?.toLowerCase());
-            })
-            .slice(0, 3); // Show only first 3
-          
-          setDashboardData(prev => ({
-            ...prev,
-            upcomingBookings: upcoming
-          }));
-        }
+        setDashboardData(prev => ({
+          ...prev,
+          upcomingBookings: upcoming
+        }));
       } catch (error) {
-        // console.error('Error loading bookings:', error);
+        console.error('Error loading bookings:', error);
       }
     };
 
-    const loadRecentActivity = async (token) => {
+    const loadRecentActivity = async () => {
       try {
-        // This would ideally come from an activity log API endpoint
-        // For now, we'll derive it from recent bookings
-        const response = await fetch(buildApiEndpoint('bookings'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await api.get('/bookings');
+        const data = response.data;
+        const bookings = data.bookings || [];
         
-        if (response.ok) {
-          const data = await response.json();
-          const bookings = data.bookings || [];
-          
-          // Generate recent activity from bookings
-          const recentActivity = bookings
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 4)
-            .map(booking => {
-              const timeAgo = getTimeAgo(booking.createdAt);
-              const chefName = booking.chef?.fullName || booking.chef?.name || 'Unknown Chef';
-              
-              return {
-                action: `Booked ${chefName}`,
-                time: timeAgo,
-                type: 'booking'
-              };
-            });
-          
-          setDashboardData(prev => ({
-            ...prev,
-            recentActivity
-          }));
-        }
+        // Generate recent activity from bookings
+        const recent = bookings
+            .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
+            .slice(0, 5)
+            .map(b => ({
+                type: 'booking',
+                action: `Booked ${b.chef?.name || 'Chef'}`,
+                time: getTimeAgo(b.createdAt || b.date)
+            }));
+
+        setDashboardData(prev => ({
+          ...prev,
+          recentActivity: recent
+        }));
       } catch (error) {
-        // console.error('Error loading recent activity:', error);
+        console.error('Error loading recent activity:', error);
       }
     };
 
-    const loadStats = async (token) => {
+    const loadStats = async () => {
       try {
-        const response = await fetch(buildApiEndpoint('bookings'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await api.get('/bookings');
+        const data = response.data;
+        const bookings = data.bookings || [];
         
-        if (response.ok) {
-          const data = await response.json();
-          const bookings = data.bookings || [];
-          
-          // Calculate stats from bookings
-          const totalBookings = bookings.length;
-          const totalSpent = bookings
-            .filter(b => ['confirmed', 'completed'].includes(b.status?.toLowerCase()))
-            .reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-          
-          const reviewsGiven = bookings.filter(b => b.status?.toLowerCase() === 'completed').length;
-          
-          // Note: favoriteChefs would need a separate API call to favorites endpoint
-          const favoriteChefs = 0; // Placeholder until favorites API is implemented
-          
-          setDashboardData(prev => ({
-            ...prev,
-            stats: {
-              totalBookings,
-              favoriteChefs,
-              totalSpent,
-              reviewsGiven
-            }
-          }));
-        }
+        // Calculate stats from bookings
+        const totalBookings = bookings.length;
+        const totalSpent = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+        
+        setDashboardData(prev => ({
+          ...prev,
+          stats: {
+            totalBookings,
+            favoriteChefs: 0,
+            totalSpent,
+            reviewsGiven: 0
+          }
+        }));
       } catch (error) {
-        // console.error('Error loading stats:', error);
+        console.error('Error loading stats:', error);
       }
     };
 

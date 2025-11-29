@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import { buildApiEndpoint } from '../utils/apiConfig';
+import api from '../utils/api';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in kilometers
@@ -16,10 +15,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 const geocodeAddress = async (address) => {
   try {
-    const response = await fetch(
-      `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`
-    );
-    const data = await response.json();
+    const response = await api.get(`/proxy/geocode?address=${encodeURIComponent(address)}`);
+    const data = response.data;
     if (data.success && data.data) {
       return {
         latitude: data.data.latitude,
@@ -114,13 +111,13 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
       if (filters.location) searchParams.append('location', filters.location);
       if (filters.city) searchParams.append('city', filters.city);
       if (filters.state) searchParams.append('state', filters.state);
+      if (filters.city) searchParams.append('city', filters.city);
+      if (filters.state) searchParams.append('state', filters.state);
 
-      const response = await axios.get(`/api/chefs/search?${searchParams.toString()}`);
+      const response = await api.get(`/chefs/search?${searchParams.toString()}`);
       let results = response.data.data || [];
       
       // If user has set a location, calculate distances and sort by distance
-      if (userLocation && results.length > 0) {
-        results = results.map(chef => {
           if (chef.locationCoords) {
             const distance = calculateDistance(
               userLocation.latitude,

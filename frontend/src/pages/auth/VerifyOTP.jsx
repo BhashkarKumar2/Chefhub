@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const VerifyOTP = () => {
@@ -72,7 +71,7 @@ const VerifyOTP = () => {
     setError('');
 
     try {
-      const response = await axios.post(buildApiEndpoint('auth/verify-email'), {
+      const response = await api.post('/auth/verify-email', {
         email,
         otp: otpValue
       });
@@ -95,7 +94,7 @@ const VerifyOTP = () => {
     setError('');
 
     try {
-      await axios.post(buildApiEndpoint('auth/resend-verification'), { email });
+      await api.post('/auth/resend-verification', { email });
       setError({ message: 'New verification code sent! Check your email.', isSuccess: true });
       setOtp(['', '', '', '', '', '']);
     } catch (err) {

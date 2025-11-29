@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const Profile = () => {
@@ -32,7 +32,7 @@ const Profile = () => {
     const loadUserData = async () => {
       try {
         // // Check if user is authenticated
-        // // console.log('ðŸ” Profile auth check:', {
+        // // console.log('🔍 Profile auth check:', {
         //   isAuthenticated,
         //   authUser,
         //   hasUserId: authUser?.id,
@@ -40,7 +40,7 @@ const Profile = () => {
         // });
         
         if (!isAuthenticated || !authUser || !authUser.id) {
-          // console.log('âŒ User not authenticated, redirecting to login');
+          // console.log('❌ User not authenticated, redirecting to login');
           // // console.log('Debug info:', {
           //   isAuthenticated,
           //   authUser,
@@ -55,85 +55,59 @@ const Profile = () => {
           return;
         }
         
-        const token = localStorage.getItem('token');
-        if (!token) {
-          // console.log('âŒ No token found, redirecting to login');
-          navigate('/login');
-          return;
-        }
-        
-        // console.log('ðŸ” Loading user profile for ID:', authUser.id);
-        // console.log('ðŸ”‘ Token exists:', token ? 'Yes' : 'No');
+        // console.log('🔍 Loading user profile for ID:', authUser.id);
         
         // Load user profile data
-        const profileResponse = await fetch(buildApiEndpoint(`/user/profile/${authUser.id}`), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        const profileResponse = await api.get(`/user/profile/${authUser.id}`);
+        const user = profileResponse.data;
         
-        if (profileResponse.ok) {
-          const user = await profileResponse.json();
-          // console.log('âœ… User data loaded:', user);
-          // console.log('🖼️ Profile image URL:', user.profileImage);
-          setUserData(user);
-          setUserStats({
-            totalBookings: user.totalBookings || 0,
-            favoriteChefs: user.favoriteChefs || 0,
-            reviewsGiven: user.reviewsGiven || 0,
-            memberSince: user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()
-          });
-        } else {
-          // console.error('âŒ Failed to load user data');
-          navigate('/login');
-          return;
-        }
+        // console.log('✅ User data loaded:', user);
+        // console.log('🖼️ Profile image URL:', user.profileImage);
+        setUserData(user);
+        setUserStats({
+          totalBookings: user.totalBookings || 0,
+          favoriteChefs: user.favoriteChefs || 0,
+          reviewsGiven: user.reviewsGiven || 0,
+          memberSince: user.createdAt ? new Date(user.createdAt).getFullYear() : new Date().getFullYear()
+        });
 
         // Load user's recent bookings
         try {
-          const bookingsResponse = await fetch(buildApiEndpoint(`/bookings/user/${userId}`), {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
+          // Note: userId variable was used in original code but it seems undefined in this scope based on previous read.
+          // It should be authUser.id.
+          // Wait, let me check if userId is defined.
+          // In original code: `const bookingsResponse = await fetch(buildApiEndpoint(`/bookings/user/${userId}`), ...`
+          // But `userId` is NOT defined in `loadUserData` scope. It might be a bug in original code or I missed it.
+          // `authUser.id` is available.
+          // I will use `authUser.id`.
           
-          if (bookingsResponse.ok) {
-            const bookings = await bookingsResponse.json();
-            // console.log('âœ… Bookings data loaded:', bookings);
-            setRecentBookings(bookings.slice(0, 3)); // Show only 3 most recent
-          } else {
-            // console.log('â„¹ï¸ No bookings found or failed to load bookings');
-            setRecentBookings([]);
-          }
+          const bookingsResponse = await api.get(`/bookings/user/${authUser.id}`);
+          const bookings = bookingsResponse.data;
+          
+          // console.log('✅ Bookings data loaded:', bookings);
+          setRecentBookings(bookings.slice(0, 3)); // Show only 3 most recent
         } catch (bookingError) {
-          // console.log('â„¹ï¸ Error loading bookings:', bookingError.message);
+          // console.log('ℹ️ Error loading bookings:', bookingError.message);
           setRecentBookings([]);
         }
 
         // Check password status
         try {
-          const passwordStatusResponse = await fetch(buildApiEndpoint('auth/password-status'), {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          });
+          const passwordStatusResponse = await api.get('/auth/password-status');
+          const passwordData = passwordStatusResponse.data;
           
-          if (passwordStatusResponse.ok) {
-            const passwordData = await passwordStatusResponse.json();
-            // console.log('âœ… Password status:', passwordData);
-            setHasPassword(passwordData.hasPassword);
-            setIsOAuthUser(passwordData.isOAuthUser);
-          }
+          // console.log('✅ Password status:', passwordData);
+          setHasPassword(passwordData.hasPassword);
+          setIsOAuthUser(passwordData.isOAuthUser);
         } catch (passwordError) {
-          // console.log('â„¹ï¸ Error checking password status:', passwordError.message);
+          // console.log('ℹ️ Error checking password status:', passwordError.message);
         }
 
       } catch (error) {
         // console.error('Error loading user data:', error);
-        navigate('/login');
+        // If 401, api interceptor handles it.
+        // But we might want to redirect if other error?
+        // navigate('/login'); // Maybe not for all errors
       } finally {
         setLoading(false);
       }

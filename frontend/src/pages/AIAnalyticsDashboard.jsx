@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UnifiedAIFeatures } from '../components/ai';
 import AdvancedSearch from '../components/AdvancedSearch';
-import axios from 'axios';
+import api from '../utils/api';
 
 const AIAnalyticsDashboard = () => {
   const [analyticsData, setAnalyticsData] = useState({
@@ -24,7 +24,7 @@ const AIAnalyticsDashboard = () => {
   const loadAnalyticsData = async () => {
     try {
       // Simulated analytics data - replace with real API calls
-      const response = await axios.get('/api/bookings/admin/stats');
+      const response = await api.get('/bookings/admin/stats');
       setAnalyticsData(response.data.data);
       generateAIInsights(response.data.data);
     } catch (error) {
@@ -53,7 +53,7 @@ const AIAnalyticsDashboard = () => {
 
   const generateAIInsights = async (data) => {
     try {
-      const response = await axios.post('/api/ai/analytics-insights', {
+      const response = await api.post('/ai/analytics-insights', {
         analyticsData: data
       });
       setAiInsights(response.data.data);

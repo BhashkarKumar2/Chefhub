@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import FavoriteButton from '../../components/features/FavoriteButton';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-import { buildApiEndpoint } from '../../utils/apiConfig';
+import api from '../../utils/api';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in kilometers
@@ -19,10 +19,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 const geocodeAddress = async (address) => {
   try {
-    const response = await fetch(
-      `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`
-    );
-    const data = await response.json();
+    const response = await api.get('/proxy/geocode', {
+      params: { address }
+    });
+    const data = response.data;
     if (data.success && data.data) {
       return {
         latitude: data.data.latitude,
