@@ -118,6 +118,8 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
       let results = response.data.data || [];
       
       // If user has set a location, calculate distances and sort by distance
+      if (userLocation) {
+        results = results.map(chef => {
           if (chef.locationCoords) {
             const distance = calculateDistance(
               userLocation.latitude,
