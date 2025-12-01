@@ -58,7 +58,11 @@ export const loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ 
+      id: user._id,
+      name: user.name,
+      email: user.email 
+    }, process.env.JWT_SECRET, { expiresIn: "1d" });
     res.json({ token, user });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -184,7 +188,11 @@ export const verifyFirebaseOTP = async (req, res) => {
     }
     
     // Generate JWT token for our application
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ 
+      id: user._id,
+      name: user.name,
+      email: user.email 
+    }, process.env.JWT_SECRET, { expiresIn: "1d" });
     
     res.json({ 
       token, 

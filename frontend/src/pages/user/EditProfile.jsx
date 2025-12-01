@@ -3,10 +3,12 @@ import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../utils/api';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
+import { useAuth } from '../../context/AuthContext';
 
 const EditProfile = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [activeSection, setActiveSection] = useState('personal');
   const [dataLoading, setDataLoading] = useState(true);
@@ -48,17 +50,13 @@ const EditProfile = () => {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const userId = localStorage.getItem('userId');
-        
-        if (!userId) {
-          // console.log('❌ No user ID or token found, redirecting to login');
-          navigate('/login');
+        if (!user || !user.id) {
           return;
         }
         
         // console.log('🔍 Loading user data for editing...');
         
-        const response = await api.get(`/user/profile/${userId}`);
+        const response = await api.get(`/user/profile/${user.id}`);
         const userData = response.data;
         // console.log('✅ User data loaded for editing:', userData);
         
@@ -97,8 +95,10 @@ const EditProfile = () => {
       }
     };
 
-    loadUserData();
-  }, []);
+    if (user) {
+      loadUserData();
+    }
+  }, [user, navigate]);
 
   const dietaryOptions = ['vegetarian', 'vegan', 'gluten-free', 'keto', 'paleo'];
   const cuisineOptions = ['indian', 'italian', 'chinese', 'mexican', 'thai', 'french', 'japanese'];
@@ -150,8 +150,7 @@ const EditProfile = () => {
 
     setUploadingImage(true);
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
+      if (!user || !user.id) {
         throw new Error('User ID not found');
       }
       
@@ -159,7 +158,7 @@ const EditProfile = () => {
       imageFormData.append('profileImage', imageFile);
 
       // console.log('🖼️ Uploading profile image...');
-      const response = await api.post(`/user/upload-profile-image/${userId}`, imageFormData, {
+      const response = await api.post(`/user/upload-profile-image/${user.id}`, imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -193,10 +192,9 @@ const EditProfile = () => {
         imageUrl = await uploadProfileImage();
       }
 
-      // Get user ID from localStorage
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        setError('User ID not found. Please log in again.');
+      // Get user ID from context
+      if (!user || !user.id) {
+        toast.error('User ID not found. Please log in again.');
         return;
       }
       
@@ -210,10 +208,10 @@ const EditProfile = () => {
         delete updateData.profileImage;
       }
       
-      // console.log('🆔 Using User ID:', userId);
+      // console.log('🆔 Using User ID:', user.id);
       // console.log('🌐 Sending update request to backend...');
       
-      const response = await api.put(`/user/profile/${userId}`, updateData);
+      const response = await api.put(`/user/profile/${user.id}`, updateData);
 
       // console.log('📡 Response received:', response.status, response.statusText);
 

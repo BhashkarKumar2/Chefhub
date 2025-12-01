@@ -90,11 +90,11 @@ router.get('/google/callback',
   }),
   (req, res) => {
     try {
-      // console.log('ðŸ”„ Google OAuth callback triggered');
-      // console.log('ðŸ‘¤ Authenticated user:', req.user ? req.user.email : 'No user');
+      // console.log('🔄 Google OAuth callback triggered');
+      // console.log('👤 Authenticated user:', req.user ? req.user.email : 'No user');
       
       if (!req.user) {
-        // console.error('âŒ No user found in request');
+        // console.error('❌ No user found in request');
         const errorUrl = process.env.NODE_ENV === 'production' 
           ? 'https://chefhub-poou.vercel.app/login?error=no_user'
           : 'http://localhost:5173/login?error=no_user';
@@ -102,8 +102,12 @@ router.get('/google/callback',
       }
       
       // Create JWT token for the authenticated user
-      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('ðŸ”‘ Generated JWT token for user:', req.user.email);
+      const token = jwt.sign({ 
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email
+      }, process.env.JWT_SECRET, { expiresIn: "1d" });
+      // console.log('🔑 Generated JWT token for user:', req.user.email);
       
       // Redirect to frontend with token as query parameter
       const baseUrl = process.env.NODE_ENV === 'production' 
@@ -136,11 +140,11 @@ router.get('/facebook/callback',
   }),
   (req, res) => {
     try {
-      // console.log('ðŸ”„ Facebook OAuth callback triggered');
-      // console.log('ðŸ‘¤ Authenticated user:', req.user ? req.user.email : 'No user');
+      // console.log('🔄 Facebook OAuth callback triggered');
+      // console.log('👤 Authenticated user:', req.user ? req.user.email : 'No user');
       
       if (!req.user) {
-        // console.error('âŒ No user found in request');
+        // console.error('❌ No user found in request');
         const errorUrl = process.env.NODE_ENV === 'production' 
           ? 'https://chefhub-poou.vercel.app/login?error=no_user'
           : 'http://localhost:5173/login?error=no_user';
@@ -148,8 +152,12 @@ router.get('/facebook/callback',
       }
       
       // Create JWT token for the authenticated user
-      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('ðŸ”‘ Generated JWT token for user:', req.user.email);
+      const token = jwt.sign({ 
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email
+      }, process.env.JWT_SECRET, { expiresIn: "1d" });
+      // console.log('🔑 Generated JWT token for user:', req.user.email);
       
       // Redirect to frontend with token as query parameter
       const baseUrl = process.env.NODE_ENV === 'production' 

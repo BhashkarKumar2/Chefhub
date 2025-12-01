@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { jwtDecode } from "jwt-decode";
 import { getToken, validateToken, removeToken } from '../utils/auth';
 
 const AuthContext = createContext();
@@ -21,63 +22,55 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuthStatus = async () => {
+    const token = getToken();
+    
+    if (!token) {
+      setIsAuthenticated(false);
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
+    // ⚡ FAST PATH: Decode token immediately
     try {
-      setIsLoading(true);
-      const token = getToken();
+      const decoded = jwtDecode(token);
       
-      if (!token) {
-        // console.log('ðŸ” No token found, user not authenticated');
-        setIsAuthenticated(false);
-        setUser(null);
+      // Check if token is expired client-side first
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        logout();
         setIsLoading(false);
         return;
       }
 
-      // console.log('ðŸ” Token found, validating with backend...');
-
-      // Validate token with backend
-      const validation = await validateToken();
+      // Set user data INSTANTLY from the token payload
+      setUser({
+        id: decoded.id || decoded.sub,
+        email: decoded.email,
+        name: decoded.name
+      });
+      setIsAuthenticated(true);
       
-      if (validation.valid) {
-        // console.log('âœ… Token validation successful:', validation.user);
-        setIsAuthenticated(true);
-        
-        // Use validated user data from backend first, then fallback to localStorage
-        if (validation.user) {
-          // console.log('âœ… Using validated user data from backend:', validation.user);
-          setUser(validation.user);
-        } else {
-          // Fallback to localStorage data, but validate it first
-          const userId = localStorage.getItem('userId');
-          const userEmail = localStorage.getItem('userEmail');
-          const userName = localStorage.getItem('userName');
-          
-          // Check for invalid stored values
-          if (userId && userId !== 'undefined' && userId !== 'null' && 
-              userEmail && userEmail !== 'undefined' && userEmail !== 'null') {
-            const userData = {
-              id: userId,
-              email: userEmail,
-              name: userName && userName !== 'undefined' && userName !== 'null' ? userName : userEmail
-            };
-            // console.log('âœ… Using validated localStorage data:', userData);
-            setUser(userData);
-          } else {
-            // console.log('âŒ Invalid user data in localStorage, logging out');
-            logout();
-            return;
-          }
-        }
+      // We can stop loading here because we have data!
+      setIsLoading(false); 
+    } catch (e) {
+      // Token format invalid
+      logout();
+      setIsLoading(false);
+      return;
+    }
+
+    // 🔒 SECURITY PATH: Still validate with backend in background
+    try {
+      const validation = await validateToken();
+      if (!validation.valid) {
+        logout(); 
       } else {
-        // console.log('âŒ Token validation failed:', validation.error);
-        // Token is invalid, clear everything
-        logout();
+        // Optional: Update with fresh data from DB
+        setUser(validation.user);
       }
     } catch (error) {
-      // console.error('âŒ Auth check failed:', error);
-      logout();
-    } finally {
-      setIsLoading(false);
+      // console.error('Background validation failed', error);
     }
   };
 
@@ -105,11 +98,8 @@ export const AuthProvider = ({ children }) => {
     
     // console.log('âœ… Storing clean user data:', cleanUserData);
     
-    // Store token and user data
+    // Store token only
     localStorage.setItem('token', token);
-    localStorage.setItem('userId', cleanUserData.id);
-    localStorage.setItem('userEmail', cleanUserData.email);
-    localStorage.setItem('userName', cleanUserData.name);
     localStorage.setItem('isLoggedIn', 'true');
     
     setIsAuthenticated(true);
@@ -121,9 +111,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     // Clear all auth data
     removeToken();
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
     localStorage.removeItem('isLoggedIn');
     
     setIsAuthenticated(false);

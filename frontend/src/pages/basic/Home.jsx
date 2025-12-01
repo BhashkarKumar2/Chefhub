@@ -61,28 +61,16 @@ const Home = () => {
     
     // Don't proceed if auth status is still loading
     if (isLoading) {
-      // console.log('Auth status still loading, please wait...');
       return;
     }
 
     // Additional checks for authentication
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    const userId = localStorage.getItem('userId');
-    
-    // console.log('Auth status:', { 
-    //   isAuthenticated, 
-    //   user, 
-    //   isLoading, 
-    //   hasToken: !!token,
-    //   hasUserId: !!userId 
-    // });
     
     // More strict authentication check
     if (isAuthenticated && user && user.id && token) {
-      // console.log('User is fully authenticated, navigating to book-chef');
       navigate('/book-chef');
     } else {
-      // console.log('User not authenticated, redirecting to register page');
       navigate('/register', { state: { redirectTo: '/book-chef' } });
     }
   };
@@ -93,28 +81,16 @@ const Home = () => {
     
     // Don't proceed if auth status is still loading
     if (isLoading) {
-      // console.log('Auth status still loading, please wait...');
       return;
     }
 
     // Additional checks for authentication
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    const userId = localStorage.getItem('userId');
-    
-    // console.log('AI Features - Auth status:', { 
-    //   isAuthenticated, 
-    //   user, 
-    //   isLoading, 
-    //   hasToken: !!token,
-    //   hasUserId: !!userId 
-    // });
     
     // More strict authentication check
     if (isAuthenticated && user && user.id && token) {
-      // console.log('User is fully authenticated, navigating to AI features');
       navigate('/ai-features');
     } else {
-      // console.log('User not authenticated, redirecting to register page');
       navigate('/register', { state: { redirectTo: '/ai-features' } });
     }
   };

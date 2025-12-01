@@ -2,45 +2,39 @@
 import { validateToken, getToken } from './auth.js';
 
 export const testAuthState = async () => {
-  // console.log('ðŸ§ª Testing authentication state...');
+  // console.log('🧪 Testing authentication state...');
   
   // Check all localStorage keys
-  // console.log('ðŸ” All localStorage keys:', Object.keys(localStorage));
+  // console.log('🔍 All localStorage keys:', Object.keys(localStorage));
   
   // Check localStorage
   const token = getToken();
-  const userEmail = localStorage.getItem('userEmail');
-  const userName = localStorage.getItem('userName');
-  const userId = localStorage.getItem('userId');
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
   
-  // console.log('ðŸ“¦ LocalStorage state:', 
+  // console.log('📦 LocalStorage state:', 
   // {
   //   hasToken: !!token,
   //   tokenLength: token?.length,
   //   tokenPreview: token ? token.substring(0, 20) + '...' : 'None',
-  //   userEmail,
-  //   userName,
-  //   userId
+  //   isLoggedIn
   // });
   
   if (token) {
-    // console.log('ðŸ” Full token:', token);
+    // console.log('🔍 Full token:', token);
   }
   
   // Test token validation
   const validation = await validateToken();
-  // console.log('âœ… Validation result:', validation);
+  // console.log('✅ Validation result:', validation);
   
   return validation;
 };
 
 // Clear all auth data
 export const clearAllAuthData = () => {
-  // console.log('ðŸ§¹ Clearing all authentication data...');
+  // console.log('🧹 Clearing all authentication data...');
   localStorage.removeItem('token');
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('userName');
-  localStorage.removeItem('userId');
+  localStorage.removeItem('authToken');
   localStorage.removeItem('isLoggedIn');
   
   // Also clear any session cookies that might exist from Google OAuth
@@ -48,5 +42,5 @@ export const clearAllAuthData = () => {
     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
   });
   
-  // console.log('âœ… All auth data and cookies cleared');
+  // console.log('✅ All auth data and cookies cleared');
 };

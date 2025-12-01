@@ -7,7 +7,7 @@ import { useThemeAwareStyle } from '../../utils/themeUtils';
 const Profile = () => {
   const { theme, classes, isDark, getClass } = useThemeAwareStyle();
   const navigate = useNavigate();
-  const { isAuthenticated, user: authUser, isLoading } = useAuth();
+  const { isAuthenticated, user: authUser, isLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [userData, setUserData] = useState(null);
   const [userStats, setUserStats] = useState({
@@ -40,17 +40,6 @@ const Profile = () => {
         // });
         
         if (!isAuthenticated || !authUser || !authUser.id) {
-          // console.log('❌ User not authenticated, redirecting to login');
-          // // console.log('Debug info:', {
-          //   isAuthenticated,
-          //   authUser,
-          //   authUserId: authUser?.id,
-          //   localStorage: {
-          //     token: localStorage.getItem('token'),
-          //     userId: localStorage.getItem('userId'),
-          //     userEmail: localStorage.getItem('userEmail')
-          //   }
-          // });
           navigate('/login');
           return;
         }
@@ -134,12 +123,7 @@ const Profile = () => {
   ];
 
   const handleLogout = () => {
-    // Clear all authentication data
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    // console.log('âœ… User logged out successfully');
+    logout();
     navigate('/login');
   };
 
