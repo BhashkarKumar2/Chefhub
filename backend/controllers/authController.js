@@ -44,7 +44,7 @@ export const loginUser = async (req, res) => {
   const { email, password } = req.body;
   // console.log(req.body);
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) return res.status(400).json({ message: "User not found" });
 
     // Check if user has a password (might be OAuth-only user)
@@ -63,7 +63,12 @@ export const loginUser = async (req, res) => {
       name: user.name,
       email: user.email 
     }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.json({ token, user });
+
+    // Remove password from user object before sending
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ token, user: userResponse });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
