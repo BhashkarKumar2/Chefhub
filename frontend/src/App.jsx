@@ -43,6 +43,8 @@ const SetPassword = lazy(() => import('./pages/user/SetPassword'));
 const ViewBookings = lazy(() => import('./pages/user/ViewBookings'));
 const MyBookings = lazy(() => import('./pages/user/MyBookings'));
 const ChefBookings = lazy(() => import('./pages/chef/ChefBookings'));
+const AddTestimonial = lazy(() => import('./pages/user/AddTestimonial'));
+const MyTestimonials = lazy(() => import('./pages/user/MyTestimonials'));
 const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
@@ -169,6 +171,16 @@ const App = () => {
                       <Route path="/chef/bookings" element={
                         <ProtectedRoute>
                           <ChefBookings />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/add-testimonial" element={
+                        <ProtectedRoute>
+                          <AddTestimonial />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/my-testimonials" element={
+                        <ProtectedRoute>
+                          <MyTestimonials />
                         </ProtectedRoute>
                       } />
                       {/* Auth-related routes */}

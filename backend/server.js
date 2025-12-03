@@ -17,6 +17,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import geocodeRoutes from './routes/geocodeRoutes.js';
 import proxyRoutes from './routes/proxyRoutes.js';
+import testimonialRoutes from './routes/testimonialRoutes.js';
 import socketService from './services/socketService.js';
 import redis from './config/redis.js';
 import compression from 'compression';
@@ -157,6 +158,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/geocode', geocodeRoutes);
 app.use('/api/proxy', proxyRoutes);
+app.use('/api/testimonials', testimonialRoutes);
 app.use('/api', healthRoutes);
 
 // Security: 404 handler for undefined routes
