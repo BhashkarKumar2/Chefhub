@@ -58,7 +58,7 @@ export const createTestimonial = async (req, res) => {
       testimonial,
       chef: chefId || undefined,
       booking: bookingId || undefined,
-      isApproved: false, // Requires admin approval
+      isApproved: true, // Auto-approved - no admin review needed
       isFeatured: false,
       isPublic: true
     });
@@ -66,7 +66,7 @@ export const createTestimonial = async (req, res) => {
     await newTestimonial.save();
 
     res.status(201).json({
-      message: 'Testimonial submitted successfully! It will be visible after approval.',
+      message: 'Testimonial published successfully!',
       testimonial: newTestimonial
     });
   } catch (error) {
@@ -87,12 +87,12 @@ export const createTestimonial = async (req, res) => {
   }
 };
 
-// Get all approved testimonials (public)
+// Get all public testimonials
 export const getTestimonials = async (req, res) => {
   try {
     const { featured, limit = 50, chef } = req.query;
     
-    const filter = { isApproved: true, isPublic: true };
+    const filter = { isPublic: true };
     
     if (featured === 'true') {
       filter.isFeatured = true;
@@ -108,10 +108,7 @@ export const getTestimonials = async (req, res) => {
       .limit(Number(limit))
       .lean();
 
-    res.json({
-      count: testimonials.length,
-      testimonials
-    });
+    res.json(testimonials);
   } catch (error) {
     console.error('Get testimonials error:', error);
     res.status(500).json({ 
@@ -192,13 +189,13 @@ export const updateTestimonial = async (req, res) => {
     if (rating) existingTestimonial.rating = Number(rating);
     if (testimonial) existingTestimonial.testimonial = testimonial;
     
-    // Reset approval status if content changed
-    existingTestimonial.isApproved = false;
+    // Keep testimonial approved - no admin review needed
+    existingTestimonial.isApproved = true;
 
     await existingTestimonial.save();
 
     res.json({
-      message: 'Testimonial updated successfully! It will be reviewed again.',
+      message: 'Testimonial updated successfully!',
       testimonial: existingTestimonial
     });
   } catch (error) {

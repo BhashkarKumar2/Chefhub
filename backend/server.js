@@ -86,7 +86,7 @@ app.use('/uploads', express.static('uploads', {
 
 // Security: General rate limiter for all requests
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 1000, // 15 sec
   max: 100, // Limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
