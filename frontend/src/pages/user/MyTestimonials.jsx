@@ -46,7 +46,7 @@ const MyTestimonials = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/api/testimonials/${id}`, {
+      await axios.delete(buildApiEndpoint(`testimonials/${id}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Testimonial deleted successfully');

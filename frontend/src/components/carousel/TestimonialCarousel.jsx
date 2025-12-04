@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const TestimonialCarousel = () => {
     const { isDark } = useThemeAwareStyle();
@@ -13,7 +12,7 @@ const TestimonialCarousel = () => {
     useEffect(() => {
         const fetchTestimonials = async () => {
             try {
-                const response = await axios.get(`${API_URL}/api/testimonials`);
+                const response = await axios.get(buildApiEndpoint('testimonials'));
                 setTestimonials(Array.isArray(response.data) ? response.data : []);
             } catch (error) {
                 console.error('Error fetching testimonials:', error);

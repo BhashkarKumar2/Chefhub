@@ -4,8 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 
 const AddTestimonial = () => {
   const { user, token, isAuthenticated } = useAuth();
@@ -40,14 +39,14 @@ const AddTestimonial = () => {
       setFetchingData(true);
       
       // Fetch user profile
-      const userResponse = await axios.get(`${API_URL}/api/user/profile/${user?.id}`, {
+      const userResponse = await axios.get(buildApiEndpoint(`user/profile/${user?.id}`), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserInfo(userResponse.data);
 
       // Fetch user's bookings
       try {
-        const bookingsResponse = await axios.get(`${API_URL}/api/bookings/user-bookings`, {
+        const bookingsResponse = await axios.get(buildApiEndpoint('bookings/user-bookings'), {
           headers: { Authorization: `Bearer ${token}` }
         });
         setBookings(bookingsResponse.data.filter(b => b.status === 'completed'));
@@ -57,7 +56,7 @@ const AddTestimonial = () => {
 
       // Fetch available chefs
       try {
-        const chefsResponse = await axios.get(`${API_URL}/api/chefs`);
+        const chefsResponse = await axios.get(buildApiEndpoint('chefs'));
         setChefs(chefsResponse.data.chefs || []);
       } catch (err) {
         console.log('Could not fetch chefs:', err.message);
@@ -100,7 +99,7 @@ const AddTestimonial = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/testimonials`,
+        buildApiEndpoint('testimonials'),
         {
           rating: Number(formData.rating),
           testimonial: formData.testimonial.trim(),
