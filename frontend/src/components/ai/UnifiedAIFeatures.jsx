@@ -128,20 +128,16 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 		}
     
 		try {
-			// console.log('ðŸ½ï¸ Generating menu with event details:', eventDetails);
       
 			const response = await axios.post(buildApiEndpoint('ai/generate-menu'), {
 				eventDetails
 			});
       
-			// console.log('ðŸ“‹ Menu API response:', response.data);
+			// console.log('Menu API response:', response.data);
 			const responseData = response.data.data;
 			setMenu(responseData);
 			onMenuGenerated(responseData);
 		} catch (error) {
-			// console.error('âŒ Error generating menu:', error);
-			// console.error('ðŸ“‹ Event details sent:', eventDetails);
-      
 			let errorMessage = 'Sorry, I could not generate a menu right now.';
 			if (error.response?.status === 404) {
 				errorMessage = 'AI service is currently unavailable. Please make sure the backend server is running.';

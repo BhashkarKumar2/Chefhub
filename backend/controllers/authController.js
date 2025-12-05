@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
     });
     await newUser.save();
     
-    // console.log('âœ… User registered successfully:', newUser.email);
+    // console.log('User registered successfully:', newUser.email);
     res.status(201).json({ 
       message: "User registered successfully",
       user: {
@@ -180,7 +180,7 @@ export const verifyFirebaseOTP = async (req, res) => {
       });
       
       await user.save();
-      // console.log('âœ… New user created:', user.phone);
+      // console.log('New user created:', user.phone);
     } else {
       // Update phone verification status and Firebase UID
       user.isPhoneVerified = true;
@@ -189,7 +189,7 @@ export const verifyFirebaseOTP = async (req, res) => {
         user.email = firebaseUser.email;
       }
       await user.save();
-      // console.log('âœ… Existing user updated:', user.phone);
+      // console.log('Existing user updated:', user.phone);
     }
     
     // Generate JWT token for our application

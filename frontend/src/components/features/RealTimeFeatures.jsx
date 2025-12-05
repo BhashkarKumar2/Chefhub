@@ -27,18 +27,15 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      // console.log('ðŸ”— Socket connected');
       setIsConnected(true);
     });
 
     newSocket.on('disconnect', () => {
-      // console.log('ðŸ”Œ Socket disconnected');
       setIsConnected(false);
     });
 
     // Listen for booking status updates
     newSocket.on('booking-status-changed', (data) => {
-      // console.log('ðŸ“… Booking status update:', data);
       addNotification({
         id: Date.now(),
         type: 'booking',
@@ -51,7 +48,6 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for new messages
     newSocket.on('new-message', (data) => {
-      // console.log('ðŸ’¬ New message:', data);
       addNotification({
         id: Date.now(),
         type: 'message',
@@ -64,7 +60,6 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for payment updates
     newSocket.on('payment-status-update', (data) => {
-      // console.log('ðŸ’³ Payment update:', data);
       addNotification({
         id: Date.now(),
         type: 'payment',
@@ -77,7 +72,6 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for chef location updates
     newSocket.on('chef-location-update', (data) => {
-      // console.log('ðŸ“ Chef location update:', data);
       addNotification({
         id: Date.now(),
         type: 'location',
@@ -90,7 +84,6 @@ export const SocketProvider = ({ children }) => {
 
     // Listen for system announcements
     newSocket.on('system-announcement', (data) => {
-      // console.log('ðŸ“¢ System announcement:', data);
       addNotification({
         id: Date.now(),
         type: 'system',

@@ -5,7 +5,7 @@ import { Strategy as FacebookStrategy } from 'passport-facebook';
 import User from '../models/User.js';
 
 // Debug: Check if environment variables are loaded
-// console.log('ðŸ” Passport.js - Environment variables check:');
+// console.log('Passport.js - Environment variables check:');
 // console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Found' : 'Missing');
 // console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Found' : 'Missing');
 // console.log('FACEBOOK_APP_ID:', process.env.FACEBOOK_APP_ID ? 'Found' : 'Missing');
@@ -13,7 +13,7 @@ import User from '../models/User.js';
 
 // Only configure Google OAuth if environment variables are present
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  // console.log('âœ… Setting up Google OAuth strategy');
+  // console.log('Setting up Google OAuth strategy');
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -68,13 +68,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id, done) => done(null, await User.findById(id)));
 } else {
-  // console.log('âš ï¸ Google OAuth not configured - missing environment variables');
-  // console.log('ðŸ’¡ Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file to enable Google authentication');
+  // console.log('Google OAuth not configured - missing environment variables');
+  // console.log('Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file to enable Google authentication');
 }
 
 // Facebook OAuth Strategy
 if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
-  // console.log('âœ… Setting up Facebook OAuth strategy');
+  // console.log('Setting up Facebook OAuth strategy');
   passport.use(new FacebookStrategy({
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
@@ -133,8 +133,8 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
     }
   ));
 } else {
-  // console.log('âš ï¸ Facebook OAuth not configured - missing environment variables');
-  // console.log('ðŸ’¡ Add FACEBOOK_APP_ID and FACEBOOK_APP_SECRET to your .env file to enable Facebook authentication');
+  // console.log('Facebook OAuth not configured - missing environment variables');
+  // console.log('Add FACEBOOK_APP_ID and FACEBOOK_APP_SECRET to your .env file to enable Facebook authentication');
 }
 
 export default passport;

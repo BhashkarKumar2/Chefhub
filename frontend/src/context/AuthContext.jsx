@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = (token, userData) => {
-    // console.log('ðŸ”‘ AuthContext login called with:', { token: !!token, userData });
+    // console.log('AuthContext login called with:', { token: !!token, userData });
     
     // Validate input data
     if (!token || !userData || !userData.id || !userData.email) {
@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     
-    // console.log('âœ… Storing clean user data:', cleanUserData);
+    // console.log('Storing clean user data:', cleanUserData);
     
     // Store token only
     localStorage.setItem('token', token);
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     setUser(cleanUserData);
     
-    // console.log('âœ… Login successful, user authenticated');
+    // console.log('Login successful, user authenticated');
   };
 
   const logout = () => {

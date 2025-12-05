@@ -90,8 +90,8 @@ router.get('/google/callback',
   }),
   (req, res) => {
     try {
-      // console.log('🔄 Google OAuth callback triggered');
-      // console.log('👤 Authenticated user:', req.user ? req.user.email : 'No user');
+      // console.log('Google OAuth callback triggered');
+      // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
       
       if (!req.user) {
         // console.error('❌ No user found in request');
@@ -107,14 +107,14 @@ router.get('/google/callback',
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('🔑 Generated JWT token for user:', req.user.email);
+      // console.log('Generated JWT token for user:', req.user.email);
       
       // Redirect to frontend with token as query parameter
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
       const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
-      // console.log('ðŸš€ Redirecting to:', redirectUrl);
+      // console.log('Redirecting to:', redirectUrl);
       
       res.redirect(redirectUrl);
     } catch (error) {
@@ -140,8 +140,8 @@ router.get('/facebook/callback',
   }),
   (req, res) => {
     try {
-      // console.log('🔄 Facebook OAuth callback triggered');
-      // console.log('👤 Authenticated user:', req.user ? req.user.email : 'No user');
+      // console.log('Facebook OAuth callback triggered');
+      // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
       
       if (!req.user) {
         // console.error('❌ No user found in request');
@@ -157,18 +157,18 @@ router.get('/facebook/callback',
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('🔑 Generated JWT token for user:', req.user.email);
+      // console.log('Generated JWT token for user:', req.user.email);
       
       // Redirect to frontend with token as query parameter
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
       const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
-      // console.log('ðŸš€ Redirecting to:', redirectUrl);
+      // console.log('Redirecting to:', redirectUrl);
       
       res.redirect(redirectUrl);
     } catch (error) {
-      // console.error('âŒ Facebook OAuth callback error:', error);
+      // console.error('Facebook OAuth callback error:', error);
       const errorUrl = process.env.NODE_ENV === 'production' 
         ? 'https://chefhub-poou.vercel.app/login?error=oauth_failed'
         : 'http://localhost:5173/login?error=oauth_failed';
