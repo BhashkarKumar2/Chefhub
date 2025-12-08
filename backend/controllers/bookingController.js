@@ -268,13 +268,41 @@ export const updateBookingStatus = async (req, res) => {
       });
     }
 
+    // Check if status is changing to completed (before updating)
+    const wasNotCompleted = booking.status !== 'completed';
+    
     booking.status = status;
     booking.updatedAt = new Date();
+    
+    // Set completedAt timestamp when status changes to completed
+    if (status === 'completed' && wasNotCompleted) {
+      booking.completedAt = new Date();
+    }
+    
     await booking.save();
 
     await booking.populate('chef', 'name email phone specialties pricePerHour');
     if (booking.user) {
       await booking.populate('user', 'name email phone');
+    }
+    
+    // Send review reminder email when booking is completed
+    if (status === 'completed' && wasNotCompleted && booking.user) {
+      try {
+        const { sendReviewReminderEmail } = await import('./emailVerificationController.js');
+        const user = await User.findById(booking.user);
+        if (user) {
+          await sendReviewReminderEmail(
+            user.email,
+            user.name,
+            booking.chef.name,
+            booking._id.toString()
+          );
+        }
+      } catch (emailError) {
+        // console.error('Failed to send review reminder email:', emailError);
+        // Don't fail the booking update if email fails
+      }
     }
 
     res.status(200).json({

@@ -264,6 +264,9 @@ const bookingSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Chef name cannot exceed 100 characters']
   },
+  completedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -376,6 +379,20 @@ bookingSchema.methods.getRefundAmount = function() {
   if (hoursDifference > 48) return this.totalPrice * 0.8; // 80% refund
   if (hoursDifference > 24) return this.totalPrice * 0.5; // 50% refund
   return 0; // No refund
+};
+
+// Instance method to check if booking is eligible for review (within 48 hours of completion)
+bookingSchema.methods.isReviewEligible = function() {
+  if (this.status !== 'completed' || !this.completedAt) {
+    return false;
+  }
+  
+  const now = Date.now();
+  const completionTime = new Date(this.completedAt).getTime();
+  const hoursSinceCompletion = (now - completionTime) / (1000 * 60 * 60);
+  
+  // Review window is exactly 48 hours after completion
+  return hoursSinceCompletion <= 48;
 };
 
 export default mongoose.model('Booking', bookingSchema);

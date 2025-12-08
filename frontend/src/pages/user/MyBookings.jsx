@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { buildApiEndpoint } from '../../utils/apiConfig';
+import axios from 'axios';
 
 const MyBookings = () => {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { getClass, isDark } = useThemeAwareStyle();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, upcoming, past
+  const [reviewStatus, setReviewStatus] = useState({}); // Store review eligibility for each booking
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
@@ -31,7 +35,29 @@ const MyBookings = () => {
       
       // Use the general bookings endpoint like Dashboard does
       const response = await api.get('/bookings');
-      setBookings(response.data.bookings || []);
+      const fetchedBookings = response.data.bookings || [];
+      setBookings(fetchedBookings);
+      
+      // Check review status for completed bookings
+      const completedBookings = fetchedBookings.filter(b => b.status === 'completed');
+      const statusMap = {};
+      
+      await Promise.all(
+        completedBookings.map(async (booking) => {
+          try {
+            const reviewResponse = await axios.get(
+              buildApiEndpoint(`testimonials/check/${booking._id}`),
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            statusMap[booking._id] = reviewResponse.data;
+          } catch (error) {
+            console.error(`Error checking review for booking ${booking._id}:`, error);
+            statusMap[booking._id] = { canReview: false, hasReview: false };
+          }
+        })
+      );
+      
+      setReviewStatus(statusMap);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       console.error('Error details:', error.response?.data || error.message);
@@ -265,6 +291,37 @@ const MyBookings = () => {
                       <div>
                         <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total Amount</p>
                         <p className={`text-2xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{booking.totalPrice.toLocaleString()}</p>
+                      </div>
+                    )}
+                    
+                    {/* Review Action Button */}
+                    {booking.status === 'completed' && (
+                      <div>
+                        {reviewStatus[booking._id]?.hasReview ? (
+                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 rounded-lg text-sm font-semibold">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                            </svg>
+                            Reviewed
+                          </span>
+                        ) : reviewStatus[booking._id]?.canReview ? (
+                          <button
+                            onClick={() => navigate(`/add-testimonial?bookingId=${booking._id}`)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold text-sm"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Rate Chef
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 rounded-lg text-sm font-semibold">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"></path>
+                            </svg>
+                            Review Expired
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

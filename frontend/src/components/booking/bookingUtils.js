@@ -25,14 +25,20 @@ const fetchWithRetry = async (url, options = {}, retries = 2, timeout = 10000) =
   }
 };
 
-// Geocode address to lat/lon using backend proxy
+// Geocode address to lat/lon using backend proxy (with rate limiting)
 export const geocodeAddress = async (address) => {
   try {
-    const res = await fetchWithRetry(
+    // Add a small delay to prevent rate limiting (stagger requests)
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const res = await fetch(
       `${buildApiEndpoint('')}proxy/geocode?address=${encodeURIComponent(address)}`,
-      {},
-      2,
-      10000
+      { 
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
     );
     
     if (!res.ok) {
@@ -42,7 +48,10 @@ export const geocodeAddress = async (address) => {
     
     const data = await res.json();
     if (data.success && data.data) {
-      return { lat: data.data.latitude, lon: data.data.longitude };
+      return { 
+        lat: data.data.latitude, 
+        lon: data.data.longitude 
+      };
     }
     return null;
   } catch (e) {
@@ -51,34 +60,46 @@ export const geocodeAddress = async (address) => {
   }
 };
 
-// Calculate distance (meters) between two [lon, lat] points using backend proxy
-export const getDistance = async (from, to) => {
+// Calculate distance (meters) between two [lat, lon] points using Haversine formula
+// Expected format: [latitude, longitude]
+export const getDistance = (from, to) => {
   try {
-    const res = await fetchWithRetry(
-      `${buildApiEndpoint('')}proxy/directions`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ coordinates: [from, to] })
-      },
-      2,
-      10000
-    );
+    // Validate input coordinates
+    if (!from || !to || from.length !== 2 || to.length !== 2) {
+      console.warn('Invalid coordinates provided to getDistance');
+      return null;
+    }
+
+    // Haversine formula for calculating great-circle distance
+    const toRad = (value) => (value * Math.PI) / 180;
     
-    if (!res.ok) {
-      console.warn(`Distance calculation failed with status: ${res.status}`);
+    const [lat1, lon1] = from; // Correct order: latitude first, longitude second
+    const [lat2, lon2] = to;
+    
+    // Validate coordinate ranges
+    if (Math.abs(lat1) > 90 || Math.abs(lat2) > 90 || Math.abs(lon1) > 180 || Math.abs(lon2) > 180) {
+      console.warn('Coordinates out of valid range');
       return null;
     }
     
-    const data = await res.json();
-    if (data.success && data.data.routes && data.data.routes[0]) {
-      return data.data.routes[0].summary.distance;
-    }
-    return null;
+    // Earth's radius in meters
+    const R = 6371000;
+    
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    
+    // Return distance in meters, rounded to nearest meter
+    return Math.round(distance);
   } catch (e) {
-    console.error('Directions error:', e.message || e);
+    console.error('Distance calculation error:', e.message || e);
     return null;
   }
 };

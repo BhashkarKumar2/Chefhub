@@ -7,7 +7,8 @@ import {
   getTestimonialById,
   updateTestimonial,
   deleteTestimonial,
-  approveTestimonial
+  approveTestimonial,
+  checkReviewEligibility
 } from '../controllers/testimonialController.js';
 import { verifyToken } from '../auth/authMiddleware.js';
 
@@ -17,8 +18,9 @@ router.get('/', getTestimonials);
 // Protected routes (require authentication)
 router.post('/', verifyToken, createTestimonial);
 router.get('/user/my-testimonials', verifyToken, getUserTestimonials);
+router.get('/check/:bookingId', verifyToken, checkReviewEligibility);
 router.get('/:id', getTestimonialById);
-router.put('/:id', verifyToken, updateTestimonial);
+// router.put('/:id', verifyToken, updateTestimonial); // Disabled - reviews are permanent
 router.delete('/:id', verifyToken, deleteTestimonial);
 
 // Admin routes (add admin middleware later)

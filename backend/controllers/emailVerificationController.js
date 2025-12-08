@@ -192,6 +192,93 @@ export const verifyEmail = async (req, res) => {
   }
 };
 
+// Send review reminder email after booking completion
+export const sendReviewReminderEmail = async (userEmail, userName, chefName, bookingId) => {
+  try {
+    const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
+    const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = { name: fromName, email: fromEmail };
+    sendSmtpEmail.to = [{ email: userEmail, name: userName }];
+    sendSmtpEmail.subject = '⭐ Rate Your Experience with ' + chefName;
+    sendSmtpEmail.htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #f97316, #fb923c); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 32px; font-weight: bold;">
+                🍽️ ChefHub
+              </h1>
+              <p style="color: white; margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">
+                Share Your Experience
+              </p>
+            </div>
+            
+            <!-- Content -->
+            <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">
+                How was your experience, ${userName}? ⭐
+              </h2>
+              
+              <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
+                Thank you for choosing <strong>${chefName}</strong> through ChefHub! We hope you had an amazing culinary experience.
+              </p>
+              
+              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6;">
+                Your feedback helps other food lovers find the perfect chef and helps chefs improve their services. You have <strong>48 hours</strong> to share your review.
+              </p>
+              
+              <!-- CTA Button -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${frontendUrl}/add-testimonial?bookingId=${bookingId}" 
+                   style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #f97316, #fb923c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 6px rgba(249, 115, 22, 0.3);">
+                  ⭐ Write Your Review
+                </a>
+              </div>
+              
+              <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 30px 0; border-radius: 4px;">
+                <p style="margin: 0; font-size: 14px; color: #92400e;">
+                  <strong>⏰ Time Sensitive:</strong> You can submit your review within 48 hours of your booking completion. After that, the review window will expire.
+                </p>
+              </div>
+              
+              <p style="margin: 20px 0 0 0; font-size: 14px; color: #6b7280;">
+                Best regards,<br>
+                <strong style="color: #f97316;">The ChefHub Team</strong>
+              </p>
+            </div>
+            
+            <!-- Footer -->
+            <div style="background: #1f2937; padding: 20px 30px; text-align: center; border-radius: 0 0 10px 10px;">
+              <p style="color: #9ca3af; margin: 0; font-size: 14px;">
+                This is an automated email from ChefHub. Please do not reply directly to this message.
+              </p>
+              <p style="color: #9ca3af; margin: 10px 0 0 0; font-size: 12px;">
+                © ${new Date().getFullYear()} ChefHub. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    // console.log('Review reminder email sent successfully to:', userEmail);
+    
+  } catch (error) {
+    // console.error('Error sending review reminder email:', error);
+    throw error;
+  }
+};
+
 // Resend verification email
 export const resendVerificationEmail = async (req, res) => {
   try {

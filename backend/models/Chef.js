@@ -113,16 +113,25 @@ const chefSchema = new mongoose.Schema({
       trim: true
     }
   },
-  rating: { 
+  averageRating: { 
     type: Number, 
     default: 0,
     min: [0, 'Rating cannot be less than 0'],
     max: [5, 'Rating cannot exceed 5']
   },
-  reviewsCount: { 
+  totalReviews: { 
     type: Number, 
     default: 0,
     min: [0, 'Reviews count cannot be negative']
+  },
+  // Legacy fields for backward compatibility
+  rating: { 
+    type: Number, 
+    default: 0
+  },
+  reviewsCount: { 
+    type: Number, 
+    default: 0
   },
   isActive: { 
     type: Boolean, 
@@ -137,9 +146,18 @@ const chefSchema = new mongoose.Schema({
 chefSchema.index({ specialty: 1 }); // For cuisine filtering
 chefSchema.index({ city: 1 }); // For location filtering
 chefSchema.index({ isActive: 1 }); // For filtering active chefs
-chefSchema.index({ rating: -1 }); // For sorting by rating
+chefSchema.index({ averageRating: -1 }); // For sorting by rating
+chefSchema.index({ rating: -1 }); // Legacy index for backward compatibility
 chefSchema.index({ pricePerHour: 1 }); // For price range filtering
 chefSchema.index({ 'locationCoords.lat': 1, 'locationCoords.lon': 1 }); // For geo queries
 chefSchema.index({ name: 'text', bio: 'text', specialty: 'text' }); // For text search
+
+// Pre-save hook to sync legacy fields for backward compatibility
+chefSchema.pre('save', function(next) {
+  // Sync new fields to legacy fields
+  this.rating = this.averageRating;
+  this.reviewsCount = this.totalReviews;
+  next();
+});
 
 export default mongoose.model('Chef', chefSchema);

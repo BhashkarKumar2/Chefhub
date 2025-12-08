@@ -215,7 +215,7 @@ export const searchChefs = async (req, res) => {
 
     // Rating filter
     if (minRating) {
-      searchQuery.rating = { $gte: parseFloat(minRating) };
+      searchQuery.averageRating = { $gte: parseFloat(minRating) };
     }
 
     // Experience filter
@@ -250,7 +250,7 @@ export const searchChefs = async (req, res) => {
     
     const [chefs, totalCount] = await Promise.all([
       Chef.find(searchQuery)
-        .sort({ rating: -1, reviewsCount: -1 }) // Sort by rating and review count
+        .sort({ averageRating: -1, totalReviews: -1 }) // Sort by rating and review count
         .skip(skip)
         .limit(parseInt(limit))
         .lean(),

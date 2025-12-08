@@ -101,7 +101,10 @@ export const createPaymentOrder = async (req, res) => {
   }
 };
 
-// Verify payment
+// ==========================================
+// 🔧 TESTING MODE: AUTO-APPROVE ALL PAYMENTS
+// ==========================================
+// Verify payment (TESTING VERSION - Auto-approves all payments)
 export const verifyPayment = async (req, res) => {
   try {
     const {
@@ -111,32 +114,15 @@ export const verifyPayment = async (req, res) => {
       bookingId
     } = req.body;
 
-    // Validate required fields
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !bookingId) {
+    // Validate bookingId is present
+    if (!bookingId) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required payment verification fields'
+        message: 'Booking ID is required'
       });
     }
 
-    // Create signature for verification
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
-      .digest('hex');
-
-    // Verify signature
-    const isSignatureValid = expectedSignature === razorpay_signature;
-
-    if (!isSignatureValid) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid payment signature'
-      });
-    }
-
-    // Find and update booking
+    // Find booking
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({
@@ -145,9 +131,12 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // Update booking status
+    // ⚠️ TESTING MODE: Skip signature verification and auto-approve
+    console.log('🧪 TEST MODE: Auto-approving payment for booking:', bookingId);
+    
+    // Update booking status to paid and confirmed
     booking.paymentStatus = 'paid';
-    booking.paymentId = razorpay_payment_id;
+    booking.paymentId = razorpay_payment_id || `TEST_PAY_${Date.now()}`;
     booking.status = 'confirmed';
     booking.updatedAt = new Date();
     await booking.save();
@@ -158,13 +147,15 @@ export const verifyPayment = async (req, res) => {
       await booking.populate('user', 'name email phone');
     }
 
+    console.log('✅ TEST MODE: Payment auto-approved and booking confirmed');
+
     res.status(200).json({
       success: true,
-      message: 'Payment verified successfully',
+      message: 'Payment verified successfully (TEST MODE)',
       data: {
         booking: booking,
-        paymentId: razorpay_payment_id,
-        orderId: razorpay_order_id
+        paymentId: booking.paymentId,
+        orderId: razorpay_order_id || `TEST_ORDER_${Date.now()}`
       }
     });
 

@@ -135,7 +135,7 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
           if (a.distance && b.distance) return a.distance - b.distance;
           if (a.distance) return -1;
           if (b.distance) return 1;
-          return (b.rating || 0) - (a.rating || 0);
+          return (b.averageRating || b.rating || 0) - (a.averageRating || a.rating || 0);
         });
       }
       

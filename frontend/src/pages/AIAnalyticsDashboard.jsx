@@ -179,7 +179,7 @@ const AIAnalyticsDashboard = () => {
                             <span className="text-green-600 font-semibold">Rs. {chef.pricePerHour}/hr</span>
                             <div className="flex items-center">
                               <span className="text-yellow-500"></span>
-                              <span className="text-sm text-gray-600 ml-1">{chef.rating}</span>
+                              <span className="text-sm text-gray-600 ml-1">{chef.averageRating?.toFixed(1) || chef.rating || 'New'}</span>
                             </div>
                           </div>
                         </div>

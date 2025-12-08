@@ -22,21 +22,13 @@ export const createTestimonial = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Construct location string
-    const locationParts = [user.city, user.state, user.country].filter(Boolean);
-    const userLocation = locationParts.length > 0 ? locationParts.join(', ') : 'India';
+    let finalChefId = chefId;
+    let booking = null;
 
-    // Validate chef if provided
-    if (chefId) {
-      const chef = await Chef.findById(chefId);
-      if (!chef) {
-        return res.status(404).json({ message: 'Chef not found' });
-      }
-    }
-
-    // Validate booking if provided
+    // If bookingId is provided, validate and get chef from booking
     if (bookingId) {
-      const booking = await Booking.findById(bookingId);
+      booking = await Booking.findById(bookingId).populate('chef');
+      
       if (!booking) {
         return res.status(404).json({ message: 'Booking not found' });
       }
@@ -45,7 +37,42 @@ export const createTestimonial = async (req, res) => {
       if (booking.user.toString() !== userId.toString()) {
         return res.status(403).json({ message: 'Unauthorized to review this booking' });
       }
+      
+      // Check if booking is eligible for review (completed and within 48 hours)
+      if (!booking.isReviewEligible()) {
+        const reason = booking.status !== 'completed' 
+          ? 'Only completed bookings can be reviewed'
+          : 'Review window expired (48 hours after completion)';
+        return res.status(400).json({ message: reason });
+      }
+      
+      // Check for duplicate review
+      const existingReview = await Testimonial.findOne({ booking: bookingId });
+      if (existingReview) {
+        return res.status(400).json({ 
+          message: 'You have already reviewed this booking' 
+        });
+      }
+      
+      // Auto-populate chefId from booking
+      finalChefId = booking.chef._id || booking.chef;
     }
+
+    // Validate chef
+    if (finalChefId) {
+      const chef = await Chef.findById(finalChefId);
+      if (!chef) {
+        return res.status(404).json({ message: 'Chef not found' });
+      }
+    } else {
+      return res.status(400).json({ 
+        message: 'Chef ID is required' 
+      });
+    }
+
+    // Construct location string
+    const locationParts = [user.city, user.state, user.country].filter(Boolean);
+    const userLocation = locationParts.length > 0 ? locationParts.join(', ') : 'India';
 
     // Create testimonial
     const newTestimonial = new Testimonial({
@@ -56,7 +83,7 @@ export const createTestimonial = async (req, res) => {
       userProfileImage: user.profileImage,
       rating: Number(rating),
       testimonial,
-      chef: chefId || undefined,
+      chef: finalChefId,
       booking: bookingId || undefined,
       isApproved: true, // Auto-approved - no admin review needed
       isFeatured: false,
@@ -77,6 +104,13 @@ export const createTestimonial = async (req, res) => {
       return res.status(400).json({ 
         message: errors[0] || 'Validation failed',
         errors 
+      });
+    }
+    
+    // Handle duplicate key error for booking
+    if (error.code === 11000 && error.keyPattern?.booking) {
+      return res.status(400).json({ 
+        message: 'You have already reviewed this booking' 
       });
     }
     
@@ -162,6 +196,88 @@ export const getTestimonialById = async (req, res) => {
     console.error('Get testimonial error:', error);
     res.status(500).json({ 
       message: 'Failed to fetch testimonial', 
+      error: error.message 
+    });
+  }
+};
+
+// Check review eligibility for a booking
+export const checkReviewEligibility = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user._id || req.user.id;
+
+    // Find the booking
+    const booking = await Booking.findById(bookingId).populate('chef', 'name');
+    
+    if (!booking) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Booking not found' 
+      });
+    }
+
+    // Verify ownership
+    if (booking.user.toString() !== userId.toString()) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'Unauthorized to access this booking' 
+      });
+    }
+
+    // Check if review already exists
+    const existingReview = await Testimonial.findOne({ booking: bookingId });
+    
+    if (existingReview) {
+      return res.json({
+        success: true,
+        hasReview: true,
+        canReview: false,
+        reason: 'You have already reviewed this booking',
+        testimonial: existingReview
+      });
+    }
+
+    // Check review eligibility
+    const isEligible = booking.isReviewEligible();
+    
+    let reason = '';
+    let expiresAt = null;
+    
+    if (booking.status !== 'completed') {
+      reason = 'Booking must be completed before reviewing';
+    } else if (!booking.completedAt) {
+      reason = 'Booking completion date not available';
+    } else if (!isEligible) {
+      reason = 'Review window expired (48 hours after completion)';
+    } else {
+      // Calculate expiry time
+      const completionTime = new Date(booking.completedAt).getTime();
+      expiresAt = new Date(completionTime + (48 * 60 * 60 * 1000));
+      reason = `You can review until ${expiresAt.toLocaleString()}`;
+    }
+
+    res.json({
+      success: true,
+      hasReview: false,
+      canReview: isEligible,
+      reason,
+      expiresAt,
+      booking: {
+        id: booking._id,
+        chefId: booking.chef._id,
+        chefName: booking.chef.name,
+        serviceType: booking.serviceType,
+        date: booking.date,
+        status: booking.status,
+        completedAt: booking.completedAt
+      }
+    });
+  } catch (error) {
+    console.error('Check review eligibility error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to check review eligibility', 
       error: error.message 
     });
   }

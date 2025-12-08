@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -9,13 +9,15 @@ import { buildApiEndpoint } from '../../utils/apiConfig';
 const AddTestimonial = () => {
   const { user, token, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bookingIdFromUrl = searchParams.get('bookingId');
   const { isDark } = useThemeAwareStyle();
   
   const [formData, setFormData] = useState({
     rating: 5,
     testimonial: '',
     chefId: '',
-    bookingId: ''
+    bookingId: bookingIdFromUrl || ''
   });
   
   const [userInfo, setUserInfo] = useState(null);
@@ -23,6 +25,9 @@ const AddTestimonial = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(true);
+  const [bookingDetails, setBookingDetails] = useState(null);
+  const [reviewEligibility, setReviewEligibility] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState('');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -34,6 +39,30 @@ const AddTestimonial = () => {
     fetchUserData();
   }, [isAuthenticated, token]);
 
+  useEffect(() => {
+    // Calculate time remaining for review countdown
+    if (reviewEligibility?.expiresAt) {
+      const updateCountdown = () => {
+        const now = new Date().getTime();
+        const expiry = new Date(reviewEligibility.expiresAt).getTime();
+        const diff = expiry - now;
+        
+        if (diff <= 0) {
+          setTimeRemaining('Expired');
+          return;
+        }
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        setTimeRemaining(`${hours}h ${minutes}m remaining`);
+      };
+      
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 60000); // Update every minute
+      return () => clearInterval(interval);
+    }
+  }, [reviewEligibility]);
+
   const fetchUserData = async () => {
     try {
       setFetchingData(true);
@@ -44,22 +73,58 @@ const AddTestimonial = () => {
       });
       setUserInfo(userResponse.data);
 
-      // Fetch user's bookings
-      try {
-        const bookingsResponse = await axios.get(buildApiEndpoint('bookings/user-bookings'), {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setBookings(bookingsResponse.data.filter(b => b.status === 'completed'));
-      } catch (err) {
-        console.log('Could not fetch bookings:', err.message);
+      // If bookingId provided, check eligibility and fetch booking details
+      if (bookingIdFromUrl) {
+        try {
+          const eligibilityResponse = await axios.get(
+            buildApiEndpoint(`testimonials/check/${bookingIdFromUrl}`),
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          
+          setReviewEligibility(eligibilityResponse.data);
+          
+          if (!eligibilityResponse.data.canReview) {
+            toast.error(eligibilityResponse.data.reason);
+            setTimeout(() => navigate('/my-bookings'), 2000);
+            return;
+          }
+          
+          if (eligibilityResponse.data.booking) {
+            setBookingDetails(eligibilityResponse.data.booking);
+            setFormData(prev => ({
+              ...prev,
+              chefId: eligibilityResponse.data.booking.chefId,
+              bookingId: bookingIdFromUrl
+            }));
+          }
+        } catch (err) {
+          console.error('Error checking review eligibility:', err);
+          toast.error('Failed to verify booking eligibility');
+          setTimeout(() => navigate('/my-bookings'), 2000);
+          return;
+        }
       }
 
-      // Fetch available chefs
-      try {
-        const chefsResponse = await axios.get(buildApiEndpoint('chefs'));
-        setChefs(chefsResponse.data.chefs || []);
-      } catch (err) {
-        console.log('Could not fetch chefs:', err.message);
+      // Fetch user's completed bookings (for dropdown if not pre-selected)
+      if (!bookingIdFromUrl) {
+        try {
+          const bookingsResponse = await axios.get(buildApiEndpoint('bookings/user-bookings'), {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setBookings(bookingsResponse.data.filter(b => b.status === 'completed'));
+        } catch (err) {
+          console.log('Could not fetch bookings:', err.message);
+        }
+      }
+
+      // Fetch available chefs (for dropdown if not pre-selected)
+      if (!bookingIdFromUrl) {
+        try {
+          const chefsResponse = await axios.get(buildApiEndpoint('chefs'));
+          setChefs(chefsResponse.data.chefs || []);
+        } catch (err) {
+          console.log('Could not fetch chefs:', err.message);
+        }
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -183,6 +248,32 @@ const AddTestimonial = () => {
           </p>
         </div>
 
+        {/* Booking Context Banner (if from booking) */}
+        {bookingDetails && (
+          <div className={`${isDark ? 'bg-gradient-to-r from-orange-900/20 to-amber-900/20 border-orange-800/30' : 'bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200'} rounded-xl shadow-lg p-6 mb-8 border`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-1`}>
+                  Reviewing: {bookingDetails.chefName}
+                </h3>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {new Date(bookingDetails.date).toLocaleDateString('en-IN', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </p>
+              </div>
+              {timeRemaining && (
+                <div className={`px-4 py-2 ${isDark ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-800'} rounded-lg font-semibold text-sm`}>
+                  ⏰ {timeRemaining}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* User Info Card */}
         {userInfo && (
           <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-lg p-6 mb-8 border`}>
@@ -249,32 +340,34 @@ const AddTestimonial = () => {
             </p>
           </div>
 
-          {/* Chef Selection (Optional) */}
-          <div className="mb-6">
-            <label className={`block text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>
-              Related to Chef (Optional)
-            </label>
-            <select
-              name="chefId"
-              value={formData.chefId}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg border ${
-                isDark 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
-                  : 'bg-white border-gray-300 text-gray-900'
-              } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
-            >
-              <option value="">Select a chef (optional)</option>
-              {chefs.map((chef) => (
-                <option key={chef._id} value={chef._id}>
-                  {chef.name} - {chef.specialty}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Chef Selection (if not pre-populated) */}
+          {!bookingIdFromUrl && (
+            <div className="mb-6">
+              <label className={`block text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>
+                Related to Chef (Optional)
+              </label>
+              <select
+                name="chefId"
+                value={formData.chefId}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-lg border ${
+                  isDark 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
+              >
+                <option value="">Select a chef (optional)</option>
+                {chefs.map(chef => (
+                  <option key={chef._id} value={chef._id}>
+                    {chef.name} - {chef.specialty}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          {/* Booking Selection (Optional) */}
-          {bookings.length > 0 && (
+          {/* Booking Selection (if not pre-populated) */}
+          {!bookingIdFromUrl && bookings.length > 0 && (
             <div className="mb-6">
               <label className={`block text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>
                 Related to Booking (Optional)
@@ -290,9 +383,9 @@ const AddTestimonial = () => {
                 } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
               >
                 <option value="">Select a booking (optional)</option>
-                {bookings.map((booking) => (
+                {bookings.map(booking => (
                   <option key={booking._id} value={booking._id}>
-                    {booking.chef?.name} - {new Date(booking.eventDate).toLocaleDateString()}
+                    {booking.chef?.name} - {new Date(booking.date).toLocaleDateString()}
                   </option>
                 ))}
               </select>

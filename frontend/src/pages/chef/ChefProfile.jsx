@@ -76,8 +76,8 @@ const ChefProfile = () => {
     experience: experienceYears,
     location,
     availability,
-    rating,
-    reviewsCount = 0,
+    averageRating,
+    totalReviews,
     completedBookings = 0,
     menu = [],
     certificates = [],
@@ -179,8 +179,12 @@ const ChefProfile = () => {
                       <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>per hour</div>
                     </div>
                     <div className="text-center">
-                      <div className={getClass('text-2xl font-bold text-yellow-500', 'text-2xl font-bold text-yellow-400')}>{rating}</div>
-                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>{reviewsCount} reviews</div>
+                      <div className={getClass('text-2xl font-bold text-yellow-500', 'text-2xl font-bold text-yellow-400')}>
+                        {averageRating ? averageRating.toFixed(1) : 'New'}
+                      </div>
+                      <div className={getClass('text-sm text-gray-600', 'text-sm text-gray-400')}>
+                        {totalReviews || 0} reviews
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className={getClass('text-2xl font-bold text-amber-600', 'text-2xl font-bold text-amber-300')}>{completedBookings}</div>
@@ -291,14 +295,16 @@ const ChefProfile = () => {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
-                      <svg key={i} className={`w-6 h-6 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                      <svg key={i} className={`w-6 h-6 ${i < Math.floor(averageRating || 0) ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                       </svg>
                     ))}
                   </div>
-                  <span className="text-xl font-semibold text-gray-700 ml-2">{rating} out of 5</span>
+                  <span className="text-xl font-semibold text-gray-700 ml-2">
+                    {averageRating ? `${averageRating.toFixed(1)} out of 5` : 'No ratings yet'}
+                  </span>
                 </div>
-                <p className="text-gray-600">Based on {reviewsCount} reviews</p>
+                <p className="text-gray-600">Based on {totalReviews || 0} reviews</p>
               </div>
               
               <div className="space-y-6">

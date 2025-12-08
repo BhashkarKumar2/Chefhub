@@ -20,7 +20,7 @@ router.post('/chef-recommendations', async (req, res) => {
       // For now, we'll get all active chefs and let the AI service handle distance-based ranking
     }
 
-    const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio rating serviceableLocations');
+    const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations');
 
     // If user provided location coordinates, calculate distances for better AI recommendations
     let chefsWithDistance = availableChefs;

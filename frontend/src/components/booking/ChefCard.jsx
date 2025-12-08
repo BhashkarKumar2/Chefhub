@@ -28,8 +28,12 @@ const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
         <div className="flex items-center gap-4 mb-4">
           <div className={getClass('flex items-center gap-1.5 text-sm', 'flex items-center gap-1.5 text-sm')}>
             <FaStar className="text-amber-500" />
-            <span className={getClass('font-semibold text-gray-700', 'font-semibold text-gray-300')}>4.8</span>
-            <span className={getClass('text-gray-500', 'text-gray-400')}>(120)</span>
+            <span className={getClass('font-semibold text-gray-700', 'font-semibold text-gray-300')}>
+              {chef.averageRating ? chef.averageRating.toFixed(1) : 'New'}
+            </span>
+            <span className={getClass('text-gray-500', 'text-gray-400')}>
+              ({chef.totalReviews || 0})
+            </span>
           </div>
           {chef.experienceYears && (
             <div className={getClass('flex items-center gap-1.5 text-sm', 'flex items-center gap-1.5 text-sm')}>

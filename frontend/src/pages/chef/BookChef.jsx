@@ -83,27 +83,22 @@ const BookChef = () => {
         let chefList = Array.isArray(chefsData) ? chefsData : [];
         // console.log('ðŸ”¢ BookChef - Chef list length:', chefList.length);
 
-        // If user location is set and geocoded, sort chefs by closest serviceable location
+        // If user location is set, sort chefs by distance using their locationCoords
         if (userLocation.lat && userLocation.lon) {
-          // For each chef, find the closest serviceable location
-          const chefDistances = await Promise.all(chefList.map(async (chef) => {
-            // If chef has serviceableLocations (array of address strings)
-            if (Array.isArray(chef.serviceableLocations) && chef.serviceableLocations.length > 0) {
-              // Geocode all chef locations (cache for performance in real app)
-              const chefLocCoords = await Promise.all(chef.serviceableLocations.map(addr => geocodeAddress(addr)));
-              // For each, get distance to user
-              const distances = await Promise.all(chefLocCoords.map(async (coord) => {
-                if (!coord) return Number.POSITIVE_INFINITY;
-                return await getDistance([coord.lon, coord.lat], [userLocation.lon, userLocation.lat]);
-              }));
-              // Find minimum distance
-              const minDist = Math.min(...distances);
-              return { ...chef, distance: minDist };
+          // For each chef, calculate distance using their stored coordinates
+          const chefDistances = chefList.map((chef) => {
+            // Use chef's locationCoords (already in database)
+            if (chef.locationCoords && chef.locationCoords.lat && chef.locationCoords.lon) {
+              const distance = getDistance(
+                [userLocation.lat, userLocation.lon],
+                [chef.locationCoords.lat, chef.locationCoords.lon]
+              );
+              return { ...chef, distance: distance || Number.POSITIVE_INFINITY };
             } else {
-              // No serviceable locations, put at end
+              // No coordinates available
               return { ...chef, distance: Number.POSITIVE_INFINITY };
             }
-          }));
+          });
           // Sort by distance
           chefList = chefDistances.sort((a, b) => a.distance - b.distance);
         }
