@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
@@ -54,6 +54,19 @@ const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'));
 const VerifyOTP = lazy(() => import('./pages/auth/VerifyOTP'));
 
 const App = () => {
+  // Prevent scroll wheel from changing number inputs globally
+  useEffect(() => {
+    const handleWheel = (e) => {
+      if (document.activeElement.type === 'number') {
+        document.activeElement.blur();
+      }
+    };
+
+    document.addEventListener('wheel', handleWheel, { passive: true });
+
+    return () => document.removeEventListener('wheel', handleWheel);
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

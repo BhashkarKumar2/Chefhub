@@ -51,6 +51,51 @@ export const createBooking = async (req, res) => {
       });
     }
 
+    // Check for availability conflicts
+    const requestedDate = new Date(date);
+    // Normalize to start/end of day to catch all bookings on that date
+    const startOfDay = new Date(requestedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(requestedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingBookings = await Booking.find({
+      chef: selectedChefId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      status: { $nin: ['cancelled', 'rejected'] }
+    });
+
+    const getMinutes = (timeStr) => {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const reqStart = getMinutes(time);
+    const reqDuration = parseInt(duration) || 2;
+    const reqEnd = reqStart + (reqDuration * 60);
+
+    const conflict = existingBookings.find(booking => {
+      const bookStart = getMinutes(booking.time);
+      const bookEnd = bookStart + (booking.duration * 60);
+      // Check overlap: (StartA < EndB) and (EndA > StartB)
+      return (reqStart < bookEnd && reqEnd > bookStart);
+    });
+
+    if (conflict) {
+      return res.status(409).json({
+        success: false,
+        message: 'Chef is already booked for this time slot',
+        conflict: {
+          date: conflict.date,
+          time: conflict.time,
+          duration: conflict.duration
+        }
+      });
+    }
+
     // Validate authentication
     if (!req.user) {
       return res.status(401).json({

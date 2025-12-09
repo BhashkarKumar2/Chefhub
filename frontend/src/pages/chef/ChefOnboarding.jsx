@@ -20,7 +20,7 @@ const ChefOnboarding = () => {
     phone: '',
     specialties: [],
     bio: '',
-    serviceTypes: [], // New: Support for multiple service types
+    serviceTypes: '', // Changed: Single service type selection
     rates: {
       birthday: '',
       marriage: '',
@@ -126,12 +126,7 @@ const ChefOnboarding = () => {
   };
 
   const handleServiceTypeChange = (serviceType) => {
-    setFormData((prev) => {
-      const updated = prev.serviceTypes.includes(serviceType)
-        ? prev.serviceTypes.filter((s) => s !== serviceType)
-        : [...prev.serviceTypes, serviceType];
-      return { ...prev, serviceTypes: updated };
-    });
+    setFormData((prev) => ({ ...prev, serviceTypes: serviceType }));
   };
 
   const handleRateChange = (serviceType, value) => {
@@ -197,12 +192,13 @@ const ChefOnboarding = () => {
     }
 
     // Validate service types
-    if (formData.serviceTypes.length === 0) {
-      errors.push('Please select at least one service type');
+    if (!formData.serviceTypes) {
+      errors.push('Please select a service type');
     }
 
-    // Validate rates for selected service types
-    formData.serviceTypes.forEach(serviceType => {
+    // Validate rates for selected service type
+    if (formData.serviceTypes) {
+      const serviceType = formData.serviceTypes;
       const rate = formData.rates[serviceType];
       if (!rate || rate === '') {
         const serviceLabel = serviceTypeOptions.find(s => s.value === serviceType)?.label || serviceType;
@@ -211,11 +207,6 @@ const ChefOnboarding = () => {
         const serviceLabel = serviceTypeOptions.find(s => s.value === serviceType)?.label || serviceType;
         errors.push(`Rate for ${serviceLabel} must be between Rs. 500 and Rs. 50,000`);
       }
-    });
-
-    // Validate address/location
-    if (!formData.city) {
-      errors.push('City is required');
     }
     if (!formData.state) {
       errors.push('State is required');
@@ -258,11 +249,10 @@ const ChefOnboarding = () => {
     if (formData.email && formData.email.trim() !== '') completed++;
     if (formData.phone && formData.phone.trim() !== '') completed++;
     if (formData.specialties.length > 0) completed++;
-    if (formData.serviceTypes.length > 0) completed++;
+    if (formData.serviceTypes) completed++;
     if (formData.bio && formData.bio.trim() !== '' && formData.bio.length >= 50) completed++;
-    // Check if rates are filled for all selected service types
-    const allRatesFilled = formData.serviceTypes.length > 0 && formData.serviceTypes.every(st => formData.rates[st] && formData.rates[st] !== '');
-    if (allRatesFilled) completed++;
+    // Check if rate is filled for selected service type
+    if (formData.serviceTypes && formData.rates[formData.serviceTypes] && formData.rates[formData.serviceTypes] !== '') completed++;
     if (formData.experience && formData.experience !== '') completed++;
     if (formData.address && formData.address.trim() !== '') completed++;
     if (formData.locationLat && formData.locationLon) completed++;
@@ -302,12 +292,14 @@ const ChefOnboarding = () => {
       formDataToSend.append('bio', formData.bio);
       
       // Add service types and rates
-      formDataToSend.append('serviceTypes', JSON.stringify(formData.serviceTypes));
+      // Send as array for backward compatibility if needed, or just as is. 
+      // Since backend ignores it mostly but frontend might use it later, let's send as array of 1.
+      formDataToSend.append('serviceTypes', JSON.stringify([formData.serviceTypes]));
       formDataToSend.append('rates', JSON.stringify(formData.rates));
       
-      // Calculate average rate for backward compatibility
-      const selectedRates = formData.serviceTypes.map(st => Number(formData.rates[st])).filter(r => !isNaN(r));
-      const avgRate = selectedRates.length > 0 ? Math.round(selectedRates.reduce((a, b) => a + b, 0) / selectedRates.length) : 0;
+      // Calculate average rate (just the single rate now)
+      const rate = Number(formData.rates[formData.serviceTypes]);
+      const avgRate = !isNaN(rate) ? rate : 0;
       formDataToSend.append('pricePerHour', avgRate);
       
       formDataToSend.append('experienceYears', Number(formData.experience));
@@ -517,35 +509,53 @@ const ChefOnboarding = () => {
                   </div>
                 </div>
 
-                {/* Geocode Button */}
+                {/* Geocode / Clear Location Button (single button, two modes) */}
                 <div className="flex gap-3 items-center">
                   <button
                     type="button"
                     className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold shadow hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={!formData.city || !formData.state || locationLoading}
+                    disabled={
+                      // In "set" mode, require city & state & not loading
+                      (!formData.locationLat || !formData.locationLon)
+                        ? (!formData.city || !formData.state || locationLoading)
+                        // In "clear" mode, never disable (unless you want to guard on loading)
+                        : false
+                    }
                     onClick={async () => {
+                      // CLEAR MODE: location already set -> clear it
+                      if (formData.locationLat && formData.locationLon) {
+                        setFormData(prev => ({ ...prev, locationLat: '', locationLon: '' }));
+                        setLocationError('');
+                        return;
+                      }
+
+                      // SET MODE: validate city/state first
                       if (!formData.city || !formData.state) {
                         setLocationError('Please enter both city and state first');
                         return;
                       }
-                      
+
                       setLocationError('');
-                      // console.log('ðŸ”„ Starting geocoding for:', formData.address);
-                      
+
                       const coords = await geocodeAddress(formData.address);
                       if (coords) {
                         setFormData(prev => ({ ...prev, locationLat: coords.lat, locationLon: coords.lon }));
-                        // console.log('âœ… Location set successfully:', coords);
                       } else {
-                        // console.log('âŒ Geocoding failed');
-                        // Error message is already set by geocodeAddress function
+                        // Error message already handled in geocodeAddress
                       }
                     }}
                   >
-                    {locationLoading ? 'Setting...' : 'Set Location'}
+                    {formData.locationLat && formData.locationLon
+                      ? 'Clear Location'
+                      : (locationLoading ? 'Setting...' : 'Set Location')}
                   </button>
                   {formData.locationLat && formData.locationLon && (
-                    <span className="text-green-600 text-sm">Location verified</span>
+                    <span className="text-green-600 text-sm font-medium flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Location verified
+                    </span>
                   )}
                 </div>
                 {locationError && <p className="text-red-500 text-xs mt-2">{locationError}</p>}
@@ -608,7 +618,7 @@ const ChefOnboarding = () => {
                     <div
                       key={service.value}
                       className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
-                        formData.serviceTypes.includes(service.value)
+                        formData.serviceTypes === service.value
                           ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
                           : 'border-gray-300 hover:border-orange-300 dark:border-gray-700 dark:hover:border-orange-700'
                       }`}
@@ -616,10 +626,11 @@ const ChefOnboarding = () => {
                     >
                       <div className="flex items-start gap-4">
                         <input
-                          type="checkbox"
-                          checked={formData.serviceTypes.includes(service.value)}
+                          type="radio"
+                          name="serviceType"
+                          checked={formData.serviceTypes === service.value}
                           onChange={() => handleServiceTypeChange(service.value)}
-                          className="mt-1 w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                          className="mt-1 w-5 h-5 text-orange-600 border-gray-300 focus:ring-orange-500"
                         />
                         <div className="flex-1">
                           <h4 className={getClass('font-semibold text-gray-900', 'font-semibold text-gray-100')}>
@@ -627,7 +638,7 @@ const ChefOnboarding = () => {
                           </h4>
                           
                           {/* Rate Input for Selected Service */}
-                          {formData.serviceTypes.includes(service.value) && (
+                          {formData.serviceTypes === service.value && (
                             <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                               <label className={getClass('block text-xs font-medium text-gray-600 mb-2', 'block text-xs font-medium text-gray-300 mb-2')}>
                                 Rate (INR) <span className="text-red-500">*</span>
