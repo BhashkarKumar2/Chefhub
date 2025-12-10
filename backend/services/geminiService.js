@@ -89,8 +89,6 @@ class GeminiService {
 
   // Generate chef recommendations based on user preferences
   async getChefRecommendations(userPreferences, availableChefs) {
-    const hasLocationData = userPreferences.locationLat && userPreferences.locationLon;
-    
     const prompt = `
     Act as a culinary expert and recommend the best chefs based on user preferences:
     
@@ -100,17 +98,10 @@ class GeminiService {
     - Budget Range: Rs.${userPreferences.minBudget || 0} - Rs.${userPreferences.maxBudget || 'Not specified'}
     - Cuisine Preference: ${userPreferences.cuisinePreference || userPreferences.cuisine || 'Any'}
     - Dietary Restrictions: ${userPreferences.dietaryRestrictions || 'None'}
-    - Location: ${userPreferences.location || 'Not specified'}
     - Date: ${userPreferences.date || 'Not specified'}
-    ${hasLocationData ? `- User Coordinates: Lat ${userPreferences.locationLat}, Lon ${userPreferences.locationLon}` : ''}
     
     Available Chefs:
     ${JSON.stringify(availableChefs, null, 2)}
-    
-    ${hasLocationData ? 
-      'IMPORTANT: Consider distance and serviceableLocations when ranking chefs. Prioritize chefs who serve the user\'s location.' : 
-      'Note: No location data provided, rank based on other preferences.'
-    }
     
     Return EXACTLY this JSON format (as an array):
     [
@@ -121,13 +112,11 @@ class GeminiService {
         },
         "score": 8,
         "explanation": "Detailed explanation of why this chef is recommended",
-        "reasons": ["reason 1", "reason 2", "reason 3"],
-        "distanceNote": "Distance-related information if applicable"
+        "reasons": ["reason 1", "reason 2", "reason 3"]
       }
     ]
     
     Rank the top 3-5 chefs and provide scores (1-10), detailed explanations, and specific reasons.
-    ${hasLocationData ? 'Include distance considerations in your reasoning.' : ''}
     Only return the JSON array, no other text.
     `;
 
@@ -149,8 +138,7 @@ class GeminiService {
             : chef.explanation,
           reasons: typeof chef.explanation === 'object' 
             ? [chef.explanation.bestMatchFactors, chef.explanation.potentialConcerns].filter(Boolean)
-            : ['AI recommendation based on available data'],
-          distanceNote: chef.distanceNote || ''
+            : ['AI recommendation based on available data']
         }));
       }
       

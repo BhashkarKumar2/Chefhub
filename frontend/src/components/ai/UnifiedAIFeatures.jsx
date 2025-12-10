@@ -4,110 +4,6 @@ import { buildApiEndpoint } from '../../utils/apiConfig';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 import { useAuth } from '../../context/AuthContext';
 
-// AI Component: Chef Recommendations
-const AIChefRecommendations = ({ userPreferences, onRecommendationsReceived }) => {
-	const { getClass, classes, isDark } = useThemeAwareStyle();
-	const [loading, setLoading] = useState(false);
-	const [recommendations, setRecommendations] = useState(null);
-
-	const getRecommendations = async () => {
-		setLoading(true);
-		try {
-			const requestData = {
-				userPreferences: {
-					...userPreferences,
-					locationLat: userPreferences.locationLat,
-					locationLon: userPreferences.locationLon
-				}
-			};
-
-			const response = await axios.post(buildApiEndpoint('ai/chef-recommendations'), requestData);
-			const responseData = response.data.data;
-			setRecommendations(responseData);
-			onRecommendationsReceived(responseData);
-		} catch (error) {
-			// console.error('Error getting recommendations:', error);
-      
-			let errorMessage = 'Sorry, I could not get chef recommendations right now.';
-			if (error.response?.status === 404) {
-				errorMessage = 'AI service is currently unavailable. Please make sure the backend server is running.';
-			} else if (error.response?.status === 500) {
-				errorMessage = 'AI service error. Please check if the Gemini API key is configured.';
-			} else if (error.code === 'ECONNREFUSED') {
-				errorMessage = 'Cannot connect to server. Please make sure the backend is running on localhost:5000 or render.com';
-			}
-      
-			setRecommendations({ 
-				error: errorMessage,
-				rawResponse: error.response?.data?.error || error.message 
-			});
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	return (
-		<div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
-			<div className="flex items-center justify-between mb-4">
-				<h3 className={`text-xl font-bold ${classes.text.heading}`}>
-					🤖 AI Chef Recommendations
-				</h3>
-				<button
-					onClick={getRecommendations}
-					disabled={loading}
-					className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
-				>
-					{loading ? 'Analyzing...' : 'Get AI Suggestions'}
-				</button>
-			</div>
-
-			{loading && (
-				<div className="flex items-center justify-center py-8">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
-					<span className={`ml-2 ${classes.text.secondary}`}>AI is analyzing your preferences...</span>
-				</div>
-			)}
-
-			{recommendations && (
-				<div className="space-y-4">
-					{Array.isArray(recommendations) ? (
-						recommendations.map((rec, index) => (
-							<div key={index} className={`border ${classes.border.default} ${classes.bg.secondary} rounded-lg p-4`}>
-								<div className="flex items-center justify-between mb-2">
-									<h4 className={`font-semibold text-lg ${classes.text.heading}`}>{rec.chef?.name || 'Chef'}</h4>
-									<div className={`${isDark ? 'bg-green-800/20 text-green-400' : 'bg-green-100 text-green-800'} px-2 py-1 rounded-full text-sm`}>
-										Match: {rec.score || 'N/A'}/10
-									</div>
-								</div>
-								<p className={`${classes.text.secondary} mb-2`}>{rec.explanation || 'No explanation available'}</p>
-								<div className={`text-sm ${classes.text.muted}`}>
-									<span className="font-medium">Why recommended:</span> {rec.reasons?.join(', ') || 'No reasons available'}
-								</div>
-							</div>
-						))
-					) : (
-						<div className={`border ${isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'} rounded-lg p-4`}>
-							<p className={`${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-								{recommendations.error || 'Unable to parse recommendations. Please try again.'}
-							</p>
-							{recommendations.rawResponse && (
-								<details className="mt-2">
-									<summary className={`text-sm ${isDark ? 'text-amber-400' : 'text-amber-600'} cursor-pointer`}>Show raw response</summary>
-									<pre className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-700'} mt-2 whitespace-pre-wrap`}>
-										{recommendations.rawResponse}
-									</pre>
-								</details>
-							)}
-						</div>
-					)}
-				</div>
-			)}
-
-      
-		</div>
-	);
-};
-
 // AI Component: Menu Generator
 const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 	const { getClass, classes, isDark } = useThemeAwareStyle();
@@ -626,4 +522,4 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 };
 
 export default UnifiedAIFeatures;
-export { AIChefRecommendations, AIMenuGenerator, AIChatAssistant };
+export { AIMenuGenerator, AIChatAssistant };

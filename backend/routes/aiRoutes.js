@@ -22,21 +22,9 @@ router.post('/chef-recommendations', async (req, res) => {
 
     const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations');
 
-    // If user provided location coordinates, calculate distances for better AI recommendations
-    let chefsWithDistance = availableChefs;
-    if (userPreferences.locationLat && userPreferences.locationLon) {
-      // Note: In a production app, you'd implement distance calculation here
-      // For now, we'll pass the location data to the AI service
-      chefsWithDistance = availableChefs.map(chef => ({
-        ...chef.toObject(),
-        userLocationLat: userPreferences.locationLat,
-        userLocationLon: userPreferences.locationLon
-      }));
-    }
-
     const recommendations = await geminiService.getChefRecommendations(
       userPreferences, 
-      chefsWithDistance
+      availableChefs
     );
 
     res.json({

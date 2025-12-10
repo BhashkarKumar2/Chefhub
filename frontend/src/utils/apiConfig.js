@@ -2,18 +2,29 @@
 // Automatically switches between localhost and production based on environment
 
 const getApiBaseUrl = () => {
-  // Check if we're in development (running on localhost)
+  // Priority 1: Use explicit environment variable if set (for Vercel/production deployments)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Priority 2: Check if we're in development (running on localhost)
   const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
   if (isDevelopment) {
     return 'http://localhost:5000';
   } else {
+    // Priority 3: Default production URL
     return 'https://chefhub.onrender.com';
   }
 };
 
 const getSocketUrl = () => {
-  // Same logic for Socket.io connections
+  // Priority 1: Use explicit environment variable if set
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Priority 2: Same logic for Socket.io connections
   const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
   if (isDevelopment) {

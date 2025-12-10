@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UnifiedAIFeatures } from '../components/ai';
+import { UnifiedAIFeatures, AIChatAssistant } from '../components/ai';
 import AdvancedSearch from '../components/AdvancedSearch';
 import api from '../utils/api';
 

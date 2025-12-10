@@ -1,1 +1,1 @@
-export { default as UnifiedAIFeatures } from './UnifiedAIFeatures';
+export { default as UnifiedAIFeatures, AIMenuGenerator, AIChatAssistant } from './UnifiedAIFeatures';
