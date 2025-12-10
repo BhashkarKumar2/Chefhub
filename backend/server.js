@@ -44,7 +44,7 @@ if (!process.env.SESSION_SECRET) {
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       'https://chefhub-poou.vercel.app', // Primary production URL
-      'https://chefhub-poou-eo3vox2fh-bhashkar-kumars-projects.vercel.app', // Vercel preview / project URL
+       // Vercel preview / project URL
       // Add other verified production URLs here (or move to env-based list)
     ]
   : [
