@@ -228,7 +228,7 @@ const Home = () => {
               </button>
             </div>
             {/* Stats Section - Updated with theme support */}
-            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto transition-all duration-1000 delay-1300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {/* <div className={`grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto transition-all duration-1000 delay-1300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               <div className="group text-center">
                 <div className="relative">
                   <div className={`absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl blur ${isDark ? 'opacity-30' : 'opacity-20'} group-hover:opacity-${isDark ? '50' : '40'} transition-opacity duration-300`}></div>
@@ -268,7 +268,7 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
