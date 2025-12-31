@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
-import BackgroundCarousel from '../../components/carousel/BackgroundCarousel';
 import TestimonialCarousel from '../../components/carousel/TestimonialCarousel';
 import logo from '../../assets/logo.png'
 
@@ -58,7 +57,7 @@ const Home = () => {
   // Function to handle booking button clicks
   const handleBookingClick = (e) => {
     e.preventDefault();
-    
+
     // Don't proceed if auth status is still loading
     if (isLoading) {
       return;
@@ -66,7 +65,7 @@ const Home = () => {
 
     // Additional checks for authentication
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    
+
     // More strict authentication check
     if (isAuthenticated && user && user.id && token) {
       navigate('/book-chef');
@@ -78,7 +77,7 @@ const Home = () => {
   // Function to handle AI Features button clicks
   const handleAIFeaturesClick = (e) => {
     e.preventDefault();
-    
+
     // Don't proceed if auth status is still loading
     if (isLoading) {
       return;
@@ -86,7 +85,7 @@ const Home = () => {
 
     // Additional checks for authentication
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-    
+
     // More strict authentication check
     if (isAuthenticated && user && user.id && token) {
       navigate('/ai-features');
@@ -111,8 +110,8 @@ const Home = () => {
       const locationData = await geocodeAddress(searchLocation);
       if (locationData) {
         // Navigate to BookChef page with location data
-        navigate('/book-chef', { 
-          state: { 
+        navigate('/book-chef', {
+          state: {
             searchLocation: locationData.address,
             coordinates: {
               lat: locationData.latitude,
@@ -137,40 +136,42 @@ const Home = () => {
         <div className={`absolute inset-0 ${isDark ? 'bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.15),rgba(255,255,255,0))]' : 'bg-[radial-gradient(circle_at_50%_50%,rgba(255,183,77,0.3),rgba(255,255,255,0))]'}`}></div>
         {/* Floating Elements - Made subtler in dark mode */}
         <div className={`absolute top-1/4 left-1/4 w-72 h-72 bg-gradient-to-r ${isDark ? 'from-orange-200/15 to-amber-300/15' : 'from-orange-200/30 to-amber-300/30'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`}></div>
-        <div className={`absolute top-3/4 right-1/4 w-72 h-72 bg-gradient-to-r ${isDark ? 'from-yellow-200/15 to-orange-400/15' : 'from-yellow-200/30 to-orange-400/30'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{animationDelay: '2s'}}></div>
-        <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r ${isDark ? 'from-amber-200/15 to-yellow-300/15' : 'from-amber-200/30 to-yellow-300/30'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{animationDelay: '4s'}}></div>
-        <div className={`absolute top-1/2 right-1/3 w-96 h-96 bg-gradient-to-r ${isDark ? 'from-orange-100/15 to-amber-200/15' : 'from-orange-100/25 to-amber-200/25'} rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse`} style={{animationDelay: '1s'}}></div>
-        <div className={`absolute bottom-1/3 left-1/2 w-80 h-80 bg-gradient-to-r ${isDark ? 'from-yellow-100/15 to-orange-200/15' : 'from-yellow-100/25 to-orange-200/25'} rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse`} style={{animationDelay: '3s'}}></div>
+        <div className={`absolute top-3/4 right-1/4 w-72 h-72 bg-gradient-to-r ${isDark ? 'from-yellow-200/15 to-orange-400/15' : 'from-yellow-200/30 to-orange-400/30'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '2s' }}></div>
+        <div className={`absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-r ${isDark ? 'from-amber-200/15 to-yellow-300/15' : 'from-amber-200/30 to-yellow-300/30'} rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse`} style={{ animationDelay: '4s' }}></div>
+        <div className={`absolute top-1/2 right-1/3 w-96 h-96 bg-gradient-to-r ${isDark ? 'from-orange-100/15 to-amber-200/15' : 'from-orange-100/25 to-amber-200/25'} rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse`} style={{ animationDelay: '1s' }}></div>
+        <div className={`absolute bottom-1/3 left-1/2 w-80 h-80 bg-gradient-to-r ${isDark ? 'from-yellow-100/15 to-orange-200/15' : 'from-yellow-100/25 to-orange-200/25'} rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-pulse`} style={{ animationDelay: '3s' }}></div>
       </div>
 
       {/* Hero Section - Updated with theme support */}
       <section className="relative min-h-screen flex items-center justify-center z-10">
-        <div className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          
+        <div className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8`}>
+
           {/* Main Hero Content */}
           <div className={`text-center mb-12 ${getClass('textSecondary')}`}>
             {/* Animated Logo */}
             <div className="mb-8 flex justify-center">
-              <div className={`relative transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                <img 
-                  src={logo} 
-                  alt="ChefHub Logo" 
-                  className="w-20 h-30 object-contain relative z-10"
+              <div className="relative">
+                <img
+                  src={logo}
+                  alt="ChefHub Logo"
+                  width="80"
+                  height="80"
+                  className="w-20 h-20 object-contain relative z-10"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextSibling.style.display = 'flex';
                   }}
                 />
                 {/* Fallback if logo doesn't load - already theme-aware */}
-                <div className={`w-20 h-20 flex items-center justify-center rounded-full text-2xl font-bold relative z-10 ${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700 text-yellow-300' : 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600'}`} style={{display: 'none'}}>
+                <div className={`w-20 h-20 flex items-center justify-center rounded-full text-2xl font-bold relative z-10 ${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700 text-yellow-300' : 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-600'}`} style={{ display: 'none' }}>
                   CH
                 </div>
-                
+
               </div>
             </div>
 
             {/* Main Heading - Updated with theme support */}
-            <div className={`transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-none mb-6">
                 <span className={`block bg-gradient-to-r ${isDark ? 'from-orange-500 via-amber-400 to-yellow-400' : 'from-orange-800 via-amber-700 to-yellow-700'} bg-clip-text text-transparent drop-shadow-2xl`}>
                   Book World-Class
@@ -185,16 +186,16 @@ const Home = () => {
             </div>
 
             {/* Subtitle - Updated with theme support */}
-            <div className={`transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div>
               <p className={`text-lg sm:text-xl md:text-2xl ${isDark ? 'text-gray-300' : 'text-gray-600'} max-w-4xl mx-auto leading-relaxed mb-12`}>
-                Transform your dining experience with <span className="text-orange-600 font-semibold">professional chefs</span> who bring 
+                Transform your dining experience with <span className="text-orange-600 font-semibold">professional chefs</span> who bring
                 <span className="text-amber-600 font-semibold"> restaurant-quality cuisine</span> directly to your home
               </p>
             </div>
-            
+
             {/* Action Buttons - Already using good theme-aware gradients */}
-            <div className={`flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 transition-all duration-1000 delay-1100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              <button 
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+              <button
                 onClick={handleBookingClick}
                 disabled={isLoading}
                 className="group relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white px-10 py-4 rounded-2xl text-lg font-bold hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-3 min-w-[200px] justify-center overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
@@ -210,8 +211,8 @@ const Home = () => {
                   {isLoading ? 'Loading...' : (isAuthenticated ? 'Book Your Chef' : 'Sign Up to Book Chef')}
                 </span>
               </button>
-              
-              <button 
+
+              <button
                 onClick={handleAIFeaturesClick}
                 disabled={isLoading}
                 className="group relative bg-white/20 backdrop-blur-md border-2 border-orange-300/50 text-orange-700 px-10 py-4 rounded-2xl text-lg font-bold hover:bg-orange-100 hover:text-orange-800 transition-all duration-300 hover:scale-105 flex items-center gap-3 min-w-[200px] justify-center disabled:opacity-50 disabled:cursor-not-allowed"
@@ -281,13 +282,13 @@ const Home = () => {
               Why Choose <span className="bg-gradient-to-r from-orange-300 to-amber-500 bg-clip-text text-transparent">ChefHub</span>?
             </h2>
             <p className="text-xl md:text-2xl text-white/70 max-w-4xl mx-auto leading-relaxed">
-              Experience the perfect blend of <span className="text-orange-300 font-semibold">culinary excellence</span> and 
+              Experience the perfect blend of <span className="text-orange-300 font-semibold">culinary excellence</span> and
               <span className="text-amber-200 font-semibold"> personalized service</span>
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
+
             {/* Feature Card 1 */}
             <div className="group relative h-full">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-amber-700 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
@@ -295,7 +296,7 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-400 to-amber-600 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                   </div>
                 </div>
@@ -313,8 +314,8 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                      <polyline points="9,22 9,12 15,12 15,22"/>
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      <polyline points="9,22 9,12 15,12 15,22" />
                     </svg>
                   </div>
                 </div>
@@ -332,10 +333,10 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                      <line x1="9" y1="9" x2="9.01" y2="9"/>
-                      <line x1="15" y1="9" x2="15.01" y2="9"/>
-                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                      <line x1="9" y1="9" x2="9.01" y2="9" />
+                      <line x1="15" y1="9" x2="15.01" y2="9" />
+                      <circle cx="12" cy="12" r="10" />
                     </svg>
                   </div>
                 </div>
@@ -353,8 +354,8 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <polyline points="12,6 12,12 16,14"/>
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12,6 12,12 16,14" />
                     </svg>
                   </div>
                 </div>
@@ -372,7 +373,7 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M20 6L9 17l-5-5"/>
+                      <path d="M20 6L9 17l-5-5" />
                     </svg>
                   </div>
                 </div>
@@ -390,7 +391,7 @@ const Home = () => {
                 <div className="relative mb-6">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-br from-orange-500 to-amber-700 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform duration-500">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
                   </div>
                 </div>
@@ -405,7 +406,7 @@ const Home = () => {
       </section>
 
       {/* AI Features Section */}
-  <section className="py-24 bg-gradient-to-br from-orange-900 via-orange-700 to-amber-800">
+      <section className="py-24 bg-gradient-to-br from-orange-900 via-orange-700 to-amber-800">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
@@ -448,7 +449,7 @@ const Home = () => {
             </div>
           </div>
 
-          
+
         </div>
       </section>
 
@@ -467,7 +468,7 @@ const Home = () => {
 
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              
+
               {/* Step 1 - Updated with theme support */}
               <div className="group text-center">
                 <div className="relative mb-8">
@@ -527,15 +528,15 @@ const Home = () => {
                   Join thousands of satisfied customers and book your perfect chef today!
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button 
+                  <button
                     onClick={handleBookingClick}
                     disabled={isLoading}
                     className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? 'Loading...' : (isAuthenticated ? 'Start Booking Now' : 'Sign Up to Start Booking')}
                   </button>
-                  <Link 
-                    to="/book-chef" 
+                  <Link
+                    to="/book-chef"
                     className={`border-2 ${isDark ? 'border-orange-400 text-orange-400 hover:bg-orange-400' : 'border-orange-600 text-orange-600 hover:bg-orange-600'} px-10 py-4 rounded-xl text-lg font-bold hover:text-white transition-all duration-300`}
                   >
                     Browse Chefs
@@ -558,12 +559,12 @@ const Home = () => {
               Real stories from satisfied customers who discovered the joy of professional in-home dining.
             </p>
           </div>
-           
+
           <TestimonialCarousel />
         </div>
       </section>
 
-    
+
     </div>
   );
 };
