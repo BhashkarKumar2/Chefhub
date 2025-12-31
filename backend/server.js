@@ -22,6 +22,7 @@ import socketService from './services/socketService.js';
 import redis from './config/redis.js';
 import compression from 'compression';
 import helmet from 'helmet';
+import hpp from 'hpp';
 
 const RedisStore = connectRedis(session);
 
@@ -43,23 +44,23 @@ if (!process.env.SESSION_SECRET) {
 // Security: CORS configuration with environment-based origins
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      'https://chefhub-poou.vercel.app', // Primary production URL
-       // Vercel preview / project URL
-      // Add other verified production URLs here (or move to env-based list)
-    ]
+    'https://chefhub-poou.vercel.app', // Primary production URL
+    // Vercel preview / project URL
+    // Add other verified production URLs here (or move to env-based list)
+  ]
   : [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:5000',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-    ];
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+  ];
 
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -86,21 +87,25 @@ app.use('/uploads', express.static('uploads', {
 }));
 
 // Security: General rate limiter for all requests
-const generalLimiter = rateLimit({
-  windowMs: 15 * 1000, // 15 sec
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const generalLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 15 * 1000, // 15 sec
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
 // Security: Strict rate limiter for authentication endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per windowMs
-  message: 'Too many login attempts, please try again after 15 minutes.',
-  skipSuccessfulRequests: true,
-});
+const authLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 login attempts per windowMs
+    message: 'Too many login attempts, please try again after 15 minutes.',
+    skipSuccessfulRequests: true,
+  })
+  : (req, res, next) => next();
 
 app.use(generalLimiter);
 
@@ -145,6 +150,9 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin requests
 }));
 
+// Security: Prevent HTTP Parameter Pollution
+app.use(hpp());
+
 // Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
@@ -170,12 +178,12 @@ app.use((req, res) => {
 // Security: Global error handler (don't expose stack traces in production)
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  
+
   const statusCode = err.statusCode || 500;
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Internal server error' 
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Internal server error'
     : err.message;
-  
+
   res.status(statusCode).json({
     success: false,
     message,
@@ -184,29 +192,33 @@ app.use((err, req, res, next) => {
 });
 
 
-// MongoDB Connection
+import { logger } from './utils/logger.js';
+
+// ... imports ...
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
-    // console.log('✅ MongoDB connected');
+    logger.info('MongoDB connected successfully');
 
     // Initialize Socket.io
     socketService.init(server);
 
     server.listen(PORT, () => {
-      // console.log(`🚀 Server running on port ${PORT}`);
-      // console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-      // console.log(`📡 Socket.io enabled for real-time features`);
+      logger.info(`Server running on port ${PORT}`, {
+        environment: process.env.NODE_ENV || 'development',
+        socketEnabled: true
+      });
     });
   })
   .catch(err => {
-    // console.error('❌ MongoDB connection error:', err)
+    logger.error('MongoDB connection error', { error: err.message, stack: err.stack });
   });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  // console.log('SIGTERM received, closing server gracefully...');
+  logger.info('SIGTERM received, closing server gracefully...');
   server.close(() => {
-    // console.log('Server closed');
+    logger.info('Server closed');
     redis.quit();
     mongoose.connection.close();
     process.exit(0);
@@ -214,9 +226,9 @@ process.on('SIGTERM', async () => {
 });
 
 process.on('SIGINT', async () => {
-  // console.log('SIGINT received, closing server gracefully...');
+  logger.info('SIGINT received, closing server gracefully...');
   server.close(() => {
-    // console.log('Server closed');
+    logger.info('Server closed');
     redis.quit();
     mongoose.connection.close();
     process.exit(0);

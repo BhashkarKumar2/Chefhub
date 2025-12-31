@@ -29,7 +29,6 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 				eventDetails
 			});
       
-			// console.log('Menu API response:', response.data);
 			const responseData = response.data.data;
 			setMenu(responseData);
 			onMenuGenerated(responseData);
@@ -156,7 +155,6 @@ const AIChatAssistant = () => {
 			};
 			setMessages(prev => [...prev, aiMessage]);
 		} catch (error) {
-			// console.error('Error sending message:', error);
       
 			let errorText = 'Sorry, I encountered an error. Please try again.';
 			if (error.response?.status === 404) {
@@ -392,11 +390,9 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 	});
 
 	const handleRecommendationsReceived = (recommendations) => {
-		// console.log('Received recommendations:', recommendations);
 	};
 
 	const handleMenuGenerated = (menu) => {
-		// console.log('Generated menu:', menu);
 	};
 
 	return (

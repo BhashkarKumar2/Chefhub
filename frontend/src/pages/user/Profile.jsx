@@ -25,14 +25,12 @@ const Profile = () => {
   useEffect(() => {
     // Don't run if auth is still loading
     if (isLoading) {
-      // console.log('â³ Auth still loading, waiting...');
       return;
     }
     
     const loadUserData = async () => {
       try {
         // // Check if user is authenticated
-        // // console.log('🔍 Profile auth check:', {
         //   isAuthenticated,
         //   authUser,
         //   hasUserId: authUser?.id,
@@ -44,14 +42,11 @@ const Profile = () => {
           return;
         }
         
-        // console.log('🔍 Loading user profile for ID:', authUser.id);
         
         // Load user profile data
         const profileResponse = await api.get(`/user/profile/${authUser.id}`);
         const user = profileResponse.data;
         
-        // console.log('✅ User data loaded:', user);
-        // console.log('🖼️ Profile image URL:', user.profileImage);
         setUserData(user);
         setUserStats({
           totalBookings: user.totalBookings || 0,
@@ -73,10 +68,8 @@ const Profile = () => {
           const bookingsResponse = await api.get(`/bookings/user/${authUser.id}`);
           const bookings = bookingsResponse.data;
           
-          // console.log('✅ Bookings data loaded:', bookings);
           setRecentBookings(bookings.slice(0, 3)); // Show only 3 most recent
         } catch (bookingError) {
-          // console.log('ℹ️ Error loading bookings:', bookingError.message);
           setRecentBookings([]);
         }
 
@@ -85,15 +78,12 @@ const Profile = () => {
           const passwordStatusResponse = await api.get('/auth/password-status');
           const passwordData = passwordStatusResponse.data;
           
-          // console.log('✅ Password status:', passwordData);
           setHasPassword(passwordData.hasPassword);
           setIsOAuthUser(passwordData.isOAuthUser);
         } catch (passwordError) {
-          // console.log('ℹ️ Error checking password status:', passwordError.message);
         }
 
       } catch (error) {
-        // console.error('Error loading user data:', error);
         // If 401, api interceptor handles it.
         // But we might want to redirect if other error?
         // navigate('/login'); // Maybe not for all errors
@@ -173,7 +163,6 @@ const Profile = () => {
                 alt="Profile"
                 className="w-32 h-32 rounded-full shadow-xl border-4 border-white/30 backdrop-blur-sm object-cover"
                 onError={(e) => {
-                  // console.log('âŒ Profile image failed to load:', e.target.src);
                   e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'User') + '&size=150&background=6366f1&color=ffffff';
                 }}
               />

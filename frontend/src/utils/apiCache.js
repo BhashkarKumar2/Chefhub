@@ -16,7 +16,6 @@ class APICache {
   set(key, data, customTTL) {
     const expiry = Date.now() + (customTTL || this.ttl);
     this.cache.set(key, { data, expiry });
-    // // console.log(`✅ Cached: ${key} (expires in ${(customTTL || this.ttl) / 1000}s)`);
   }
 
   /**
@@ -27,17 +26,14 @@ class APICache {
   get(key) {
     const cached = this.cache.get(key);
     if (!cached) {
-      // // console.log(`❌ Cache miss: ${key}`);
       return null;
     }
     
     if (Date.now() > cached.expiry) {
       this.cache.delete(key);
-      // // console.log(`⏰ Cache expired: ${key}`);
       return null;
     }
     
-    // // console.log(`✅ Cache hit: ${key}`);
     return cached.data;
   }
 
@@ -50,12 +46,10 @@ class APICache {
       for (const key of this.cache.keys()) {
         if (key.includes(keyPattern)) {
           this.cache.delete(key);
-          // // console.log(`🗑️ Cleared cache: ${key}`);
         }
       }
     } else {
       this.cache.clear();
-      // // console.log('🗑️ Cleared all cache');
     }
   }
 

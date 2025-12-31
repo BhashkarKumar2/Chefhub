@@ -75,18 +75,14 @@ const ChefOnboarding = () => {
   const geocodeAddress = async (address) => {
     try {
       setLocationLoading(true);
-      // console.log('🌍 Geocoding address:', address);
       
       const response = await api.post('/geocode', { address });
       
-      // console.log('📡 Geocode response status:', response.status);
       
       const data = response.data;
-      // console.log('✅ Geocoding successful:', data);
       
       if (data.features && data.features.length > 0) {
         const coords = data.features[0].geometry.coordinates;
-        // console.log('📍 Coordinates found:', { lat: coords[1], lon: coords[0] });
         setLocationError(''); // Clear any previous errors
         return { lat: coords[1], lon: coords[0] };
       } else {
@@ -94,7 +90,6 @@ const ChefOnboarding = () => {
         return null;
       }
     } catch (e) {
-      // console.error('❌ Geocoding fetch error:', e);
       const errorMessage = e.response?.data?.error || 'Network error. Please check your connection and try again.';
       setLocationError(`Geocoding failed: ${errorMessage}`);
       return null;
@@ -266,21 +261,16 @@ const ChefOnboarding = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // console.log('\n🔥 === CHEF ONBOARDING FORM SUBMISSION STARTED ===');
-    // console.log('📝 Form Data:', formData);
     
     const validationErrors = getValidationErrors();
     if (validationErrors.length > 0) {
-      // console.log('❌ Form validation failed:', validationErrors);
       toast.error('Please fix the following errors: ' + validationErrors.join('; '));
       return;
     }
-    // console.log('✅ Form validation passed');
     
     setIsSubmitting(true);
 
     try {
-      // console.log('📦 Creating FormData for submission...');
       // Create FormData to handle file upload
       const formDataToSend = new FormData();
       
@@ -319,44 +309,31 @@ const ChefOnboarding = () => {
       
       // Add profile image if uploaded
       if (formData.profileImage) {
-        // console.log('🖼️ Adding profile image to FormData:', formData.profileImage.name);
         formDataToSend.append('profileImage', formData.profileImage);
       } else {
-        // console.log('📷 No profile image selected');
       }
 
       // Log FormData contents
-      // console.log('📋 FormData contents:');
       for (let [key, value] of formDataToSend.entries()) {
         if (key === 'profileImage') {
-          // console.log(`  ${key}:`, value.name, `(${value.size} bytes)`);
         } else {
-          // console.log(`  ${key}:`, value);
         }
       }
 
-      // console.log('🌐 Sending request to backend...');
       const response = await api.post('/chefs', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      // console.log('📡 Response received:', response.status, response.statusText);
 
       const savedChef = response.data;
-      // console.log('✅ Chef profile saved successfully:', savedChef);
-      // console.log('🔥 === CHEF ONBOARDING COMPLETED SUCCESSFULLY ===\n');
       
       // Success message and redirect
       toast.success('Chef profile created successfully! Redirecting to dashboard...');
       navigate('/dashboard');
       
     } catch (error) {
-      // console.error('\n❌ === CHEF ONBOARDING FAILED ===');
-      // console.error('🚨 Error message:', error.message);
-      // console.error('📊 Full error:', error);
-      // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
       
       // More user-friendly error messages
       let userMessage = error.message;

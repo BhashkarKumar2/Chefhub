@@ -1,5 +1,18 @@
 {
-  "dependencies": {
-    "react-icons": "^5.5.0"
-  }
+    "name": "chefhub-root",
+    "version": "1.0.0",
+    "description": "Root configuration for ChefHub application",
+    "private": true,
+    "scripts": {
+        "install:all": "cd backend && npm install && cd ../frontend && npm install",
+        "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+        "build": "npm run build --prefix frontend",
+        "test": "npm run test --prefix backend"
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    }
 }

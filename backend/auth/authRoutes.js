@@ -6,53 +6,64 @@ import { registerUser, loginUser, validateToken, getCurrentUser, verifyFirebaseO
 import { verifyToken as authMiddleware } from '../middleware/authMiddleware.js';
 import { setPassword, changePassword, checkPasswordStatus, forgotPassword, verifyResetToken, resetPassword } from '../controllers/passwordController.js';
 import { verifyEmail, resendVerificationEmail } from '../controllers/emailVerificationController.js';
+import { validate, registerValidationRules, loginValidationRules, forgotPasswordValidationRules, resetPasswordValidationRules } from '../middleware/validationMiddleware.js';
 
 const router = express.Router();
 
 // Rate limiters for authentication endpoints
-const registerLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // 3 registration attempts per IP
-  message: 'Too many registration attempts from this IP. Please try again in 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const registerLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 3, // 3 registration attempts per IP
+    message: 'Too many registration attempts from this IP. Please try again in 15 minutes.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 login attempts per IP
-  message: 'Too many login attempts from this IP. Please try again in 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const loginLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // 10 login attempts per IP
+    message: 'Too many login attempts from this IP. Please try again in 15 minutes.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
-const verifyEmailLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 5, // 5 verification attempts per IP
-  message: 'Too many verification attempts. Please try again in 5 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const verifyEmailLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 5, // 5 verification attempts per IP
+    message: 'Too many verification attempts. Please try again in 5 minutes.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
-const resendOTPLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 3, // 3 resend attempts per IP
-  message: 'Too many resend requests. Please try again in 5 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const resendOTPLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 3, // 3 resend attempts per IP
+    message: 'Too many resend requests. Please try again in 5 minutes.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
-const forgotPasswordLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 3, // 3 forgot password attempts per IP
-  message: 'Too many password reset requests. Please try again in 1 hour.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+const forgotPasswordLimiter = process.env.NODE_ENV === 'production'
+  ? rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // 3 forgot password attempts per IP
+    message: 'Too many password reset requests. Please try again in 1 hour.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+  : (req, res, next) => next();
 
 // Regular authentication routes
-router.post('/register', registerLimiter, registerUser);
-router.post('/login', loginLimiter, loginUser);
+router.post('/register', registerLimiter, registerValidationRules(), validate, registerUser);
+router.post('/login', loginLimiter, loginValidationRules(), validate, loginUser);
 
 // Email verification routes
 router.post('/verify-email', verifyEmailLimiter, verifyEmail);
@@ -73,53 +84,53 @@ router.post('/change-password', authMiddleware, changePassword);
 router.get('/password-status', authMiddleware, checkPasswordStatus);
 
 // Password reset routes (public)
-router.post('/forgot-password', forgotPasswordLimiter, forgotPassword);
+router.post('/forgot-password', forgotPasswordLimiter, forgotPasswordValidationRules(), validate, forgotPassword);
 router.get('/reset-password/:token', verifyResetToken);
-router.post('/reset-password/:token', resetPassword);
+router.post('/reset-password/:token', resetPasswordValidationRules(), validate, resetPassword);
 
 // Google OAuth routes
-router.get('/google', 
+router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-router.get('/google/callback', 
-  passport.authenticate('google', { 
-    failureRedirect: process.env.NODE_ENV === 'production' 
-      ? 'https://chefhub-poou.vercel.app/login' 
+router.get('/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: process.env.NODE_ENV === 'production'
+      ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
   }),
   (req, res) => {
     try {
       // console.log('Google OAuth callback triggered');
       // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
-      
+
       if (!req.user) {
         // console.error('❌ No user found in request');
-        const errorUrl = process.env.NODE_ENV === 'production' 
+        const errorUrl = process.env.NODE_ENV === 'production'
           ? 'https://chefhub-poou.vercel.app/login?error=no_user'
           : 'http://localhost:5173/login?error=no_user';
         return res.redirect(errorUrl);
       }
-      
+
       // Create JWT token for the authenticated user
-      const token = jwt.sign({ 
+      const token = jwt.sign({
         id: req.user._id,
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
       // console.log('Generated JWT token for user:', req.user.email);
-      
+
       // Redirect to frontend with token as query parameter
-      const baseUrl = process.env.NODE_ENV === 'production' 
+      const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
       const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
       // console.log('Redirecting to:', redirectUrl);
-      
+
       res.redirect(redirectUrl);
     } catch (error) {
       // console.error('âŒ Google OAuth callback error:', error);
-      const errorUrl = process.env.NODE_ENV === 'production' 
+      const errorUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app/login?error=oauth_failed'
         : 'http://localhost:5173/login?error=oauth_failed';
       res.redirect(errorUrl);
@@ -128,48 +139,48 @@ router.get('/google/callback',
 );
 
 // Facebook OAuth routes
-router.get('/facebook', 
+router.get('/facebook',
   passport.authenticate('facebook', { scope: ['public_profile', 'email'] })
 );
 
-router.get('/facebook/callback', 
-  passport.authenticate('facebook', { 
-    failureRedirect: process.env.NODE_ENV === 'production' 
-      ? 'https://chefhub-poou.vercel.app/login' 
+router.get('/facebook/callback',
+  passport.authenticate('facebook', {
+    failureRedirect: process.env.NODE_ENV === 'production'
+      ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
   }),
   (req, res) => {
     try {
       // console.log('Facebook OAuth callback triggered');
       // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
-      
+
       if (!req.user) {
         // console.error('❌ No user found in request');
-        const errorUrl = process.env.NODE_ENV === 'production' 
+        const errorUrl = process.env.NODE_ENV === 'production'
           ? 'https://chefhub-poou.vercel.app/login?error=no_user'
           : 'http://localhost:5173/login?error=no_user';
         return res.redirect(errorUrl);
       }
-      
+
       // Create JWT token for the authenticated user
-      const token = jwt.sign({ 
+      const token = jwt.sign({
         id: req.user._id,
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
       // console.log('Generated JWT token for user:', req.user.email);
-      
+
       // Redirect to frontend with token as query parameter
-      const baseUrl = process.env.NODE_ENV === 'production' 
+      const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
       const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
       // console.log('Redirecting to:', redirectUrl);
-      
+
       res.redirect(redirectUrl);
     } catch (error) {
       // console.error('Facebook OAuth callback error:', error);
-      const errorUrl = process.env.NODE_ENV === 'production' 
+      const errorUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app/login?error=oauth_failed'
         : 'http://localhost:5173/login?error=oauth_failed';
       res.redirect(errorUrl);

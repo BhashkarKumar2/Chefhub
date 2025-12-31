@@ -28,7 +28,6 @@ const AIAnalyticsDashboard = () => {
       setAnalyticsData(response.data.data);
       generateAIInsights(response.data.data);
     } catch (error) {
-      // console.error('Error loading analytics:', error);
       // Fallback data for demo
       setAnalyticsData({
         totalUsers: 245,
@@ -58,7 +57,6 @@ const AIAnalyticsDashboard = () => {
       });
       setAiInsights(response.data.data);
     } catch (error) {
-      // console.error('Error generating AI insights:', error);
     }
   };
 
@@ -227,7 +225,7 @@ const AIAnalyticsDashboard = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-3xl shadow-xl p-6">
               <h3 className="text-lg font-bold text-gray-800 mb-4">
-                ⚡ Quick AI Actions
+                 Quick AI Actions
               </h3>
               <div className="space-y-3">
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
@@ -240,7 +238,7 @@ const AIAnalyticsDashboard = () => {
                   Optimize Pricing Strategy
                 </button>
                 <button className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 text-sm">
-                  🤖 AI Business Consultation
+                   AI Business Consultation
                 </button>
               </div>
             </div>

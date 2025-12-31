@@ -33,21 +33,17 @@ const Dashboard = () => {
   useEffect(() => {
     // Wait for auth to complete
     if (authLoading) {
-      // console.log('ðŸ”„ Dashboard: Waiting for authentication to complete...');
       return;
     }
 
     const loadDashboardData = async () => {
       try {
-        // console.log('ðŸ” Dashboard: Loading dashboard data...');
-        // console.log('ðŸ” Dashboard auth state:', { 
         //   isAuthenticated, 
         //   user: user ? { id: user.id, email: user.email, name: user.name } : null,
         //   hasToken: !!token 
         // });
         
         if (!isAuthenticated || !user || !token) {
-          // console.log('ðŸ” Dashboard: No authentication found, using guest mode...');
           setUserData({
             name: 'Guest User',
             email: null
@@ -60,10 +56,8 @@ const Dashboard = () => {
         try {
           const userResponse = await api.get(`/user/profile/${user.id}`);
           const userData = userResponse.data;
-          // console.log('âœ… Dashboard: User data loaded:', userData);
           setUserData(userData);
         } catch (error) {
-          // console.error('âŒ Dashboard: Failed to load user data from API');
           // Fall back to AuthContext user data
           setUserData({
             name: user.name || 'User',
@@ -79,7 +73,6 @@ const Dashboard = () => {
         ]);
 
       } catch (error) {
-        // console.error('âŒ Dashboard: Error loading dashboard data:', error);
         // Fall back to AuthContext user data
         if (user) {
           setUserData({
@@ -217,7 +210,7 @@ const Dashboard = () => {
 
   const quickActions = [
     {
-      title: "🤖 AI Features",
+      title: "AI Features",
       description: "AI-powered chef booking, recommendations & menu generation",
       icon: (
         <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">

@@ -10,10 +10,8 @@ const MobileLoginTest = () => {
       // Test Firebase import
       import('../../firebase/config').then((config) => {
         setStatus('âœ… Firebase config loaded successfully');
-        // console.log('Firebase auth object:', config.auth);
       }).catch((error) => {
         setStatus('âŒ Firebase config error: ' + error.message);
-        // console.error('Firebase error:', error);
       });
     } catch (error) {
       setStatus('âŒ Import error: ' + error.message);

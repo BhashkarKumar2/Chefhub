@@ -54,11 +54,9 @@ const EditProfile = () => {
           return;
         }
         
-        // console.log('🔍 Loading user data for editing...');
         
         const response = await api.get(`/user/profile/${user.id}`);
         const userData = response.data;
-        // console.log('✅ User data loaded for editing:', userData);
         
         // Map backend data to form structure
         setFormData({
@@ -89,7 +87,6 @@ const EditProfile = () => {
           setImagePreview(userData.profileImage);
         }
       } catch (error) {
-        // console.error('Error loading user data:', error);
       } finally {
         setDataLoading(false);
       }
@@ -157,7 +154,6 @@ const EditProfile = () => {
       const imageFormData = new FormData();
       imageFormData.append('profileImage', imageFile);
 
-      // console.log('🖼️ Uploading profile image...');
       const response = await api.post(`/user/upload-profile-image/${user.id}`, imageFormData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -165,12 +161,8 @@ const EditProfile = () => {
       });
 
       const result = response.data;
-      // console.log('✅ Image uploaded successfully:', result);
-      // console.log('🔗 Cloudinary URL:', result.imageUrl);
-      // console.log('📄 Full response:', result);
       return result.imageUrl;
     } catch (error) {
-      // console.error('❌ Image upload failed:', error);
       const errorMessage = error.response?.data?.message || 'Failed to upload image';
       throw new Error(errorMessage);
     } finally {
@@ -182,8 +174,6 @@ const EditProfile = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // console.log('\nðŸ”¥ === USER PROFILE UPDATE STARTED ===');
-    // console.log('ðŸ“ Form Data:', formData);
     
     try {
       // First upload image if one was selected
@@ -208,16 +198,11 @@ const EditProfile = () => {
         delete updateData.profileImage;
       }
       
-      // console.log('🆔 Using User ID:', user.id);
-      // console.log('🌐 Sending update request to backend...');
       
       const response = await api.put(`/user/profile/${user.id}`, updateData);
 
-      // console.log('📡 Response received:', response.status, response.statusText);
 
       const result = response.data;
-      // console.log('✅ Profile updated successfully:', result);
-      // console.log('🔥 === USER PROFILE UPDATE COMPLETED ===\n');
       
       // Update localStorage if user data is stored there
       if (result.user) {
@@ -227,9 +212,6 @@ const EditProfile = () => {
       toast.success('Profile updated successfully!');
       navigate('/profile');
     } catch (error) {
-      // console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
-      // console.error('🚨 Error:', error.message);
-      // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
       
       const errorMessage = error.response?.data?.message || error.message || 'Failed to update profile';
       toast.error(`Error updating profile: ${errorMessage}`);

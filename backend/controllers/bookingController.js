@@ -139,7 +139,7 @@ export const createBooking = async (req, res) => {
 
   } catch (error) {
     // console.error('Error creating booking:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -149,7 +149,7 @@ export const createBooking = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to create booking',
@@ -181,7 +181,7 @@ export const getUserBookings = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching user bookings:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -191,7 +191,7 @@ export const getUserBookings = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -214,6 +214,16 @@ export const getChefBookings = async (req, res) => {
       });
     }
 
+    // SECURITY: Only the chef themselves can view their bookings (contains customer PII)
+    // Compare the requesting user with the chef's linked user account if applicable
+    // For now, we require the requesting user ID to match the chefId or be an admin
+    if (req.user.id.toString() !== chefId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only view your own bookings.'
+      });
+    }
+
     const bookings = await Booking.find({ chef: chefId })
       .populate('user', 'name email phone')
       .sort({ createdAt: -1 })
@@ -226,7 +236,7 @@ export const getChefBookings = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching chef bookings:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -236,7 +246,7 @@ export const getChefBookings = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -251,12 +261,12 @@ export const getBookingById = async (req, res) => {
     const { id } = req.params;
 
     // Find booking and verify ownership
-    const booking = await Booking.findOne({ 
-      _id: id, 
-      user: req.user.id 
+    const booking = await Booking.findOne({
+      _id: id,
+      user: req.user.id
     })
-    .populate('chef', 'name fullName email phone specialties pricePerHour profileImage rating bio rate')
-    .populate('user', 'name email phone');
+      .populate('chef', 'name fullName email phone specialties pricePerHour profileImage rating bio rate')
+      .populate('user', 'name email phone');
 
     if (!booking) {
       return res.status(404).json({
@@ -272,7 +282,7 @@ export const getBookingById = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching booking:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -282,7 +292,7 @@ export const getBookingById = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to fetch booking',
@@ -313,24 +323,35 @@ export const updateBookingStatus = async (req, res) => {
       });
     }
 
+    // SECURITY: Only booking owner or the chef can update status
+    const isBookingOwner = booking.user && booking.user.toString() === req.user.id.toString();
+    const isChef = booking.chef && booking.chef.toString() === req.user.id.toString();
+
+    if (!isBookingOwner && !isChef) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only the booking owner or chef can update this booking.'
+      });
+    }
+
     // Check if status is changing to completed (before updating)
     const wasNotCompleted = booking.status !== 'completed';
-    
+
     booking.status = status;
     booking.updatedAt = new Date();
-    
+
     // Set completedAt timestamp when status changes to completed
     if (status === 'completed' && wasNotCompleted) {
       booking.completedAt = new Date();
     }
-    
+
     await booking.save();
 
     await booking.populate('chef', 'name email phone specialties pricePerHour');
     if (booking.user) {
       await booking.populate('user', 'name email phone');
     }
-    
+
     // Send review reminder email when booking is completed
     if (status === 'completed' && wasNotCompleted && booking.user) {
       try {
@@ -358,7 +379,7 @@ export const updateBookingStatus = async (req, res) => {
 
   } catch (error) {
     // console.error('Error updating booking status:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -368,7 +389,7 @@ export const updateBookingStatus = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -407,7 +428,7 @@ export const deleteBooking = async (req, res) => {
 
   } catch (error) {
     // console.error('Error deleting booking:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -417,7 +438,7 @@ export const deleteBooking = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -467,7 +488,7 @@ export const getBookingStats = async (req, res) => {
 
   } catch (error) {
     // console.error('Error fetching booking stats:', error);
-    
+
     // Handle Mongoose validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
@@ -477,7 +498,7 @@ export const getBookingStats = async (req, res) => {
         errors: errors
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Internal server error',

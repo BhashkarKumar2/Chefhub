@@ -124,7 +124,6 @@ const Home = () => {
         toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
-      // console.error('Search error:', error);
       toast.error('Error searching for location. Please try again.');
     }
     setIsSearching(false);

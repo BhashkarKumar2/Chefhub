@@ -44,7 +44,6 @@ const SignupNew = () => {
 
     // Prevent re-submission after successful registration
     if (success) {
-      // console.log('[SIGNUP] Already registered successfully, ignoring re-submission');
       return;
     }
 
@@ -55,7 +54,6 @@ const SignupNew = () => {
 
     // Prevent duplicate submissions - check if already loading
     if (loading) {
-      // console.log('[SIGNUP] Already processing, ignoring duplicate submission');
       return;
     }
 

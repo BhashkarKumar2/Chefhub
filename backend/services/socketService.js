@@ -13,7 +13,7 @@ class SocketService {
         origin: [
           "http://localhost:5173",
           "http://localhost:5174",
-          "http://localhost:5000", 
+          "http://localhost:5000",
           "http://127.0.0.1:5173",
           "http://127.0.0.1:5174",
           "https://chefhub-ochre.vercel.app",
@@ -35,42 +35,58 @@ class SocketService {
           next();
         } catch (error) {
           // console.error('Socket authentication error:', error);
-          next(new Error('Authentication error'));
+          next(new Error('Authentication error: Invalid token'));
         }
       } else {
-        // Allow anonymous connections for public features
-        next();
+        // SECURITY: Reject anonymous connections - authentication required
+        next(new Error('Authentication required'));
       }
     });
 
     this.io.on('connection', (socket) => {
       // console.log(`ðŸ”— Socket connected: ${socket.id}`);
-      
+
       if (socket.userId) {
         this.connectedUsers.set(socket.userId, socket.id);
         // console.log(`ðŸ‘¤ User ${socket.userId} connected`);
-        
+
         // Join user to their personal room for notifications
         socket.join(`user:${socket.userId}`);
       }
 
-      // Handle chef status updates
+      // Handle chef status updates (requires auth)
       socket.on('chef-status-update', (data) => {
+        if (!socket.userId) {
+          socket.emit('error', { message: 'Authentication required' });
+          return;
+        }
         this.broadcastChefStatusUpdate(data);
       });
 
-      // Handle booking status updates
+      // Handle booking status updates (requires auth)
       socket.on('booking-status-update', (data) => {
+        if (!socket.userId) {
+          socket.emit('error', { message: 'Authentication required' });
+          return;
+        }
         this.notifyBookingStatusUpdate(data);
       });
 
-      // Handle real-time chat messages
+      // Handle real-time chat messages (requires auth)
       socket.on('send-message', (data) => {
+        if (!socket.userId) {
+          socket.emit('error', { message: 'Authentication required' });
+          return;
+        }
         this.handleChatMessage(socket, data);
       });
 
-      // Handle location updates for delivery tracking
+      // Handle location updates for delivery tracking (requires auth)
       socket.on('location-update', (data) => {
+        if (!socket.userId) {
+          socket.emit('error', { message: 'Authentication required' });
+          return;
+        }
         this.handleLocationUpdate(socket, data);
       });
 
@@ -105,7 +121,7 @@ class SocketService {
   // Booking status updates
   notifyBookingStatusUpdate(data) {
     const { bookingId, status, userId, chefId, message } = data;
-    
+
     // Notify the user
     this.notifyUser(userId, 'booking-status-changed', {
       bookingId,
@@ -128,7 +144,7 @@ class SocketService {
   // Chef availability updates
   broadcastChefStatusUpdate(data) {
     const { chefId, isAvailable, location } = data;
-    
+
     this.broadcast('chef-availability-changed', {
       chefId,
       isAvailable,
@@ -140,7 +156,7 @@ class SocketService {
   // Real-time chat between users and chefs
   handleChatMessage(socket, data) {
     const { recipientId, message, bookingId } = data;
-    
+
     // Send message to recipient
     this.notifyUser(recipientId, 'new-message', {
       senderId: socket.userId,
@@ -157,25 +173,40 @@ class SocketService {
     });
   }
 
-  // Location tracking for chef arrival
+  // Location tracking for chef arrival - SECURITY: Only notify the specific booking user
   handleLocationUpdate(socket, data) {
-    const { bookingId, latitude, longitude, estimatedArrival } = data;
-    
-    // Notify user about chef's location
-    this.broadcast('chef-location-update', {
-      chefId: socket.userId,
-      bookingId,
-      latitude,
-      longitude,
-      estimatedArrival,
-      timestamp: new Date().toISOString()
-    });
+    const { bookingId, latitude, longitude, estimatedArrival, targetUserId } = data;
+
+    // SECURITY: Only notify the specific user who booked, not everyone
+    if (targetUserId) {
+      this.notifyUser(targetUserId, 'chef-location-update', {
+        chefId: socket.userId,
+        bookingId,
+        latitude,
+        longitude,
+        estimatedArrival,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      // Fallback: emit only to the booking room if targetUserId not provided
+      // This is still better than broadcasting to everyone
+      if (this.io) {
+        this.io.to(`booking:${bookingId}`).emit('chef-location-update', {
+          chefId: socket.userId,
+          bookingId,
+          latitude,
+          longitude,
+          estimatedArrival,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
   }
 
   // Payment status updates
   notifyPaymentUpdate(data) {
     const { userId, bookingId, status, amount } = data;
-    
+
     this.notifyUser(userId, 'payment-status-update', {
       bookingId,
       status,

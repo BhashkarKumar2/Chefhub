@@ -33,12 +33,12 @@ export const forgotPassword = async (req, res) => {
 
     // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
-    
+
     // Send email using Brevo
     try {
       const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
       const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
-      
+
       const sendSmtpEmail = new brevo.SendSmtpEmail();
       sendSmtpEmail.sender = { name: fromName, email: fromEmail };
       sendSmtpEmail.to = [{ email: user.email, name: user.name }];
@@ -88,26 +88,22 @@ export const forgotPassword = async (req, res) => {
         `;
 
       const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-     // console.log('✅ Password reset email sent to:', user.email);
+      // console.log('✅ Password reset email sent to:', user.email);
 
-      res.json({ 
+      res.json({
         message: 'Password reset link has been sent to your email',
         success: true
       });
     } catch (emailError) {
       console.error('❌ Error sending email:', emailError);
-      
-      // Fallback: Return reset URL in development mode
+
+      // SECURITY: Never expose reset tokens in API response
+      // Log the URL for debugging but don't return it to client
       if (process.env.NODE_ENV === 'development') {
-        //console.log('📧 Development mode - Reset URL:', resetUrl);
-        return res.json({ 
-          message: 'Email service unavailable. Reset link generated.',
-          resetUrl: resetUrl,
-          success: true
-        });
+        console.log('📧 Development mode - Reset URL (for debugging only):', resetUrl);
       }
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         message: 'Failed to send reset email. Please try again later.',
         success: false
       });
@@ -151,8 +147,12 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Password is required' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
+      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
     }
 
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
@@ -173,7 +173,7 @@ export const resetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
     await user.save();
 
-    res.json({ 
+    res.json({
       message: 'Password has been reset successfully',
       success: true
     });
@@ -198,8 +198,12 @@ export const setPassword = async (req, res) => {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
+      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
     }
 
     // Find user
@@ -210,8 +214,8 @@ export const setPassword = async (req, res) => {
 
     // Check if user already has a password
     if (user.password) {
-      return res.status(400).json({ 
-        message: 'Password already exists. Use change password instead.' 
+      return res.status(400).json({
+        message: 'Password already exists. Use change password instead.'
       });
     }
 
@@ -220,7 +224,7 @@ export const setPassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    res.json({ 
+    res.json({
       message: 'Password set successfully. You can now login with email and password.',
       success: true
     });
@@ -238,8 +242,8 @@ export const changePassword = async (req, res) => {
 
     // Validate input
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ 
-        message: 'Current password, new password, and confirm password are required' 
+      return res.status(400).json({
+        message: 'Current password, new password, and confirm password are required'
       });
     }
 
@@ -247,8 +251,12 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'New passwords do not match' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
     }
 
     // Find user
@@ -259,8 +267,8 @@ export const changePassword = async (req, res) => {
 
     // Check if user has a password
     if (!user.password) {
-      return res.status(400).json({ 
-        message: 'No password set. Use set password instead.' 
+      return res.status(400).json({
+        message: 'No password set. Use set password instead.'
       });
     }
 
@@ -275,7 +283,7 @@ export const changePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    res.json({ 
+    res.json({
       message: 'Password changed successfully',
       success: true
     });
@@ -290,12 +298,12 @@ export const checkPasswordStatus = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const user = await User.findById(userId).select('password googleId facebookId');
-    
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({ 
+    res.json({
       hasPassword: !!user.password,
       isOAuthUser: !!(user.googleId || user.facebookId),
       canSetPassword: !user.password && !!(user.googleId || user.facebookId)

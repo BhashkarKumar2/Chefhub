@@ -2,59 +2,66 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   // Essential fields for authentication
-  name: { 
-    type: String, 
+  name: {
+    type: String,
     required: [true, 'Name is required'],
     trim: true,
     minlength: [2, 'Name must be at least 2 characters'],
     maxlength: [100, 'Name cannot exceed 100 characters']
   },
-  email: { 
-    type: String, 
-    unique: true, 
+  email: {
+    type: String,
+    unique: true,
     sparse: true,
     trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address']
   },
   password: {
     type: String,
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [8, 'Password must be at least 8 characters'],
+    validate: {
+      validator: function (v) {
+        // Enforce at least one letter and one number
+        return /^(?=.*[A-Za-z])(?=.*\d).+$/.test(v);
+      },
+      message: 'Password must contain at least one letter and one number'
+    },
     select: false
   },
-  
+
   // OAuth integration fields
-  googleId: { 
-    type: String, 
-    unique: true, 
+  googleId: {
+    type: String,
+    unique: true,
     sparse: true,
     trim: true
   },
-  facebookId: { 
-    type: String, 
-    unique: true, 
+  facebookId: {
+    type: String,
+    unique: true,
     sparse: true,
     trim: true
   },
-  firebaseUid: { 
-    type: String, 
-    unique: true, 
+  firebaseUid: {
+    type: String,
+    unique: true,
     sparse: true,
     trim: true
   },
-  phone: { 
-    type: String, 
-    unique: true, 
+  phone: {
+    type: String,
+    unique: true,
     sparse: true,
     trim: true,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         if (!v) return true; // Allow empty phone (optional field)
         return /^\+?[1-9]\d{9,14}$/.test(v); // Min 10 digits, max 15 with country code
       },
       message: 'Please provide a valid phone number'
     }
   },
-  
+
   // Optional profile fields (can be updated later)
   profileImage: {
     type: String,
@@ -66,7 +73,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, 'Bio cannot exceed 500 characters']
   },
-  
+
   // Location (simplified)
   city: {
     type: String,
@@ -83,22 +90,22 @@ const userSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Country name cannot exceed 100 characters']
   },
-  
+
   // Preferences (simplified)
   cuisinePreferences: {
     type: [String],
     validate: {
-      validator: function(arr) {
+      validator: function (arr) {
         return arr.length <= 20;
       },
       message: 'Cannot have more than 20 cuisine preferences'
     }
   },
-  
+
   // Verification status
   isPhoneVerified: { type: Boolean, default: false },
   isEmailVerified: { type: Boolean, default: false },
-  
+
   // Password reset fields
   resetPasswordToken: {
     type: String,
@@ -108,7 +115,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false
   },
-  
+
   // Email verification fields
   emailVerificationToken: {
     type: String,
@@ -118,12 +125,12 @@ const userSchema = new mongoose.Schema({
     type: Date,
     select: false
   },
-  
+
   // Core functionality
   favorites: {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Chef' }],
     validate: {
-      validator: function(arr) {
+      validator: function (arr) {
         return arr.length <= 100;
       },
       message: 'Cannot have more than 100 favorites'

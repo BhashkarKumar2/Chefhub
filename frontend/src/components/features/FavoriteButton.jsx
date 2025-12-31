@@ -29,9 +29,7 @@ const FavoriteButton = ({
     // Show user feedback
     if (wasAdded) {
       // You could replace this with a toast notification
-      // console.log(`${chef.name} added to favorites!`);
     } else {
-      // console.log(`${chef.name} removed from favorites!`);
     }
   };
 

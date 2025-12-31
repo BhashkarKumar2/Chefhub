@@ -29,8 +29,8 @@ router.put('/:id', authMiddleware, updateBookingStatus);
 // Cancel/Delete a booking
 router.delete('/:id', authMiddleware, deleteBooking);
 
-// Get all bookings for a specific chef
-router.get('/chef/:chefId', getChefBookings);
+// Get all bookings for a specific chef (requires auth)
+router.get('/chef/:chefId', authMiddleware, getChefBookings);
 
 // Admin routes
 // Get booking statistics

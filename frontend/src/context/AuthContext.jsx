@@ -70,16 +70,13 @@ export const AuthProvider = ({ children }) => {
         setUser(validation.user);
       }
     } catch (error) {
-      // console.error('Background validation failed', error);
     }
   };
 
   const login = (token, userData) => {
-    // console.log('AuthContext login called with:', { token: !!token, userData });
     
     // Validate input data
     if (!token || !userData || !userData.id || !userData.email) {
-      // console.error('âŒ Invalid login data provided:', { token: !!token, userData });
       return;
     }
     
@@ -92,11 +89,9 @@ export const AuthProvider = ({ children }) => {
     
     // Double-check that we don't have invalid values
     if (cleanUserData.id === 'undefined' || cleanUserData.id === 'null' || !cleanUserData.id) {
-      // console.error('âŒ Invalid user ID detected:', cleanUserData.id);
       return;
     }
     
-    // console.log('Storing clean user data:', cleanUserData);
     
     // Store token only
     localStorage.setItem('token', token);
@@ -105,7 +100,6 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     setUser(cleanUserData);
     
-    // console.log('Login successful, user authenticated');
   };
 
   const logout = () => {

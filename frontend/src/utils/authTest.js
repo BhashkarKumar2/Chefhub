@@ -2,16 +2,13 @@
 import { validateToken, getToken } from './auth.js';
 
 export const testAuthState = async () => {
-  // console.log('🧪 Testing authentication state...');
   
   // Check all localStorage keys
-  // console.log('🔍 All localStorage keys:', Object.keys(localStorage));
   
   // Check localStorage
   const token = getToken();
   const isLoggedIn = localStorage.getItem('isLoggedIn');
   
-  // console.log('📦 LocalStorage state:', 
   // {
   //   hasToken: !!token,
   //   tokenLength: token?.length,
@@ -20,19 +17,16 @@ export const testAuthState = async () => {
   // });
   
   if (token) {
-    // console.log('🔍 Full token:', token);
   }
   
   // Test token validation
   const validation = await validateToken();
-  // console.log('✅ Validation result:', validation);
   
   return validation;
 };
 
 // Clear all auth data
 export const clearAllAuthData = () => {
-  // console.log('🧹 Clearing all authentication data...');
   localStorage.removeItem('token');
   localStorage.removeItem('authToken');
   localStorage.removeItem('isLoggedIn');
@@ -42,5 +36,4 @@ export const clearAllAuthData = () => {
     document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
   });
   
-  // console.log('✅ All auth data and cookies cleared');
 };

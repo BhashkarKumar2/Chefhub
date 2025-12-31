@@ -56,7 +56,6 @@ const Favorites = () => {
         toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
-      // console.error('Location search error:', error);
       toast.error('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);

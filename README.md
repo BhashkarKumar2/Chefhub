@@ -138,25 +138,28 @@ isApproved: {
 *   Redis Server
 
 ### Installation
-
 1.  **Clone the repository**
     ```bash
     git clone https://github.com/yourusername/chefhub.git
     cd chefhub
     ```
 
-2.  **Backend Setup**
+2.  **Install Dependencies (Root, Backend & Frontend)**
     ```bash
-    cd backend
+    # Install root dependencies
     npm install
-    # Create .env file (see Environment Variables below)
-    npm start
+
+    # Install all project dependencies
+    npm run install:all
     ```
 
-3.  **Frontend Setup**
+3.  **Environment Setup**
+    - Create a `.env` file in `backend/` using `backend/.env.example` as a template.
+    - (Optional) Configure frontend environment variables if needed.
+
+4.  **Start the Application**
     ```bash
-    cd frontend
-    npm install
+    # Runs both Backend (Port 5000) and Frontend (Port 5173) concurrently
     npm run dev
     ```
 

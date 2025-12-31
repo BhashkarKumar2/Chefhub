@@ -22,15 +22,12 @@ const ChefProfile = () => {
           return;
         }
 
-        // console.log('ðŸ” Loading chef profile for ID:', id);
         
         const response = await api.get(`/chefs/${id}`);
         const chefData = response.data;
         
-        // console.log('âœ… Chef data loaded:', chefData);
         setChef(chefData);
       } catch (error) {
-        // console.error('Error loading chef profile:', error);
         setError(error.response?.data?.message || 'Failed to load chef profile');
       } finally {
         setLoading(false);
@@ -86,7 +83,6 @@ const ChefProfile = () => {
     reviews = []
   } = chef;
 
-  // console.log("chef data found is :" , chef);
 
   const tabs = [
     { id: 'about', label: 'About', icon: '' },

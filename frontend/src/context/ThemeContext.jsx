@@ -9,7 +9,6 @@ export const ThemeProvider = ({ children }) => {
     // Check localStorage first, but default to 'light' if not found
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
-      // console.log('Theme initialization - saved theme:', savedTheme);
       return savedTheme === 'dark' ? 'dark' : 'light';
     }
     return 'light';

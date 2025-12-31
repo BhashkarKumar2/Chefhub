@@ -75,13 +75,10 @@ const BookChef = () => {
         const res = await api.get('/chefs');
         
         const response = res.data;
-        // console.log('📋 BookChef - Full API response:', response);
         
         const chefsData = response.chefs || response.data || [];
-        // console.log('ðŸ“Š BookChef - Extracted chefs data:', chefsData);
         
         let chefList = Array.isArray(chefsData) ? chefsData : [];
-        // console.log('ðŸ”¢ BookChef - Chef list length:', chefList.length);
 
         // If user location is set, sort chefs by distance using their locationCoords
         if (userLocation.lat && userLocation.lon) {
@@ -109,7 +106,6 @@ const BookChef = () => {
           setSelectedChef(chefById);
         }
       } catch (err) {
-        // console.error('Error fetching chefs:', err);
         setChefs([]);
       } finally {
         setLoading(false);

@@ -48,6 +48,14 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Name, email, and password are required" });
     }
 
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
+      return res.status(400).json({ message: "Password must contain at least one letter and one number" });
+    }
+
     // Check if user already exists
     const existing = await User.findOne({ email });
     if (existing) {
@@ -113,8 +121,13 @@ export const loginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({ email }).select('+password');
+    // Security: Prevent username enumeration (always use generic error message)
+    // Note: We still check user existence but won't reveal it to the client yet if password fails
+
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      // Return same generic message, but maybe add a small random delay to mitigate timing attacks if needed
+      // For now, standardize the message
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Check if email is verified
@@ -127,7 +140,7 @@ export const loginUser = async (req, res) => {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });

@@ -7,10 +7,11 @@ import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
 import { verifyToken, optionalAuth } from '../auth/authMiddleware.js';
+import { validate, updateProfileValidationRules } from '../middleware/validationMiddleware.js';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
@@ -23,98 +24,58 @@ const upload = multer({
     }
   }
 });
-// @route   POST /api/users/register
-// @desc    Register new user
-// @access  Public
-router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+// DEPRECATED: Registration and Login have been moved to /api/auth
+// Use authRoutes for better security (OTP, OAuth, standardized error messages)
 
-  try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create user
-    const user = new User({ name, email, password: hashedPassword });
-    await user.save();
-
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (err) {
-    // console.error('Registration error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   POST /api/users/login
-// @desc    Login user and return JWT
-// @access  Public
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Check for user
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-    // Create JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
-
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
-  } catch (err) {
-    // console.error('Login error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+// router.post('/register', ...) - Removed
+// router.post('/login', ...) - Removed
 
 // @route   PUT /api/users/profile/:id
 // @desc    Update user profile
 // @access  Private (protected with auth middleware)
-router.put('/profile/:id', verifyToken, async (req, res) => {
+router.put('/profile/:id', verifyToken, updateProfileValidationRules(), validate, async (req, res) => {
   // console.log('\nðŸ”¥ === USER PROFILE UPDATE STARTED ===');
   // console.log('ðŸ“ User ID:', req.params.id);
   // console.log('ðŸ“ Update Data:', JSON.stringify(req.body, null, 2));
-  
+
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
+
+    // SECURITY: Ownership check - users can only update their own profile
+    if (req.user.id.toString() !== id.toString() && req.user._id?.toString() !== id.toString()) {
+      return res.status(403).json({
+        message: 'Access denied. You can only update your own profile.'
+      });
+    }
+
     // Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       // console.log('âŒ Invalid ObjectId format');
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Invalid user ID format',
         error: 'User ID must be a valid MongoDB ObjectId (24-character hex string)',
         receivedId: id,
         suggestion: 'Please provide a valid user ID from login response'
       });
     }
-    
+
     // Find and update user
     const updatedUser = await User.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
     ).select('-password'); // Don't return password
-    
+
     if (!updatedUser) {
       // console.log('âŒ User not found');
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     // console.log('âœ… User profile updated successfully');
     // console.log('ðŸ‘¤ Updated user:', updatedUser);
     // console.log('ðŸ”¥ === USER PROFILE UPDATE COMPLETED ===\n');
-    
+
     res.json({
       message: 'Profile updated successfully',
       user: updatedUser
@@ -123,24 +84,24 @@ router.put('/profile/:id', verifyToken, async (req, res) => {
     // console.error('\n❌ === USER PROFILE UPDATE FAILED ===');
     // console.error('🚨 Error:', err);
     // console.error('🔥 === ERROR HANDLING COMPLETED ===\n');
-    
+
     // Handle Mongoose validation errors
     if (err.name === 'ValidationError') {
       const errors = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: errors[0] || 'Validation failed',
         errors: errors
       });
     }
-    
+
     // Handle duplicate key errors
     if (err.code === 11000) {
       const field = Object.keys(err.keyPattern)[0];
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `This ${field} is already registered`
       });
     }
-    
+
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
@@ -171,14 +132,21 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
   // console.log('\nðŸ”¥ === USER PROFILE IMAGE UPLOAD STARTED ===');
   // console.log('ðŸ“ User ID:', req.params.id);
   // console.log('ðŸ“Ž File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
-  
+
   try {
     const { id } = req.params;
-    
+
+    // SECURITY: Ownership check - users can only upload their own profile image
+    if (req.user.id.toString() !== id.toString() && req.user._id?.toString() !== id.toString()) {
+      return res.status(403).json({
+        message: 'Access denied. You can only update your own profile image.'
+      });
+    }
+
     // Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
       // console.log('âŒ Invalid ObjectId format');
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Invalid user ID format',
         error: 'User ID must be a valid MongoDB ObjectId'
       });
@@ -187,7 +155,7 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     // Check if file was uploaded
     if (!req.file) {
       // console.log('âŒ No file uploaded');
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'No image file provided',
         error: 'Please select an image file to upload'
       });
@@ -201,13 +169,13 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     }
 
     // console.log('🖼️ Processing image upload...');
-    
+
     // Convert buffer to base64
     const b64 = Buffer.from(req.file.buffer).toString('base64');
     const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-    
+
     // console.log('â˜ï¸ Uploading to Cloudinary...');
-    
+
     // Upload to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(dataURI, {
       folder: 'user-profiles',
@@ -240,7 +208,7 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
 
     // console.log('âœ… User profile image updated successfully');
     // console.log('ðŸ”¥ === USER PROFILE IMAGE UPLOAD COMPLETED ===\n');
-    
+
     res.json({
       message: 'Profile image uploaded successfully',
       user: updatedUser,
@@ -251,9 +219,9 @@ router.post('/upload-profile-image/:id', verifyToken, upload.single('profileImag
     // console.error('\nâŒ === USER PROFILE IMAGE UPLOAD FAILED ===');
     // console.error('ðŸš¨ Error:', err);
     // console.error('📍¥ === ERROR HANDLING COMPLETED ===\n');
-    res.status(500).json({ 
-      message: 'Failed to upload profile image', 
-      error: err.message 
+    res.status(500).json({
+      message: 'Failed to upload profile image',
+      error: err.message
     });
   }
 });
@@ -289,9 +257,9 @@ router.get('/dashboard/batch', verifyToken, async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ 
-      message: 'Failed to fetch dashboard data', 
-      error: err.message 
+    res.status(500).json({
+      message: 'Failed to fetch dashboard data',
+      error: err.message
     });
   }
 });

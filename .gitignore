@@ -14,14 +14,7 @@ node_modules/
 /test-results/
 
 # Test files and directories
-test-*.js
-test-*.jsx
-test-*.ts
-test-*.tsx
-**/test-*.js
-**/test-*.jsx
-**/test-*.ts
-**/test-*.tsx
+
 debug-*.js
 debug-*.jsx
 debug-*.ts
@@ -213,7 +206,7 @@ public/uploads/
 **/old backup files/
 
 # Project-specific test and debug files
-test-*.js
+
 debug-*.js
 frontend-auth-debug.js
 chef-consistency-fix-summary.js

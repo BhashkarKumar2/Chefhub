@@ -28,7 +28,6 @@ export const isTokenExpired = (token) => {
     // Check if token is expired
     return payload.exp < currentTime;
   } catch (error) {
-    // console.error('Error parsing token:', error);
     return true;
   }
 };
@@ -37,31 +36,24 @@ export const isTokenExpired = (token) => {
 export const validateToken = async () => {
   const token = getToken();
   
-  // console.log('🔍 Validating token:', token ? 'Token exists' : 'No token found');
   
   if (!token) {
-    // console.log('❌ No token found');
     return { valid: false, error: 'No token found' };
   }
 
   // Check if token is expired client-side first
   if (isTokenExpired(token)) {
-    // console.log('❌ Token expired (client-side check)');
     removeToken();
     return { valid: false, error: 'Token expired' };
   }
 
   try {
-    // console.log('🔄 Sending validation request to backend...');
     const response = await api.post('/auth/validate-token');
 
     const data = response.data;
-    // console.log('📡 Backend validation response:', { status: response.status, data });
 
-    // console.log('✅ Token validation successful:', data.user);
     return { valid: true, user: data.user };
   } catch (error) {
-    // console.error('❌ Token validation error:', error);
     removeToken();
     const errorMessage = error.response?.data?.message || 'Network error';
     return { valid: false, error: errorMessage };
@@ -80,7 +72,6 @@ export const getCurrentUser = async () => {
     const response = await api.get('/auth/me');
     return response.data;
   } catch (error) {
-    // console.error('Error fetching current user:', error);
     removeToken();
     return null;
   }

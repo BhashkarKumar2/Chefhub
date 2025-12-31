@@ -91,13 +91,10 @@ const Chefs = () => {
       const queryString = params.toString();
       const endpoint = queryString ? `/chefs/search?${queryString}` : '/chefs';
       
-      // console.log('🔍 Fetching chefs from:', endpoint);
 
       const response = await api.get(endpoint);
       const data = response.data;
       
-      // console.log('✅ Chefs fetched:', data);
-      // console.log('📊 Response structure:', {
       //   hasChefs: !!data.chefs,
       //   hasData: !!data.data,
       //   chefCount: data.chefs?.length || data.data?.length || 0,
@@ -107,8 +104,6 @@ const Chefs = () => {
       setChefs(data.chefs || data.data || []);
       setError(null);
     } catch (err) {
-      // console.error('❌ Error fetching chefs:', err);
-      // console.error('📋 Error details:', {
       //   message: err.message,
       //   stack: err.stack?.split('\n')[0] // First line of stack trace
       // });

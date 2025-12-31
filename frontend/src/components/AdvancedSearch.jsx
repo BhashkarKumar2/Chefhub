@@ -82,7 +82,6 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
         toast.error('Location not found. Please try a different address.');
       }
     } catch (error) {
-      // console.error('Location search error:', error);
       toast.error('Error searching for location. Please try again.');
     }
     setIsLoadingLocation(false);
@@ -142,7 +141,6 @@ const AdvancedSearch = ({ onResults, onFiltersChange }) => {
       setSearchResults(results);
       onResults?.(results);
     } catch (error) {
-      // console.error('Search error:', error);
       setSearchResults([]);
     } finally {
       setLoading(false);

@@ -26,22 +26,22 @@ const MyBookings = () => {
   const fetchMyBookings = async () => {
     try {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         console.error('No authentication token available');
         setLoading(false);
         return;
       }
-      
+
       // Use the general bookings endpoint like Dashboard does
       const response = await api.get('/bookings');
       const fetchedBookings = response.data.bookings || [];
       setBookings(fetchedBookings);
-      
+
       // Check review status for completed bookings
       const completedBookings = fetchedBookings.filter(b => b.status === 'completed');
       const statusMap = {};
-      
+
       await Promise.all(
         completedBookings.map(async (booking) => {
           try {
@@ -56,7 +56,7 @@ const MyBookings = () => {
           }
         })
       );
-      
+
       setReviewStatus(statusMap);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -79,15 +79,15 @@ const MyBookings = () => {
   const filterBookings = () => {
     const now = new Date();
     if (filter === 'upcoming') {
-      return bookings.filter(b => 
-        new Date(b.date) >= now && 
-        b.status !== 'completed' && 
+      return bookings.filter(b =>
+        new Date(b.date) >= now &&
+        b.status !== 'completed' &&
         b.status !== 'cancelled'
       );
     } else if (filter === 'past') {
-      return bookings.filter(b => 
-        new Date(b.date) < now || 
-        b.status === 'completed' || 
+      return bookings.filter(b =>
+        new Date(b.date) < now ||
+        b.status === 'completed' ||
         b.status === 'cancelled'
       );
     }
@@ -115,14 +115,14 @@ const MyBookings = () => {
               <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
             </svg>
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent pb-2">
             My Bookings
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-95">
             Manage your culinary experiences and upcoming chef bookings
           </p>
         </div>
-        
+
         {/* Floating elements */}
         <div className="absolute top-20 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
@@ -143,11 +143,10 @@ const MyBookings = () => {
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-6 py-2.5 font-medium capitalize transition-all duration-200 rounded-lg relative ${
-                  filter === tab
+                className={`px-6 py-2.5 font-medium capitalize transition-all duration-200 rounded-lg relative ${filter === tab
                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md'
                     : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'}`
-                }`}
+                  }`}
               >
                 {tab}
                 {tab === 'upcoming' && bookings.filter(b => new Date(b.date) >= new Date() && b.status !== 'completed' && b.status !== 'cancelled').length > 0 && (
@@ -216,7 +215,7 @@ const MyBookings = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Status Badge */}
                     <div>
                       {booking.status === 'pending' && (
@@ -293,7 +292,7 @@ const MyBookings = () => {
                         <p className={`text-2xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{booking.totalPrice.toLocaleString()}</p>
                       </div>
                     )}
-                    
+
                     {/* Review Action Button */}
                     {booking.status === 'completed' && (
                       <div>

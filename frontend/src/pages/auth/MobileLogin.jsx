@@ -22,10 +22,8 @@ const MobileLogin = () => {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'normal',
         callback: (response) => {
-          // console.log('reCAPTCHA solved');
         },
         'expired-callback': () => {
-          // console.log('reCAPTCHA expired');
         }
       });
     }
@@ -59,21 +57,14 @@ const MobileLogin = () => {
     setMessage('');
 
     try {
-      // console.log('ðŸ”¥ Firebase Auth object:', auth);
-      // console.log('ðŸ“± Phone number:', phoneNumber);
-      // console.log('🤖 reCAPTCHA verifier:', window.recaptchaVerifier);
       
       // Send OTP using Firebase
       const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-      // console.log('âœ… Confirmation result:', confirmationResult);
       
       setConfirmationResult(confirmationResult);
       setMessage('OTP sent successfully to your phone');
       setStep(2);
     } catch (err) {
-      // console.error('âŒ Error sending OTP:', err);
-      // console.error('âŒ Error code:', err.code);
-      // console.error('âŒ Error message:', err.message);
       
       // Provide more specific error messages
       let errorMessage = 'Failed to send OTP';
@@ -95,7 +86,6 @@ const MobileLogin = () => {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'normal',
           callback: (response) => {
-            // console.log('reCAPTCHA solved');
           }
         });
       }
@@ -127,7 +117,6 @@ const MobileLogin = () => {
       // Redirect to dashboard or home
       navigate('/dashboard');
     } catch (err) {
-      // console.error('Error verifying OTP:', err);
       setError(err.response?.data?.message || err.message || 'Failed to verify OTP');
     } finally {
       setLoading(false);
@@ -146,7 +135,6 @@ const MobileLogin = () => {
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           size: 'normal',
           callback: (response) => {
-            // console.log('reCAPTCHA solved');
           }
         });
       }
@@ -155,7 +143,6 @@ const MobileLogin = () => {
       setConfirmationResult(confirmationResult);
       setMessage('OTP resent successfully');
     } catch (err) {
-      // console.error('Error resending OTP:', err);
       setError(err.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);

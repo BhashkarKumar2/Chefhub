@@ -26,7 +26,6 @@ const ViewBookings = () => {
       const response = await api.get('/bookings');
       const data = response.data;
       
-      // console.log('Bookings fetched:', data);
       
       if (data.success) {
         setBookings(data.bookings || []);
@@ -34,7 +33,6 @@ const ViewBookings = () => {
         setError(data.message || 'Failed to fetch bookings');
       }
     } catch (error) {
-      // console.error('Error fetching bookings:', error);
       setError(error.response?.data?.message || error.message || 'Failed to load bookings');
     } finally {
       setLoading(false);
@@ -59,7 +57,6 @@ const ViewBookings = () => {
         toast.error(data.message || 'Failed to cancel booking');
       }
     } catch (error) {
-      // console.error('Error cancelling booking:', error);
       toast.error(error.response?.data?.message || 'Failed to cancel booking. Please try again.');
     }
   };
@@ -78,7 +75,6 @@ const ViewBookings = () => {
         toast.error(data.message || 'Failed to update booking');
       }
     } catch (error) {
-      // console.error('Error updating booking:', error);
       toast.error(error.response?.data?.message || 'Failed to update booking. Please try again.');
     }
   };

@@ -82,7 +82,7 @@ const ChefBookings = () => {
               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd"></path>
             </svg>
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent pb-2">
             Booking Requests
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed opacity-95">
@@ -95,7 +95,7 @@ const ChefBookings = () => {
             </div>
           )}
         </div>
-        
+
         {/* Floating elements */}
         <div className="absolute top-20 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
@@ -116,11 +116,10 @@ const ChefBookings = () => {
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-6 py-2.5 font-medium capitalize transition-all duration-200 rounded-lg relative ${
-                  filter === tab
+                className={`px-6 py-2.5 font-medium capitalize transition-all duration-200 rounded-lg relative ${filter === tab
                     ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md'
                     : `${isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-50'}`
-                }`}
+                  }`}
               >
                 {tab}
                 {tab === 'pending' && pendingCount > 0 && (
@@ -171,7 +170,7 @@ const ChefBookings = () => {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Status Badge */}
                     <div>
                       {booking.status === 'pending' && (
@@ -264,7 +263,7 @@ const ChefBookings = () => {
                         <p className={`text-2xl font-bold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>₹{booking.totalPrice.toLocaleString()}</p>
                       </div>
                     )}
-                    
+
                     <div className="flex gap-2">
                       {booking.status === 'pending' && (
                         <>
@@ -282,7 +281,7 @@ const ChefBookings = () => {
                           </button>
                         </>
                       )}
-                      
+
                       {booking.status === 'confirmed' && (
                         <button
                           onClick={() => handleCompleteBooking(booking._id)}
