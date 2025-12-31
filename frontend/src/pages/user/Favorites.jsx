@@ -10,10 +10,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
@@ -46,7 +46,7 @@ const Favorites = () => {
 
   const handleLocationSearch = async () => {
     if (!locationFilter.trim()) return;
-    
+
     setIsLoadingLocation(true);
     try {
       const coordinates = await geocodeAddress(locationFilter);
@@ -66,12 +66,12 @@ const Favorites = () => {
     setLocationFilter('');
   };
 
-  let filteredChefs = filter === 'all' 
-    ? favorites 
-    : favorites.filter(chef => 
-        chef.specialty?.toLowerCase().includes(filter.toLowerCase()) ||
-        chef.name?.toLowerCase().includes(filter.toLowerCase())
-      );
+  let filteredChefs = filter === 'all'
+    ? favorites
+    : favorites.filter(chef =>
+      chef.specialty?.toLowerCase().includes(filter.toLowerCase()) ||
+      chef.name?.toLowerCase().includes(filter.toLowerCase())
+    );
 
   // Apply location filtering if user location is set
   if (userLocation) {
@@ -97,9 +97,9 @@ const Favorites = () => {
   const cuisineTypes = ['all', 'indian', 'italian', 'american', 'british', 'chinese', 'thai'];
 
   return (
-  <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
+    <div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'}`}>
       {/* Header */}
-  <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-20">
+      <div className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-20">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative max-w-6xl mx-auto px-6 text-center">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full backdrop-blur-sm mb-8">
@@ -114,7 +114,7 @@ const Favorites = () => {
             Your carefully curated collection of exceptional chefs, ready to create memorable culinary experiences
           </p>
         </div>
-        
+
         {/* Floating elements */}
         <div className="absolute top-20 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-12 h-12 bg-white/15 rounded-full animate-bounce"></div>
@@ -168,7 +168,7 @@ const Favorites = () => {
                     <>
                       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="32" strokeDashoffset="32">
-                          <animate attributeName="stroke-dashoffset" dur="1s" values="32;0" repeatCount="indefinite"/>
+                          <animate attributeName="stroke-dashoffset" dur="1s" values="32;0" repeatCount="indefinite" />
                         </circle>
                       </svg>
                       Searching...
@@ -176,8 +176,8 @@ const Favorites = () => {
                   ) : (
                     <>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                        <circle cx="12" cy="10" r="3"/>
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
                       </svg>
                       Sort by Distance
                     </>
@@ -189,8 +189,8 @@ const Favorites = () => {
                     className={`px-4 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                     Clear
                   </button>
@@ -200,8 +200,8 @@ const Favorites = () => {
             {userLocation && (
               <p className={`text-sm mt-2 flex items-center gap-1 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
                 </svg>
                 Showing chefs sorted by distance from your location
               </p>
@@ -219,8 +219,8 @@ const Favorites = () => {
             <p className={`mb-8 max-w-md mx-auto ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Start exploring our amazing chefs and save your favorites to see them here.
             </p>
-            <Link 
-              to="/book-chef" 
+            <Link
+              to="/book-chef"
               className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
             >
               Discover Chefs
@@ -235,25 +235,31 @@ const Favorites = () => {
               <div key={chef._id} className={`group rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border overflow-hidden ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-orange-100'}`}>
                 <div className="relative">
                   <img
-                    src={chef.profileImage?.url || 'https://images.unsplash.com/photo-1559847844-d963b5de7901?w=400&auto=format&fit=crop&q=60'}
+                    src={chef.profileImage?.url || chef.photo || 'https://images.unsplash.com/photo-1659354219145-dedd2324698e?w=600&auto=format&fit=crop&q=60'}
                     alt={chef.name}
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.onerror = null; // Prevent infinite loop
+                      e.target.src = 'https://images.unsplash.com/photo-1659354219145-dedd2324698e?w=600&auto=format&fit=crop&q=60';
+                    }}
                   />
-                  <div className={`absolute top-4 right-4 backdrop-blur-sm rounded-xl px-3 py-1 ${isDark ? 'bg-gray-800/90' : 'bg-white/90'}`}>
-                    <span className={`font-bold text-lg ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>Rs. {chef.pricePerHour}/hr</span>
-                  </div>
-                  <div className="absolute top-2 left-15">
+                  {/* <div className="absolute top-2 left-15">
                     <FavoriteButton chef={chef} variant="card" />
-                  </div>
+                  </div> */}
                 </div>
-                
+
                 <div className="p-6">
-                  <h3 className={`text-2xl font-bold mb-2 group-hover:text-orange-600 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {chef.name}
-                  </h3>
-                  <p className={`font-semibold mb-2 ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{chef.specialty}</p>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h3 className={`text-2xl font-bold group-hover:text-orange-600 transition-colors duration-300 ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
+                        {chef.name}
+                      </h3>
+                      <p className={`font-semibold ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>{chef.specialty}</p>
+                    </div>
+
+                  </div>
                   <p className={`text-sm leading-relaxed mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{chef.bio}</p>
-                  
+
                   <div className="space-y-2 mb-4">
                     <div className={`flex items-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                       <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -274,14 +280,14 @@ const Favorites = () => {
                       {chef.experienceYears} years experience
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => (
-                        <svg 
-                          key={i} 
-                          className={`w-4 h-4 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`} 
-                          fill="currentColor" 
+                        <svg
+                          key={i}
+                          className={`w-4 h-4 ${i < 4 ? 'text-yellow-400' : 'text-gray-300'}`}
+                          fill="currentColor"
                           viewBox="0 0 20 20"
                         >
                           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
@@ -290,23 +296,19 @@ const Favorites = () => {
                       <span className={`text-sm ml-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>(4.5)</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3">
-                    <Link 
+                    <Link
                       to={`/book-chef?chef=${chef._id}`}
                       className="flex-1 text-center px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold"
                     >
                       Book Now
                     </Link>
-                    <button
-                      onClick={() => removeFromFavorites(chef._id)}
-                      className={`px-4 py-2 rounded-xl transition-all duration-300 border font-semibold ${isDark ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50 border-red-700' : 'bg-red-50 text-red-600 hover:bg-red-100 border-red-200'}`}
-                      title="Remove from favorites"
-                    >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path>
-                      </svg>
-                    </button>
+                    <FavoriteButton
+                      chef={chef}
+                      variant="icon"
+                      className={`px-4 py-2 rounded-xl transition-all duration-300 border font-semibold ${isDark ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-900/50 border-amber-700' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200'}`}
+                    />
                   </div>
                 </div>
               </div>
@@ -320,8 +322,8 @@ const Favorites = () => {
             <div className="bg-gradient-to-r from-orange-600 to-amber-600 rounded-3xl p-8 text-white">
               <h3 className="text-3xl font-bold mb-4">Ready to Book Your Next Experience?</h3>
               <p className="text-xl mb-8 opacity-95">Choose from your favorite chefs and create unforgettable memories</p>
-              <Link 
-                to="/book-chef" 
+              <Link
+                to="/book-chef"
                 className={`inline-flex items-center px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 font-semibold ${isDark ? 'bg-gray-800 text-orange-400' : 'bg-white text-orange-600'}`}
               >
                 Explore More Chefs

@@ -12,14 +12,14 @@ const AddTestimonial = () => {
   const [searchParams] = useSearchParams();
   const bookingIdFromUrl = searchParams.get('bookingId');
   const { isDark } = useThemeAwareStyle();
-  
+
   const [formData, setFormData] = useState({
     rating: 5,
     testimonial: '',
     chefId: '',
     bookingId: bookingIdFromUrl || ''
   });
-  
+
   const [userInfo, setUserInfo] = useState(null);
   const [chefs, setChefs] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -35,7 +35,7 @@ const AddTestimonial = () => {
       navigate('/login');
       return;
     }
-    
+
     fetchUserData();
   }, [isAuthenticated, token]);
 
@@ -46,17 +46,17 @@ const AddTestimonial = () => {
         const now = new Date().getTime();
         const expiry = new Date(reviewEligibility.expiresAt).getTime();
         const diff = expiry - now;
-        
+
         if (diff <= 0) {
           setTimeRemaining('Expired');
           return;
         }
-        
+
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         setTimeRemaining(`${hours}h ${minutes}m remaining`);
       };
-      
+
       updateCountdown();
       const interval = setInterval(updateCountdown, 60000); // Update every minute
       return () => clearInterval(interval);
@@ -66,7 +66,7 @@ const AddTestimonial = () => {
   const fetchUserData = async () => {
     try {
       setFetchingData(true);
-      
+
       // Fetch user profile
       const userResponse = await axios.get(buildApiEndpoint(`user/profile/${user?.id}`), {
         headers: { Authorization: `Bearer ${token}` }
@@ -80,15 +80,15 @@ const AddTestimonial = () => {
             buildApiEndpoint(`testimonials/check/${bookingIdFromUrl}`),
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          
+
           setReviewEligibility(eligibilityResponse.data);
-          
+
           if (!eligibilityResponse.data.canReview) {
             toast.error(eligibilityResponse.data.reason);
             setTimeout(() => navigate('/my-bookings'), 2000);
             return;
           }
-          
+
           if (eligibilityResponse.data.booking) {
             setBookingDetails(eligibilityResponse.data.booking);
             setFormData(prev => ({
@@ -144,7 +144,7 @@ const AddTestimonial = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.testimonial.trim()) {
       toast.error('Please write your testimonial');
       return;
@@ -177,7 +177,7 @@ const AddTestimonial = () => {
       );
 
       toast.success(response.data.message || 'Testimonial submitted successfully!');
-      
+
       // Reset form
       setFormData({
         rating: 5,
@@ -257,11 +257,11 @@ const AddTestimonial = () => {
                   Reviewing: {bookingDetails.chefName}
                 </h3>
                 <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {new Date(bookingDetails.date).toLocaleDateString('en-IN', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
+                  {new Date(bookingDetails.date).toLocaleDateString('en-IN', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
                   })}
                 </p>
               </div>
@@ -324,18 +324,16 @@ const AddTestimonial = () => {
               onChange={handleChange}
               rows="6"
               placeholder="Share your experience with ChefHub... (20-500 characters)"
-              className={`w-full px-4 py-3 rounded-lg border ${
-                isDark 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+              className={`w-full px-4 py-3 rounded-lg border ${isDark
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                   : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-              } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
+                } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
               required
             />
-            <p className={`text-sm mt-2 ${
-              formData.testimonial.length > 500 
-                ? 'text-red-500' 
+            <p className={`text-sm mt-2 ${formData.testimonial.length > 500
+                ? 'text-red-500'
                 : isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
+              }`}>
               {formData.testimonial.length} / 500 characters
             </p>
           </div>
@@ -350,11 +348,10 @@ const AddTestimonial = () => {
                 name="chefId"
                 value={formData.chefId}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  isDark 
-                    ? 'bg-gray-700 border-gray-600 text-white' 
+                className={`w-full px-4 py-3 rounded-lg border ${isDark
+                    ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
-                } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
               >
                 <option value="">Select a chef (optional)</option>
                 {chefs.map(chef => (
@@ -376,11 +373,10 @@ const AddTestimonial = () => {
                 name="bookingId"
                 value={formData.bookingId}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-lg border ${
-                  isDark 
-                    ? 'bg-gray-700 border-gray-600 text-white' 
+                className={`w-full px-4 py-3 rounded-lg border ${isDark
+                    ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
-                } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
+                  } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
               >
                 <option value="">Select a booking (optional)</option>
                 {bookings.map(booking => (
@@ -392,23 +388,17 @@ const AddTestimonial = () => {
             </div>
           )}
 
-          {/* Info Box */}
-          <div className={`${isDark ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'} border rounded-lg p-4 mb-6`}>
-            <p className={`text-sm ${isDark ? 'text-green-300' : 'text-green-800'}`}>
-              ✓ Your testimonial will be published immediately after submission and will be visible on the website.
-            </p>
-          </div>
+
 
           {/* Submit Button */}
           <div className="flex gap-4">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                isDark
+              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${isDark
                   ? 'bg-gray-700 text-white hover:bg-gray-600'
                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-              }`}
+                }`}
               disabled={loading}
             >
               Cancel
@@ -416,11 +406,10 @@ const AddTestimonial = () => {
             <button
               type="submit"
               disabled={loading || formData.testimonial.length < 20 || formData.testimonial.length > 500}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold text-white transition-all ${
-                loading || formData.testimonial.length < 20 || formData.testimonial.length > 500
+              className={`flex-1 py-3 px-6 rounded-lg font-semibold text-white transition-all ${loading || formData.testimonial.length < 20 || formData.testimonial.length > 500
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl'
-              }`}
+                }`}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

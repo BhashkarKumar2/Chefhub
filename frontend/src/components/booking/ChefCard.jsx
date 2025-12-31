@@ -11,9 +11,7 @@ const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
           alt={chef.name || chef.fullName}
           className="w-full h-56 object-cover"
         />
-        <div className="absolute top-4 right-4">
-          <FavoriteButton chef={chef} variant="card" />
-        </div>
+
         <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t ${isDark ? 'from-gray-800 to-transparent' : 'from-white to-transparent'}`}>
           <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
             {chef.name || chef.fullName}
@@ -23,7 +21,7 @@ const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
           )}
         </div>
       </div>
-      
+
       <div className="p-6 flex-grow flex flex-col">
         <div className="flex items-center gap-4 mb-4">
           <div className={getClass('flex items-center gap-1.5 text-sm', 'flex items-center gap-1.5 text-sm')}>
@@ -60,17 +58,28 @@ const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
             )}
           </div>
         </div>
-        
-        <button
-          onClick={() => onSelect(chef)}
-          disabled={!canBook}
-          title={!canBook ? 'Set your service location to enable booking' : undefined}
-          className={`w-full mt-auto px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-300 transform
-            ${canBook ? 'bg-orange-600 text-white hover:bg-orange-700 group-hover:scale-105' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}
-          `}
-        >
-          {canBook ? 'Book Now' : 'Set Location to Book'}
-        </button>
+
+        <div className="mt-auto flex gap-3">
+          <button
+            onClick={() => onSelect(chef)}
+            disabled={!canBook}
+            title={!canBook ? 'Set your service location to enable booking' : undefined}
+            className={`flex-1 px-6 py-3 rounded-lg font-semibold shadow-md transition-all duration-300 transform
+              ${canBook ? 'bg-orange-600 text-white hover:bg-orange-700 group-hover:scale-105' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}
+            `}
+          >
+            {canBook ? 'Book Now' : 'Set Location to Book'}
+          </button>
+
+          <FavoriteButton
+            chef={chef}
+            variant="icon"
+            className={`px-4 py-3 rounded-lg shadow-md border transition-all duration-300 transform group-hover:scale-105 ${isDark
+                ? 'bg-gray-700 border-gray-600 text-amber-400 hover:bg-gray-600'
+                : 'bg-white border-gray-200 text-amber-500 hover:bg-amber-50'
+              }`}
+          />
+        </div>
       </div>
     </div>
   );

@@ -208,7 +208,7 @@ const Home = () => {
                     <>
                     </>
                   )}
-                  {isLoading ? 'Loading...' : (isAuthenticated ? 'Book Your Chef' : 'Sign Up to Book Chef')}
+                  {isLoading ? 'Loading...' : (isAuthenticated ? 'Book Your Chef' : 'Sign Up / Login to Book Chef')}
                 </span>
               </button>
 
@@ -223,7 +223,7 @@ const Home = () => {
                   ) : (
                     <></>
                   )}
-                  {isLoading ? 'Loading...' : (isAuthenticated ? 'AI Features' : 'Sign Up for AI Features')}
+                  {isLoading ? 'Loading...' : (isAuthenticated ? 'AI Features' : 'Sign Up / Login for AI Features')}
                 </span>
               </button>
             </div>
@@ -533,7 +533,7 @@ const Home = () => {
                     disabled={isLoading}
                     className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Loading...' : (isAuthenticated ? 'Start Booking Now' : 'Sign Up to Start Booking')}
+                    {isLoading ? 'Loading...' : (isAuthenticated ? 'Start Booking Now' : 'Sign Up / Login to Start Booking')}
                   </button>
                   <Link
                     to="/book-chef"

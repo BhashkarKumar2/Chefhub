@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
+import Testimonial from '../models/Testimonial.js';
 import { verifyToken, optionalAuth } from '../auth/authMiddleware.js';
 import { validate, updateProfileValidationRules } from '../middleware/validationMiddleware.js';
 
@@ -233,27 +234,51 @@ router.get('/dashboard/batch', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch all data in parallel
-    const [user, bookings] = await Promise.all([
+    // Fetch data in parallel
+    const [user, recentBookings, bookingStats, reviewCount] = await Promise.all([
       User.findById(userId).select('-password').lean(),
+
+      // Get recent bookings for the list
       mongoose.model('Booking').find({ user: userId })
         .populate('chef', 'name profileImage specialty')
         .sort({ createdAt: -1 })
         .limit(10)
-        .lean()
+        .lean(),
+
+      // Aggregate booking stats (total spent, counts)
+      mongoose.model('Booking').aggregate([
+        { $match: { user: new mongoose.Types.ObjectId(userId) } },
+        {
+          $group: {
+            _id: null,
+            totalSpent: { $sum: { $cond: [{ $in: ["$status", ["confirmed", "completed"]] }, "$totalPrice", 0] } },
+            totalBookings: { $sum: 1 },
+            completedCount: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+            upcomingCount: { $sum: { $cond: [{ $in: ["$status", ["confirmed", "pending"]] }, 1, 0] } }
+          }
+        }
+      ]),
+
+      // Count reviews given by user
+      Testimonial.countDocuments({ user: userId })
     ]);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const stats = bookingStats[0] || { totalSpent: 0, totalBookings: 0, completedCount: 0, upcomingCount: 0 };
+
     res.json({
       user,
-      bookings: bookings || [],
+      bookings: recentBookings || [],
       stats: {
-        totalBookings: bookings.length,
-        upcomingBookings: bookings.filter(b => b.status === 'confirmed').length,
-        completedBookings: bookings.filter(b => b.status === 'completed').length
+        totalBookings: stats.totalBookings,
+        upcomingBookings: stats.upcomingCount,
+        completedBookings: stats.completedCount,
+        favoriteChefs: user.favorites ? user.favorites.length : 0,
+        totalSpent: stats.totalSpent,
+        reviewsGiven: reviewCount
       }
     });
   } catch (err) {
@@ -261,6 +286,86 @@ router.get('/dashboard/batch', verifyToken, async (req, res) => {
       message: 'Failed to fetch dashboard data',
       error: err.message
     });
+  }
+});
+
+// @route   GET /api/user/favorites
+// @desc    Get user favorites
+// @access  Private
+router.get('/favorites', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate({
+      path: 'favorites',
+      select: 'name profileImage specialty pricePerHour averageRating totalReviews locationCoords city state bio experienceYears photo serviceableLocations'
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      favorites: user.favorites || []
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// @route   POST /api/user/favorites/:chefId
+// @desc    Add chef to favorites
+// @access  Private
+router.post('/favorites/:chefId', verifyToken, async (req, res) => {
+  try {
+    const { chefId } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(chefId)) {
+      return res.status(400).json({ message: 'Invalid chef ID' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if already in favorites
+    if (user.favorites.includes(chefId)) {
+      return res.status(400).json({ message: 'Chef already in favorites' });
+    }
+
+    // Add to favorites (limit check handled by schema validation if any, but good to check here too)
+    if (user.favorites.length >= 100) {
+      return res.status(400).json({ message: 'Favorites limit reached' });
+    }
+
+    user.favorites.push(chefId);
+    await user.save();
+
+    res.json({ message: 'Added to favorites', favorites: user.favorites });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// @route   DELETE /api/user/favorites/:chefId
+// @desc    Remove chef from favorites
+// @access  Private
+router.delete('/favorites/:chefId', verifyToken, async (req, res) => {
+  try {
+    const { chefId } = req.params;
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Remove from favorites
+    user.favorites = user.favorites.filter(favId => favId.toString() !== chefId);
+    await user.save();
+
+    res.json({ message: 'Removed from favorites', favorites: user.favorites });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 
