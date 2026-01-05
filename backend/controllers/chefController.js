@@ -5,15 +5,15 @@ export const createChefProfile = async (req, res) => {
   // console.log(' === CHEF PROFILE CREATION STARTED ===');
   // console.log('Request Body:', JSON.stringify(req.body, null, 2));
   // console.log('File uploaded:', req.file ? `Yes (${req.file.originalname}, ${req.file.size} bytes)` : 'No');
-  
+
   try {
     // Validate required fields
     const requiredFields = ['name', 'email', 'specialty', 'bio', 'pricePerHour', 'experienceYears'];
     const missingFields = requiredFields.filter(field => !req.body[field]);
-    
+
     if (missingFields.length > 0) {
       // console.log(' Validation Error - Missing required fields:', missingFields);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Missing required fields',
         missingFields: missingFields,
         error: `Please provide: ${missingFields.join(', ')}`
@@ -25,7 +25,7 @@ export const createChefProfile = async (req, res) => {
     const existingChef = await Chef.findOne({ email: req.body.email });
     if (existingChef) {
       // console.log('Email already exists in database');
-      return res.status(409).json({ 
+      return res.status(409).json({
         message: 'Email already exists',
         error: `A chef profile with email "${req.body.email}" already exists. Please use a different email address.`,
         suggestion: 'Try using a different email or contact support to update your existing profile.'
@@ -45,6 +45,12 @@ export const createChefProfile = async (req, res) => {
       // console.log(' serviceableLocations is not an array after parsing:', serviceableLocations);
     }
 
+    // Parse supportedOccasions
+    let supportedOccasions = req.body.supportedOccasions;
+    if (typeof supportedOccasions === 'string') {
+      supportedOccasions = supportedOccasions.split(',').map(o => o.trim()).filter(Boolean);
+    }
+
     const chefData = {
       name: req.body.name,
       email: req.body.email,
@@ -58,22 +64,24 @@ export const createChefProfile = async (req, res) => {
       experienceYears: req.body.experienceYears,
       certifications: req.body.certifications,
       availability: req.body.availability,
+
       serviceableLocations: serviceableLocations || [],
+      supportedOccasions: supportedOccasions || [],
       locationCoords: req.body.locationCoords ? {
         lat: parseFloat(req.body.locationCoords.lat),
         lon: parseFloat(req.body.locationCoords.lon)
       } : undefined
     };
-   
+
     // If image was uploaded, upload to Cloudinary
     if (req.file) {
-      
+
       try {
         // Convert buffer to base64
         const b64 = Buffer.from(req.file.buffer).toString('base64');
         const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-        
-       
+
+
         // Upload to Cloudinary
         const uploadResult = await cloudinary.uploader.upload(dataURI, {
           folder: 'chef-profiles',
@@ -89,36 +97,31 @@ export const createChefProfile = async (req, res) => {
           publicId: uploadResult.public_id
         };
       } catch (uploadError) {
-        return res.status(500).json({ 
+        return res.status(500).json({
           message: 'Failed to upload image',
           error: uploadError.message,
           suggestion: 'Please try uploading a smaller image (less than 5MB) or try again later.'
         });
       }
-    } 
+    }
 
     // console.log('Creating chef profile in database...');
     const newChef = new Chef(chefData);
     await newChef.save();
-    
-    // console.log('Chef profile created successfully!');
-    // console.log(' Chef ID:', newChef._id);
-    // console.log(' Chef Email:', newChef.email);
-    // console.log(' === CHEF PROFILE CREATION COMPLETED ===\n');
-    
+
     res.status(201).json({
       message: 'Chef profile created successfully',
       chef: newChef,
       success: true
     });
   } catch (err) {
-    
+
     // Handle specific MongoDB errors
     if (err.code === 11000) {
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
-      
-      return res.status(409).json({ 
+
+      return res.status(409).json({
         message: 'Email already exists',
         error: `A chef profile with ${field} "${value}" already exists. Please use a different ${field}.`,
         suggestion: 'Try using a different email address or contact support.',
@@ -126,23 +129,22 @@ export const createChefProfile = async (req, res) => {
         value: value
       });
     }
-    
+
     // Handle validation errors
     if (err.name === 'ValidationError') {
       const validationErrors = Object.keys(err.errors).map(key => ({
         field: key,
         message: err.errors[key].message
       }));
-      
-      return res.status(400).json({ 
+
+      return res.status(400).json({
         message: 'Validation failed',
         error: 'Please check the required fields and try again.',
         validationErrors: validationErrors
       });
     }
-    
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: 'Failed to create chef profile',
       error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
       suggestion: 'Please try again or contact support if the problem persists.'
@@ -153,16 +155,16 @@ export const createChefProfile = async (req, res) => {
 export const getAllChefs = async (req, res) => {
   try {
     const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 }).lean();
-    
+
     // console.log(' Chefs retrieved successfully:', chefs.length);
-    res.status(200).json({ 
+    res.status(200).json({
       message: 'Chefs retrieved successfully',
       chefs: chefs,
       success: true
     });
   } catch (err) {
     // console.error(' Error retrieving chefs:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Failed to retrieve chefs',
       error: err.message,
       success: false
@@ -247,7 +249,7 @@ export const searchChefs = async (req, res) => {
 
     // Execute search with pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
+
     const [chefs, totalCount] = await Promise.all([
       Chef.find(searchQuery)
         .sort({ averageRating: -1, totalReviews: -1 }) // Sort by rating and review count
@@ -305,6 +307,11 @@ export const updateChefProfile = async (req, res) => {
       updateData.serviceableLocations = updateData.serviceableLocations.split(',').map(loc => loc.trim()).filter(Boolean);
     }
 
+    // Parse supportedOccasions for update
+    if (updateData.supportedOccasions && typeof updateData.supportedOccasions === 'string') {
+      updateData.supportedOccasions = updateData.supportedOccasions.split(',').map(o => o.trim()).filter(Boolean);
+    }
+
     // Handle location coordinates update
     if (updateData.locationCoords) {
       updateData.locationCoords = {
@@ -335,7 +342,7 @@ export const updateChefProfile = async (req, res) => {
         // Convert buffer to base64 and upload new image
         const b64 = Buffer.from(req.file.buffer).toString('base64');
         const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-        
+
         const uploadResult = await cloudinary.uploader.upload(dataURI, {
           folder: 'chef-profiles',
           transformation: [
@@ -351,16 +358,16 @@ export const updateChefProfile = async (req, res) => {
         };
       } catch (uploadError) {
         // console.error('Cloudinary upload error:', uploadError);
-        return res.status(500).json({ 
+        return res.status(500).json({
           message: 'Failed to upload image',
-          error: uploadError.message 
+          error: uploadError.message
         });
       }
     }
 
     const updatedChef = await Chef.findByIdAndUpdate(
-      chefId, 
-      updateData, 
+      chefId,
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -372,20 +379,20 @@ export const updateChefProfile = async (req, res) => {
     // Handle Mongoose validation errors
     if (err.name === 'ValidationError') {
       const errors = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: errors[0] || 'Validation failed',
         errors: errors
       });
     }
-    
+
     // Handle duplicate key errors
     if (err.code === 11000) {
       const field = Object.keys(err.keyPattern)[0];
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `This ${field} is already registered`
       });
     }
-    
+
     res.status(500).json({ message: err.message });
   }
 };
@@ -393,7 +400,7 @@ export const updateChefProfile = async (req, res) => {
 export const deleteChef = async (req, res) => {
   try {
     const chef = await Chef.findById(req.params.id);
-    
+
     if (!chef) {
       return res.status(404).json({ message: 'Chef not found' });
     }
@@ -410,13 +417,34 @@ export const deleteChef = async (req, res) => {
 
     // Soft delete (set isActive to false) or hard delete
     const updatedChef = await Chef.findByIdAndUpdate(
-      req.params.id, 
-      { isActive: false }, 
+      req.params.id,
+      { isActive: false },
       { new: true }
     );
 
     res.json({ message: 'Chef profile deactivated successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+// Get metadata for filters (Cuisines, etc.)
+export const getChefMetadata = async (req, res) => {
+  try {
+    const cuisines = await Chef.distinct('specialty', { isActive: true });
+    // Flatten and unique supportedOccasions if they are arrays, but distinct works well on arrays in Mongo
+    const occasions = await Chef.distinct('supportedOccasions', { isActive: true });
+
+    res.status(200).json({
+      success: true,
+      cuisines: cuisines.sort(),
+      occasions: occasions.sort()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch metadata',
+      error: error.message
+    });
   }
 };

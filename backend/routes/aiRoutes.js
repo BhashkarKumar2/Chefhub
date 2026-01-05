@@ -1,35 +1,42 @@
 import express from 'express';
 import geminiService from '../services/geminiService.js';
 import Chef from '../models/Chef.js';
+import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import { verifyToken } from '../auth/authMiddleware.js';
 
 const router = express.Router();
 
 // Get AI-powered chef recommendations
-router.post('/chef-recommendations', async (req, res) => {
+router.post('/chef-recommendations', verifyToken, async (req, res) => {
   try {
-    const { userPreferences } = req.body;
-
-    // Get available chefs based on location and availability
-    let chefQuery = { isActive: true };
-    
-    // If user has location preferences, add location-based filtering
-    if (userPreferences.location) {
-      // You can add more sophisticated location filtering here
-      // For now, we'll get all active chefs and let the AI service handle distance-based ranking
+    // Verify user exists and get profile
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: 'User not authenticated' });
     }
 
-    const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations');
+    const userProfile = await User.findById(req.user.id);
+
+    // Get available chefs (can still filter by basic active status)
+    let chefQuery = { isActive: true };
+    const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations supportedOccasions');
+
+
 
     const recommendations = await geminiService.getChefRecommendations(
-      userPreferences, 
+      userProfile,
       availableChefs
     );
 
+    console.log(`[AI Debug] AI returned ${recommendations.length} recommendations`);
+
     res.json({
       success: true,
-      data: recommendations
+      data: recommendations,
+      debug: {
+        chefsChecked: availableChefs.length,
+        userCity: userProfile.city || 'Not set'
+      }
     });
   } catch (error) {
     // console.error('Chef recommendations error:', error);
@@ -75,7 +82,7 @@ router.post('/pricing-suggestions', async (req, res) => {
     };
 
     const pricingSuggestions = await geminiService.generatePricingSuggestions(
-      bookingDetails, 
+      bookingDetails,
       marketData
     );
 
@@ -200,18 +207,18 @@ router.post('/chat', async (req, res) => {
 
     res.json({
       success: true,
-      data: { 
+      data: {
         response: response.text(),
         timestamp: new Date().toISOString()
       }
     });
   } catch (error) {
     // console.error('AI chat error:', error);
-    
+
     // Provide more specific error messages
     let errorMessage = 'Failed to process chat message';
     let statusCode = 500;
-    
+
     if (error.message && error.message.includes('API_KEY')) {
       errorMessage = 'AI service configuration error';
       statusCode = 503;
@@ -222,7 +229,7 @@ router.post('/chat', async (req, res) => {
       errorMessage = 'AI service quota exceeded. Please try again later.';
       statusCode = 429;
     }
-    
+
     res.status(statusCode).json({
       success: false,
       message: errorMessage,

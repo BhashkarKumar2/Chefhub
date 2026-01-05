@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 class GeminiService {
- constructor() {
+  constructor() {
     // Initialize Gemini with API key
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -33,11 +33,11 @@ class GeminiService {
     }
 
     let lastError;
-    
+
     for (let i = 0; i < this.availableModels.length; i++) {
       try {
         if (i !== this.currentModelIndex) {
-          this.model = this.genAI.getGenerativeModel({ 
+          this.model = this.genAI.getGenerativeModel({
             model: this.availableModels[i],
             generationConfig: {
               temperature: 0.7,
@@ -48,34 +48,34 @@ class GeminiService {
           });
           this.currentModelIndex = i;
         }
-        
+
         const result = await this.model.generateContent(prompt);
         const response = await result.response;
-        
+
         // Check if response is valid
         if (!response || !response.text) {
           throw new Error('Invalid response from AI model');
         }
-        
+
         return response;
       } catch (error) {
         lastError = error;
         console.warn(`Model ${this.availableModels[i]} failed:`, error.message);
-        
+
         // If it's a 404 error about model not found, try next model
         if (error.message.includes('404') || error.message.includes('not found')) {
           continue;
         }
-        
+
         // If it's an API key error, don't try other models
         if (error.message.includes('API_KEY') || error.message.includes('403')) {
           throw error;
         }
-        
+
         continue;
       }
     }
-    
+
     // If all models failed, provide a fallback response for chat
     if (prompt.toLowerCase().includes('chef assistant') || prompt.toLowerCase().includes('cooking')) {
       // console.log('All AI models failed, returning fallback cooking response');
@@ -83,67 +83,122 @@ class GeminiService {
         text: () => "I'm sorry, but the AI service is currently unavailable. However, I'd be happy to help with basic cooking advice! For specific recipes and detailed cooking instructions, please try again later when the AI service is restored."
       };
     }
-    
+
     throw lastError || new Error('All AI models are currently unavailable');
   }
 
-  // Generate chef recommendations based on user preferences
-  async getChefRecommendations(userPreferences, availableChefs) {
+  // Generate chef recommendations based on user profile
+  async getChefRecommendations(userProfile, availableChefs) {
+    // Construct implicit preferences from profile
+    const preferences = {
+      cuisines: userProfile.cuisinePreferences && userProfile.cuisinePreferences.length > 0 ? userProfile.cuisinePreferences.join(', ') : 'Any',
+      location: userProfile.city || 'Any',
+      favorites: userProfile.favorites && userProfile.favorites.length > 0 ? `User has favorited chefs: ${userProfile.favorites.join(', ')}` : 'No favorites yet',
+      bio: userProfile.bio || ''
+    };
+
     const prompt = `
-    Act as a culinary expert and recommend the best chefs based on user preferences:
+    Act as a personal culinary concierge. I need you to recommend the best chefs for a user based on their profile.
     
-    User Preferences:
-    - Event Type: ${userPreferences.serviceType || 'Event'}
-    - Guest Count: ${userPreferences.guestCount || 'Not specified'}
-    - Budget Range: Rs.${userPreferences.minBudget || 0} - Rs.${userPreferences.maxBudget || 'Not specified'}
-    - Cuisine Preference: ${userPreferences.cuisinePreference || userPreferences.cuisine || 'Any'}
-    - Dietary Restrictions: ${userPreferences.dietaryRestrictions || 'None'}
-    - Date: ${userPreferences.date || 'Not specified'}
+    User Profile Context:
+    - Favorite Cuisines: ${preferences.cuisines}
+    - Location: ${preferences.location}
+    - User Bio: ${preferences.bio}
+    - ${preferences.favorites}
     
     Available Chefs:
-    ${JSON.stringify(availableChefs, null, 2)}
+    ${JSON.stringify(availableChefs.map(c => ({
+      id: c._id,
+      name: c.name,
+      specialty: c.specialty,
+      occasions: c.supportedOccasions,
+      city: c.city,
+      rating: c.averageRating,
+      bio: c.bio
+    })), null, 2)}
+    
+    Task:
+    Select the top 3 chefs that best match this specific user's taste and location.
+    
+    CRITICAL FALLBACK RULES:
+    1. If you find perfect matches (Cuisine + Location), return them with high scores (8-10).
+    2. If NO perfect matches exist, you MUST return at least 2-3 "Fallback Options".
+       - If User Location is valid/specific: Prioritize chefs in that city.
+       - If User Location is 'Any' or 'Not set': Return higher rated chefs globally.
+    3. NEVER return an empty list. Always return 3 chefs, even if they are just random top-rated ones.
     
     Return EXACTLY this JSON format (as an array):
     [
       {
         "chef": {
-          "name": "Chef Name",
-          "id": "chef_id_from_available_chefs"
+            "id": "chef_id_from_available_chefs"
         },
         "score": 8,
-        "explanation": "Detailed explanation of why this chef is recommended",
-        "reasons": ["reason 1", "reason 2", "reason 3"]
+        "explanation": "Personalized explanation linking user preferences to chef specialty",
+        "reasons": ["Matches Italian preference", "Highly rated in your city"]
       }
     ]
     
-    Rank the top 3-5 chefs and provide scores (1-10), detailed explanations, and specific reasons.
     Only return the JSON array, no other text.
     `;
 
     try {
       const response = await this.generateWithFallback(prompt);
       const parsed = this.parseJSONResponse(response.text());
-      
-      // Handle different response formats
+
+      // Standardize response to an array
+      let rawResults = [];
       if (parsed.topChefs) {
-        // Convert the topChefs format to expected format
-        return parsed.topChefs.map(chef => ({
-          chef: {
-            name: availableChefs.find(c => c._id === chef.chefId)?.name || 'Unknown Chef',
-            id: chef.chefId
-          },
-          score: chef.score,
-          explanation: typeof chef.explanation === 'object' 
-            ? chef.explanation.reasonsForRecommendation || 'No explanation provided'
-            : chef.explanation,
-          reasons: typeof chef.explanation === 'object' 
-            ? [chef.explanation.bestMatchFactors, chef.explanation.potentialConcerns].filter(Boolean)
-            : ['AI recommendation based on available data']
+        rawResults = parsed.topChefs;
+      } else if (Array.isArray(parsed)) {
+        rawResults = parsed;
+      } else {
+        // Fallback for single object or unexpected structure
+        rawResults = parsed ? [parsed] : [];
+      }
+
+      // Enrich with real chef data
+      let finalRecommendations = rawResults.map(aiResult => {
+        // Handle potentially different field names from AI
+        const chefId = aiResult.chefId || aiResult.chef?.id;
+
+        const originalChef = availableChefs.find(c => c._id.toString() === chefId);
+        if (!originalChef) return null;
+
+        return {
+          id: originalChef._id,
+          name: originalChef.name,
+          specialty: originalChef.specialty,
+          pricePerHour: originalChef.pricePerHour,
+          experienceYears: originalChef.experienceYears,
+          confidenceScore: (aiResult.score || 0) * 10,
+          matchReason: typeof aiResult.explanation === 'object'
+            ? aiResult.explanation.reasonsForRecommendation
+            : aiResult.explanation,
+          reasons: aiResult.reasons || []
+        };
+      }).filter(Boolean);
+
+      // FINAL FALLBACK: If validation removed everything (or AI returned nothing)
+      if (finalRecommendations.length === 0) {
+        // console.log('[GeminiService] No valid recommendations found. Using manual fallback.');
+        const topChefs = availableChefs
+          .sort((a, b) => b.averageRating - a.averageRating)
+          .slice(0, 3);
+
+        finalRecommendations = topChefs.map(originalChef => ({
+          id: originalChef._id,
+          name: originalChef.name,
+          specialty: originalChef.specialty,
+          pricePerHour: originalChef.pricePerHour,
+          experienceYears: originalChef.experienceYears,
+          confidenceScore: 70, // 7/10
+          matchReason: "One of our highest-rated chefs (Community Favorite).",
+          reasons: ["Top Rated", "Community Favorite"]
         }));
       }
-      
-      // Return as-is if already in expected format
-      return Array.isArray(parsed) ? parsed : [parsed];
+
+      return finalRecommendations;
     } catch (error) {
       // console.error('Gemini API error:', error);
       throw new Error('Failed to generate chef recommendations');
@@ -184,10 +239,10 @@ class GeminiService {
     try {
       const response = await this.generateWithFallback(prompt);
       const responseText = response.text().trim();
-      
+
       // Clean the response to ensure it's valid JSON
       let cleanedResponse = responseText;
-      
+
       // Remove markdown code blocks if present
       if (cleanedResponse.includes('```json')) {
         cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
@@ -195,61 +250,61 @@ class GeminiService {
       if (cleanedResponse.includes('```')) {
         cleanedResponse = cleanedResponse.replace(/```/g, '');
       }
-      
+
       // Parse the JSON
       const parsedMenu = JSON.parse(cleanedResponse.trim());
-      
+
       // Validate the structure and provide defaults
       const menu = {
         appetizers: parsedMenu.appetizers || [
-          "Vegetable Samosa", 
-          "Paneer Tikka", 
+          "Vegetable Samosa",
+          "Paneer Tikka",
           "Mixed Pakoras"
         ],
         mainCourse: parsedMenu.mainCourse || [
-          "Butter Chicken", 
-          "Dal Makhani", 
-          "Biryani", 
+          "Butter Chicken",
+          "Dal Makhani",
+          "Biryani",
           "Palak Paneer"
         ],
         desserts: parsedMenu.desserts || [
-          "Gulab Jamun", 
+          "Gulab Jamun",
           "Kulfi"
         ],
         beverages: parsedMenu.beverages || [
-          "Lassi", 
-          "Masala Chai", 
+          "Lassi",
+          "Masala Chai",
           "Fresh Lime Water"
         ],
         estimatedCost: parsedMenu.estimatedCost || 1200,
         preparationTime: parsedMenu.preparationTime || "2-3 hours",
         servingNotes: parsedMenu.servingNotes || "Serve hot and fresh"
       };
-      
+
       return menu;
     } catch (error) {
       // console.error('Menu generation error:', error);
-      
+
       // Return a fallback menu with proper structure
       return {
         appetizers: [
-          "Vegetable Samosa with Mint Chutney", 
-          "Paneer Tikka", 
+          "Vegetable Samosa with Mint Chutney",
+          "Paneer Tikka",
           "Mixed Vegetable Pakoras"
         ],
         mainCourse: [
-          "Butter Chicken with Naan", 
-          "Dal Makhani", 
-          "Vegetable Biryani", 
+          "Butter Chicken with Naan",
+          "Dal Makhani",
+          "Vegetable Biryani",
           "Palak Paneer with Roti"
         ],
         desserts: [
-          "Gulab Jamun", 
+          "Gulab Jamun",
           "Kulfi with Pistachios"
         ],
         beverages: [
-          "Sweet Lassi", 
-          "Masala Chai", 
+          "Sweet Lassi",
+          "Masala Chai",
           "Fresh Lime Soda"
         ],
         estimatedCost: 1200,

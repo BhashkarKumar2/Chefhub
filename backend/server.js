@@ -203,6 +203,15 @@ mongoose.connect(process.env.MONGO_URI)
     // Initialize Socket.io
     socketService.init(server);
 
+    // Initialize Chef Search Index (Redis)
+    (async () => {
+      try {
+        await redisIndexService.initChefIndex();
+      } catch (err) {
+        logger.error('Failed to initialize Redis Index:', err);
+      }
+    })();
+
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`, {
         environment: process.env.NODE_ENV || 'development',
