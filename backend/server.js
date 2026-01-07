@@ -23,6 +23,7 @@ import redis from './config/redis.js';
 import compression from 'compression';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import { initScheduledJobs } from './services/cronService.js';
 
 const RedisStore = connectRedis(session);
 
@@ -211,6 +212,9 @@ mongoose.connect(process.env.MONGO_URI)
         logger.error('Failed to initialize Redis Index:', err);
       }
     })();
+
+    // Initialize Cron Jobs
+    initScheduledJobs();
 
     server.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`, {
