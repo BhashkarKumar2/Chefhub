@@ -205,6 +205,9 @@ mongoose.connect(process.env.MONGO_URI)
     socketService.init(server);
 
     // Initialize Chef Search Index (Redis)
+    /** 
+     * NOTE: redisIndexService is currently missing from the codebase.
+     * Commenting out to prevent startup errors.
     (async () => {
       try {
         await redisIndexService.initChefIndex();
@@ -212,6 +215,7 @@ mongoose.connect(process.env.MONGO_URI)
         logger.error('Failed to initialize Redis Index:', err);
       }
     })();
+    */
 
     // Initialize Cron Jobs
     initScheduledJobs();
