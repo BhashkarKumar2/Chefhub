@@ -248,16 +248,115 @@ export const searchChefs = async (req, res) => {
     // console.log(' Search query:', JSON.stringify(searchQuery, null, 2));
 
     // Execute search with pagination
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    let chefs;
+    let totalCount;
 
-    const [chefs, totalCount] = await Promise.all([
-      Chef.find(searchQuery)
-        .sort({ averageRating: -1, totalReviews: -1 }) // Sort by rating and review count
-        .skip(skip)
-        .limit(parseInt(limit))
-        .lean(),
-      Chef.countDocuments(searchQuery)
-    ]);
+    // Smart Sorting Logic
+    if (page === '1' && (!req.query.sortBy || req.query.sortBy === 'smart')) {
+      // For smart sort, we fetch more candidates to rank them effectively
+      const candidateLimit = 50;
+      const candidates = await Chef.find(searchQuery).lean();
+      totalCount = candidates.length;
+
+      // Helper for distance (Haversine)
+      const getDistance = (lat1, lon1, lat2, lon2) => {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return 10000; // Far away if coords missing
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      };
+
+      // User location (from query or profile if we had access, here query assumed)
+      // Expecting location to be "lat,lon" string for smart sort, otherwise 0,0
+      let userLat = 0, userLon = 0;
+      if (req.query.userLat && req.query.userLon) {
+        userLat = parseFloat(req.query.userLat);
+        userLon = parseFloat(req.query.userLon);
+      }
+
+      const scoredChefs = candidates.map(chef => {
+        let score = 0;
+
+        // 1. Rating Score (40%) - Max 40 pts
+        // Normalize 0-5 to 0-40
+        const rating = chef.averageRating || 0;
+        const ratingScore = (rating / 5) * 40;
+        score += ratingScore;
+
+        // 2. Distance Score (30%) - Max 30 pts
+        // Only if we have user coords
+        let distance = 0;
+        if (userLat && userLon && chef.locationCoords) {
+          distance = getDistance(userLat, userLon, chef.locationCoords.lat, chef.locationCoords.lon);
+          // Decay: 100% at 0km, 50% at 10km, 0% at 50km
+          // Simple Linear: Max 30 - (distance * 0.6)
+          let distScore = Math.max(0, 30 - (distance * 0.6));
+          score += distScore;
+        } else {
+          // If no location provided, treat as neutral (15pts) or prioritized if generic location matches?
+          // For now, give neutral score to avoid punishing too hard if just browsing
+          score += 15;
+        }
+
+        // 3. Review Confidence (10%) - Max 10 pts
+        // 0-10 reviews = 0-5 pts, 10-50 = 5-8 pts, 50+ = 10 pts
+        const reviews = chef.totalReviews || 0;
+        let reviewScore = 0;
+        if (reviews > 50) reviewScore = 10;
+        else if (reviews > 10) reviewScore = 5 + ((reviews - 10) / 40) * 3; // 5 to 8
+        else reviewScore = (reviews / 10) * 5; // 0 to 5
+        score += reviewScore;
+
+        // 4. Price Score (20%) - Max 20 pts
+        // If within budget, full points. If slightly over, partial.
+        // Assuming budget passed as maxPrice
+        let priceScore = 20; // Default full points if no constraint
+        if (maxPrice) {
+          const budget = parseInt(maxPrice);
+          if (chef.pricePerHour > budget) {
+            // Penalize: -1pt per 100rs over budget
+            const over = chef.pricePerHour - budget;
+            priceScore = Math.max(0, 20 - (over / 100)); // 1000rs over = 10pts lost
+          }
+        }
+        score += priceScore;
+
+        return { ...chef, smartScore: score, distance: distance };
+      });
+
+      // Sort by Smart Score descending
+      scoredChefs.sort((a, b) => b.smartScore - a.smartScore);
+
+      // Pagination slice
+      const start = (parseInt(page) - 1) * parseInt(limit);
+      const end = start + parseInt(limit);
+      chefs = scoredChefs.slice(start, end);
+
+    } else {
+      // Standard Mongo Sort
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+
+      let sortOption = { averageRating: -1, totalReviews: -1 };
+      if (req.query.sortBy === 'price_low') sortOption = { pricePerHour: 1 };
+      if (req.query.sortBy === 'price_high') sortOption = { pricePerHour: -1 };
+      if (req.query.sortBy === 'newest') sortOption = { createdAt: -1 };
+
+      const result = await Promise.all([
+        Chef.find(searchQuery)
+          .sort(sortOption)
+          .skip(skip)
+          .limit(parseInt(limit))
+          .lean(),
+        Chef.countDocuments(searchQuery)
+      ]);
+      chefs = result[0];
+      totalCount = result[1];
+    }
 
     const totalPages = Math.ceil(totalCount / parseInt(limit));
 

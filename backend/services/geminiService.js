@@ -120,12 +120,17 @@ class GeminiService {
     Task:
     Select the top 3 chefs that best match this specific user's taste and location.
     
-    CRITICAL FALLBACK RULES:
-    1. If you find perfect matches (Cuisine + Location), return them with high scores (8-10).
-    2. If NO perfect matches exist, you MUST return at least 2-3 "Fallback Options".
-       - If User Location is valid/specific: Prioritize chefs in that city.
-       - If User Location is 'Any' or 'Not set': Return higher rated chefs globally.
-    3. NEVER return an empty list. Always return 3 chefs, even if they are just random top-rated ones.
+    CRITICAL QUALITY GATES (MUST FOLLOW):
+    1. **RATING FILTER**: Do NOT recommend any chef with specific rating < 4.0 unless they are the *absolute only* option available in the requested city.
+    2. **LOCATION vs QUALITY**: 
+       - If a chef is nearby (same city) but poor rating (<3.5), SKIP THEM.
+       - Prefer a 4.8 🌟 chef who is slightly further away over a 3.5 🌟 chef who is next door.
+       - If the user provided specific coordinates, prioritize distance, but never sacrifice quality for it.
+    
+    Recommended Strategy:
+    1. First, find high-rated chefs (4.5+) in the exact location.
+    2. Second, find high-rated chefs matching the CUISINE even if location is 'Any' or generic.
+    3. Third, fill remaining slots with "Community Favorites" (high reviews).
     
     Return EXACTLY this JSON format (as an array):
     [

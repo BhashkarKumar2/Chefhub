@@ -217,3 +217,10 @@ url-update-reference.js
 *-summary.js
 *-reference.js
 *.md
+
+# Tests and Verification
+backend/tests/
+scripts/
+**/verify_*.js
+**/test_*.js
+**/check_*.js

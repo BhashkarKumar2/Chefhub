@@ -63,9 +63,21 @@ export const createPaymentOrder = async (req, res) => {
     const order = await razorpay.orders.create(orderOptions);
     // console.log('Razorpay order created successfully:', order);
 
-    // Update booking with order ID
+    // COMMISSION LOGIC (20% Split)
+    const COMMISSION_RATE = 20; // 20%
+    const adminCommission = Math.round((amount * COMMISSION_RATE) / 100);
+    const chefEarnings = amount - adminCommission;
+
+    // Update booking with payment info AND financial split
     booking.paymentId = order.id;
     booking.paymentStatus = 'pending';
+
+    // Revenue Split Fields
+    booking.adminCommission = adminCommission;
+    booking.chefEarnings = chefEarnings;
+    booking.commissionRate = COMMISSION_RATE;
+    booking.currency = currency;
+
     await booking.save();
 
     res.status(200).json({
@@ -85,13 +97,13 @@ export const createPaymentOrder = async (req, res) => {
     // console.error('Error details:', error);
     // console.error('Error message:', error.message);
     // console.error('Error stack:', error.stack);
-    
+
     // Check if it's a Razorpay specific error
     if (error.statusCode) {
       // console.error('Razorpay Error Code:', error.statusCode);
       // console.error('Razorpay Error Details:', error.error);
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Error creating payment order',
@@ -288,7 +300,7 @@ export const refundPayment = async (req, res) => {
 
     // Calculate refund amount based on booking policy
     const refundAmount = booking.getRefundAmount();
-    
+
     if (refundAmount <= 0) {
       return res.status(400).json({
         success: false,

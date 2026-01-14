@@ -15,7 +15,7 @@ const bookingSchema = new mongoose.Schema({
     type: Date,
     required: [true, 'Booking date is required'],
     validate: {
-      validator: function(value) {
+      validator: function (value) {
         return value >= new Date();
       },
       message: 'Booking date cannot be in the past'
@@ -80,7 +80,7 @@ const bookingSchema = new mongoose.Schema({
       maxlength: 100
     }],
     validate: {
-      validator: function(arr) {
+      validator: function (arr) {
         return arr.length <= 20;
       },
       message: 'Cannot have more than 20 add-ons'
@@ -91,6 +91,28 @@ const bookingSchema = new mongoose.Schema({
     required: [true, 'Total price is required'],
     min: [0, 'Price cannot be negative'],
     max: [10000000, 'Price cannot exceed 10,000,000']
+  },
+  // Financial Split Tracking
+  adminCommission: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  chefEarnings: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  commissionRate: {
+    type: Number, // Percentage (e.g., 20 for 20%)
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  currency: {
+    type: String,
+    default: 'INR',
+    uppercase: true
   },
   contactInfo: {
     name: {
@@ -109,7 +131,7 @@ const bookingSchema = new mongoose.Schema({
       type: String,
       trim: true,
       validate: {
-        validator: function(v) {
+        validator: function (v) {
           if (!v) return true; // Allow empty phone (optional field)
           return /^\+?[1-9]\d{9,14}$/.test(v); // Min 10 digits, max 15 with country code
         },
@@ -201,7 +223,7 @@ const bookingSchema = new mongoose.Schema({
           }
         }],
         validate: {
-          validator: function(arr) {
+          validator: function (arr) {
             // Only validate if mealTypes array exists and has items
             if (!arr || arr.length === 0) return true;
             return arr.length <= 4;
@@ -212,7 +234,7 @@ const bookingSchema = new mongoose.Schema({
       dietaryRestrictions: {
         type: [String],
         validate: {
-          validator: function(arr) {
+          validator: function (arr) {
             return arr.length <= 10;
           },
           message: 'Cannot have more than 10 dietary restrictions'
@@ -233,7 +255,7 @@ const bookingSchema = new mongoose.Schema({
       startDate: {
         type: Date,
         validate: {
-          validator: function(value) {
+          validator: function (value) {
             return !value || value >= new Date();
           },
           message: 'Start date cannot be in the past'
@@ -242,7 +264,7 @@ const bookingSchema = new mongoose.Schema({
       endDate: {
         type: Date,
         validate: {
-          validator: function(value) {
+          validator: function (value) {
             return !value || !this.serviceDetails?.daily?.startDate || value > this.serviceDetails.daily.startDate;
           },
           message: 'End date must be after start date'
@@ -291,13 +313,13 @@ bookingSchema.index({ date: 1, status: 1 });
 bookingSchema.index({ chefId: 1, userId: 1 });
 
 // Virtual for booking duration in a readable format
-bookingSchema.virtual('durationText').get(function() {
+bookingSchema.virtual('durationText').get(function () {
   if (this.duration === 1) return '1 hour';
   return `${this.duration} hours`;
 });
 
 // Virtual for formatted date
-bookingSchema.virtual('formattedDate').get(function() {
+bookingSchema.virtual('formattedDate').get(function () {
   return this.date.toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',
@@ -307,7 +329,7 @@ bookingSchema.virtual('formattedDate').get(function() {
 });
 
 // Virtual for service type display name
-bookingSchema.virtual('serviceTypeDisplay').get(function() {
+bookingSchema.virtual('serviceTypeDisplay').get(function () {
   const displayNames = {
     birthday: 'Birthday Party',
     marriage: 'Marriage Ceremony',
@@ -317,18 +339,18 @@ bookingSchema.virtual('serviceTypeDisplay').get(function() {
 });
 
 // Pre-save middleware to update the updatedAt field and maintain legacy fields
-bookingSchema.pre('save', function(next) {
+bookingSchema.pre('save', function (next) {
   this.updatedAt = new Date();
-  
+
   // Maintain backward compatibility
   if (this.user && !this.userId) this.userId = this.user;
   if (this.chef && !this.chefId) this.chefId = this.chef;
-  
+
   next();
 });
 
 // Static method to get bookings by date range
-bookingSchema.statics.getBookingsByDateRange = function(startDate, endDate) {
+bookingSchema.statics.getBookingsByDateRange = function (startDate, endDate) {
   return this.find({
     date: {
       $gte: startDate,
@@ -338,7 +360,7 @@ bookingSchema.statics.getBookingsByDateRange = function(startDate, endDate) {
 };
 
 // Static method to get popular service types
-bookingSchema.statics.getServiceTypeStats = function() {
+bookingSchema.statics.getServiceTypeStats = function () {
   return this.aggregate([
     {
       $group: {
@@ -355,25 +377,25 @@ bookingSchema.statics.getServiceTypeStats = function() {
 };
 
 // Instance method to check if booking can be cancelled
-bookingSchema.methods.canBeCancelled = function() {
+bookingSchema.methods.canBeCancelled = function () {
   const now = new Date();
   const bookingDate = new Date(this.date);
   const timeDifference = bookingDate.getTime() - now.getTime();
   const hoursDifference = timeDifference / (1000 * 3600);
-  
+
   // Can be cancelled if more than 24 hours before the booking
   return hoursDifference > 24 && this.status === 'pending';
 };
 
 // Instance method to calculate refund amount
-bookingSchema.methods.getRefundAmount = function() {
+bookingSchema.methods.getRefundAmount = function () {
   if (!this.canBeCancelled()) return 0;
-  
+
   const now = new Date();
   const bookingDate = new Date(this.date);
   const timeDifference = bookingDate.getTime() - now.getTime();
   const hoursDifference = timeDifference / (1000 * 3600);
-  
+
   // Refund policy based on cancellation time
   if (hoursDifference > 72) return this.totalPrice; // Full refund
   if (hoursDifference > 48) return this.totalPrice * 0.8; // 80% refund
@@ -382,15 +404,15 @@ bookingSchema.methods.getRefundAmount = function() {
 };
 
 // Instance method to check if booking is eligible for review (within 48 hours of completion)
-bookingSchema.methods.isReviewEligible = function() {
+bookingSchema.methods.isReviewEligible = function () {
   if (this.status !== 'completed' || !this.completedAt) {
     return false;
   }
-  
+
   const now = Date.now();
   const completionTime = new Date(this.completedAt).getTime();
   const hoursSinceCompletion = (now - completionTime) / (1000 * 60 * 60);
-  
+
   // Review window is exactly 48 hours after completion
   return hoursSinceCompletion <= 48;
 };
