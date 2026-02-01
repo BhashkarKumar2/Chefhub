@@ -50,7 +50,6 @@ const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const AuthSuccess = lazy(() => import('./pages/auth/AuthSuccess'));
-const AuthDebug = lazy(() => import('./pages/auth/AuthDebug'));
 const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'));
 const VerifyOTP = lazy(() => import('./pages/auth/VerifyOTP'));
 
@@ -204,7 +203,6 @@ const App = () => {
                         } />
                         {/* Auth-related routes */}
                         <Route path="/auth-success" element={<AuthSuccess />} />
-                        <Route path="/auth-debug" element={<AuthDebug />} />
                         <Route path="/verify-email/:token" element={<VerifyEmail />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
                       </Routes>
