@@ -4,13 +4,16 @@ import {
   verifyPayment,
   handlePaymentFailure,
   getPaymentStatus,
-  refundPayment
+  refundPayment,
+  getChefEarnings
 } from '../controllers/paymentController.js';
 
-// import authMiddleware from '../../middleware/authMiddleware.js';
-// Temporarily disable auth middleware to test basic functionality
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Get earnings stats (Protected)
+router.get('/earnings', authMiddleware, getChefEarnings);
 
 // Create payment order
 router.post('/create-order', createPaymentOrder);

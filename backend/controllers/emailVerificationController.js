@@ -10,9 +10,13 @@ apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BR
 // Send verification email with OTP using Brevo
 export const sendVerificationEmail = async (user, verificationOTP) => {
   try {
-    const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
+    const fromEmail = process.env.BREVO_FROM_EMAIL;
     const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
-    
+
+    if (!fromEmail) {
+      throw new Error('BREVO_FROM_EMAIL environment variable is required');
+    }
+
     const sendSmtpEmail = new brevo.SendSmtpEmail();
     sendSmtpEmail.sender = { name: fromName, email: fromEmail };
     sendSmtpEmail.to = [{ email: user.email, name: user.name }];
@@ -103,9 +107,9 @@ export const verifyEmail = async (req, res) => {
 
     if (!email || !otp) {
       // console.log(`[VERIFY] ❌ Missing email or OTP`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Email and OTP are required' 
+        message: 'Email and OTP are required'
       });
     }
 
@@ -117,10 +121,10 @@ export const verifyEmail = async (req, res) => {
       // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
       pendingData = pendingRegistrations.get(email);
     }
-    
+
     if (!pendingData) {
       // console.log(`[VERIFY] ❌ No pending registration found for ${email}`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
         message: 'No pending registration found. Please register again.'
       });
@@ -134,7 +138,7 @@ export const verifyEmail = async (req, res) => {
         pendingRegistrations.delete(email);
       }
       // console.log(`[VERIFY] ⏰ OTP expired for ${email}`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
         message: 'OTP has expired. Please register again.',
         expired: true
@@ -143,10 +147,10 @@ export const verifyEmail = async (req, res) => {
 
     // Hash the entered OTP and compare
     const hashedOTP = crypto.createHash('sha256').update(otp.toString()).digest('hex');
-    
+
     if (hashedOTP !== pendingData.otp) {
       // console.log(`[VERIFY] ❌ Incorrect OTP entered for ${email}`);
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
         message: 'Incorrect OTP. Please check your email and try again.'
       });
@@ -154,26 +158,26 @@ export const verifyEmail = async (req, res) => {
 
     // OTP is correct - Now create the user in database
     // console.log(`[VERIFY] ✅ OTP verified for ${email}, creating user in database...`);
-    
+
     const newUser = new User({
       name: pendingData.name,
       email: pendingData.email,
       password: pendingData.password,
       isEmailVerified: true // User is verified since OTP matched
     });
-    
+
     await newUser.save();
-    
+
     // Remove from pending registrations (Redis or in-memory)
     try {
       await deletePendingRegistration(email);
     } catch {
       pendingRegistrations.delete(email);
     }
-    
+
     // console.log(`[VERIFY] ✅ User created successfully for ${email}`);
-    
-    res.json({ 
+
+    res.json({
       success: true,
       message: 'Email verified successfully! You can now log in.',
       user: {
@@ -185,9 +189,9 @@ export const verifyEmail = async (req, res) => {
 
   } catch (error) {
     // console.error('❌ Email verification error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server error during verification' 
+      message: 'Server error during verification'
     });
   }
 };
@@ -195,10 +199,14 @@ export const verifyEmail = async (req, res) => {
 // Send review reminder email after booking completion
 export const sendReviewReminderEmail = async (userEmail, userName, chefName, bookingId) => {
   try {
-    const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
+    const fromEmail = process.env.BREVO_FROM_EMAIL;
     const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
+
+    if (!fromEmail) {
+      throw new Error('BREVO_FROM_EMAIL environment variable is required');
+    }
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    
+
     const sendSmtpEmail = new brevo.SendSmtpEmail();
     sendSmtpEmail.sender = { name: fromName, email: fromEmail };
     sendSmtpEmail.to = [{ email: userEmail, name: userName }];
@@ -272,7 +280,7 @@ export const sendReviewReminderEmail = async (userEmail, userName, chefName, boo
 
     await apiInstance.sendTransacEmail(sendSmtpEmail);
     // console.log('Review reminder email sent successfully to:', userEmail);
-    
+
   } catch (error) {
     // console.error('Error sending review reminder email:', error);
     throw error;
@@ -287,9 +295,9 @@ export const resendVerificationEmail = async (req, res) => {
     // console.log(`[RESEND] Resend OTP requested for ${email}`);
 
     if (!email) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Email address is required' 
+        message: 'Email address is required'
       });
     }
 
@@ -301,12 +309,12 @@ export const resendVerificationEmail = async (req, res) => {
       // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
       pendingData = pendingRegistrations.get(email);
     }
-    
+
     if (!pendingData) {
       // console.log(`[RESEND] ❌ No pending registration for ${email}`);
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'No pending registration found. Please register again.' 
+        message: 'No pending registration found. Please register again.'
       });
     }
 
@@ -317,7 +325,7 @@ export const resendVerificationEmail = async (req, res) => {
     // Update pending registration with new OTP (Redis or in-memory)
     pendingData.otp = hashedOTP;
     pendingData.expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-    
+
     try {
       await storePendingRegistration(email, pendingData);
     } catch (redisError) {
@@ -330,16 +338,16 @@ export const resendVerificationEmail = async (req, res) => {
 
     // console.log(`[RESEND] ✅ New OTP sent to ${email}`);
 
-    res.json({ 
+    res.json({
       success: true,
-      message: 'New verification code sent! Please check your email.' 
+      message: 'New verification code sent! Please check your email.'
     });
 
   } catch (error) {
     // console.error('❌ Error resending verification email:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Failed to resend verification email' 
+      message: 'Failed to resend verification email'
     });
   }
 };

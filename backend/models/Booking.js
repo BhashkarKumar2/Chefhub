@@ -92,6 +92,19 @@ const bookingSchema = new mongoose.Schema({
     min: [0, 'Price cannot be negative'],
     max: [10000000, 'Price cannot exceed 10,000,000']
   },
+  basePrice: {
+    type: Number,
+    min: [0, 'Base price cannot be negative']
+  },
+  surgeMultiplier: {
+    type: Number,
+    default: 1,
+    min: [1, 'Multiplier cannot be less than 1']
+  },
+  surgeReason: {
+    type: String,
+    trim: true
+  },
   // Financial Split Tracking
   adminCommission: {
     type: Number,

@@ -209,6 +209,7 @@ public/uploads/
 
 debug-*.js
 frontend-auth-debug.js
+frontend/src/pages/auth/AuthDebug.jsx
 chef-consistency-fix-summary.js
 mongodb-connection-fix.js
 url-update-reference.js
@@ -220,6 +221,8 @@ url-update-reference.js
 
 # Tests and Verification
 backend/tests/
+backend/scripts/
+backend/tools/
 scripts/
 **/verify_*.js
 **/test_*.js

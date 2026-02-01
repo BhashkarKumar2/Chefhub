@@ -36,8 +36,12 @@ export const forgotPassword = async (req, res) => {
 
     // Send email using Brevo
     try {
-      const fromEmail = process.env.BREVO_FROM_EMAIL || 'bhashkarkumar2063@gmail.com';
+      const fromEmail = process.env.BREVO_FROM_EMAIL;
       const fromName = process.env.BREVO_FROM_NAME || 'ChefHub';
+
+      if (!fromEmail) {
+        throw new Error('BREVO_FROM_EMAIL environment variable is required');
+      }
 
       const sendSmtpEmail = new brevo.SendSmtpEmail();
       sendSmtpEmail.sender = { name: fromName, email: fromEmail };

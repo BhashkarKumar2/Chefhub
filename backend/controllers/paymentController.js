@@ -1,5 +1,6 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 
 // Initialize Razorpay instance
@@ -339,6 +340,82 @@ export const refundPayment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error processing refund',
+      error: error.message
+    });
+  }
+};
+
+// Get earnings statistics for a chef
+export const getChefEarnings = async (req, res) => {
+  try {
+    // Ensure user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+
+    const chefId = req.user.id;
+
+    // Aggregation pipeline to calculate totals
+    const stats = await Booking.aggregate([
+      {
+        $match: {
+          chef: new mongoose.Types.ObjectId(chefId),
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalEarnings: { $sum: '$chefEarnings' },
+          totalBookings: { $sum: 1 }
+        }
+      }
+    ]);
+
+    // Get recent transactions
+    const recentTransactions = await Booking.find({
+      chef: chefId,
+      paymentStatus: 'paid'
+    })
+      .select('date totalPrice chefEarnings adminCommission status paymentStatus createdAt user serviceType')
+      .populate('user', 'name')
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    const pendingStats = await Booking.aggregate([
+      {
+        $match: {
+          chef: new mongoose.Types.ObjectId(chefId),
+          status: 'pending'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          potentialEarnings: { $sum: '$chefEarnings' },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalEarnings: stats.length > 0 ? stats[0].totalEarnings : 0,
+        completedBookings: stats.length > 0 ? stats[0].totalBookings : 0,
+        pendingEarnings: pendingStats.length > 0 ? pendingStats[0].potentialEarnings : 0,
+        recentTransactions: recentTransactions
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching earnings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch earnings data',
       error: error.message
     });
   }

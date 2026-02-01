@@ -3,6 +3,7 @@ import geminiService from '../services/geminiService.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
+import AIUsage from '../models/AIUsage.js';
 import { verifyToken } from '../auth/authMiddleware.js';
 
 const router = express.Router();
@@ -48,16 +49,69 @@ router.post('/chef-recommendations', verifyToken, async (req, res) => {
   }
 });
 
-// Generate AI-powered menu for events
-router.post('/generate-menu', async (req, res) => {
+// Get AI usage stats
+router.get('/usage', verifyToken, async (req, res) => {
   try {
-    const { eventDetails } = req.body;
+    const usage = await AIUsage.findOne({
+      user: req.user.id,
+      feature: 'menu_generation'
+    });
 
-    const menu = await geminiService.generateEventMenu(eventDetails);
+    // Default limit is 5 per month
+    const LIMIT = 5;
+    const currentCount = usage ? usage.count : 0;
 
     res.json({
       success: true,
-      data: menu
+      data: {
+        used: currentCount,
+        limit: LIMIT,
+        remaining: Math.max(0, LIMIT - currentCount)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch usage stats' });
+  }
+});
+
+// Generate AI-powered menu for events (Freemium: Limited to 5/month)
+router.post('/generate-menu', verifyToken, async (req, res) => {
+  try {
+    const { eventDetails } = req.body;
+    const userId = req.user.id; // From verifyToken
+
+    // 1. Check Usage Limit
+    let usage = await AIUsage.findOne({ user: userId, feature: 'menu_generation' });
+
+    if (!usage) {
+      usage = new AIUsage({ user: userId, feature: 'menu_generation', count: 0 });
+    }
+
+    const LIMIT = 5;
+    if (usage.count >= LIMIT) {
+      return res.status(403).json({
+        success: false,
+        error: 'Free limit exceeded. You have used all 5 free menu generations for this month.',
+        code: 'LIMIT_EXCEEDED'
+      });
+    }
+
+    // 2. Generate Menu
+    const menu = await geminiService.generateEventMenu(eventDetails);
+
+    // 3. Increment Usage (only on success)
+    usage.count += 1;
+    usage.lastUsedAt = new Date();
+    await usage.save();
+
+    res.json({
+      success: true,
+      data: menu,
+      usage: {
+        used: usage.count,
+        limit: LIMIT,
+        remaining: LIMIT - usage.count
+      }
     });
   } catch (error) {
     // console.error('Menu generation error:', error);

@@ -19,7 +19,14 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
+    // Don't connect if no token - authentication is required
+    if (!token) {
+      setSocket(null);
+      setIsConnected(false);
+      return;
+    }
+
     const newSocket = io(SOCKET_URL, {
       auth: {
         token
@@ -31,6 +38,11 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('disconnect', () => {
+      setIsConnected(false);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.warn('Socket connection error:', error.message);
       setIsConnected(false);
     });
 
@@ -296,18 +308,17 @@ export const RealTimeChat = ({ recipientId, bookingId }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-4">
       <h3 className="text-lg font-semibold mb-4">ðŸ’¬ Chat</h3>
-      
+
       <div className="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
         {chatHistory.length === 0 ? (
           <p className="text-gray-500 text-center">No messages yet</p>
         ) : (
           chatHistory.map((msg) => (
             <div key={msg.id} className={`mb-3 ${msg.sent ? 'text-right' : 'text-left'}`}>
-              <div className={`inline-block p-3 rounded-lg max-w-xs ${
-                msg.sent 
-                  ? 'bg-amber-600 text-white' 
+              <div className={`inline-block p-3 rounded-lg max-w-xs ${msg.sent
+                  ? 'bg-amber-600 text-white'
                   : 'bg-white border border-gray-200'
-              }`}>
+                }`}>
                 <p className="text-sm">{msg.message}</p>
                 <span className="text-xs opacity-70">
                   {new Date(msg.timestamp).toLocaleTimeString()}

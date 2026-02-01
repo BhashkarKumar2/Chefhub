@@ -43,6 +43,7 @@ const SetPassword = lazy(() => import('./pages/user/SetPassword'));
 const ViewBookings = lazy(() => import('./pages/user/ViewBookings'));
 const MyBookings = lazy(() => import('./pages/user/MyBookings'));
 const ChefBookings = lazy(() => import('./pages/chef/ChefBookings'));
+const ChefEarnings = lazy(() => import('./pages/chef/ChefEarnings'));
 const AddTestimonial = lazy(() => import('./pages/user/AddTestimonial'));
 const MyTestimonials = lazy(() => import('./pages/user/MyTestimonials'));
 const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
@@ -73,7 +74,7 @@ const App = () => {
         <FavoritesProvider>
           <SocketProvider>
             <Router>
-              <Toaster 
+              <Toaster
                 position="top-right"
                 toastOptions={{
                   duration: 3000,
@@ -126,82 +127,87 @@ const App = () => {
                             <ChefProfile />
                           </ProtectedRoute>
                         } />
-                      <Route path="/book/:id" element={
-                        <ProtectedRoute>
-                          <BookChef />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/book-chef" element={
-                        <ProtectedRoute>
-                          <BookChef />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/book-chef-ai" element={
-                        <ProtectedRoute>
-                          <UnifiedAIFeatures mode="booking" />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/ai-features" element={
-                        <ProtectedRoute>
-                          <UnifiedAIFeatures mode="dashboard" />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/chef-onboarding" element={
-                        <ProtectedRoute>
-                          <ChefOnboarding />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/profile" element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/favorites" element={
-                        <ProtectedRoute>
-                          <Favorites />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/edit-profile" element={
-                        <ProtectedRoute>
-                          <EditProfile />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/set-password" element={
-                        <ProtectedRoute>
-                          <SetPassword />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/bookings" element={
-                        <ProtectedRoute>
-                          <ViewBookings />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/my-bookings" element={
-                        <ProtectedRoute>
-                          <MyBookings />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/chef/bookings" element={
-                        <ProtectedRoute>
-                          <ChefBookings />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/add-testimonial" element={
-                        <ProtectedRoute>
-                          <AddTestimonial />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/my-testimonials" element={
-                        <ProtectedRoute>
-                          <MyTestimonials />
-                        </ProtectedRoute>
-                      } />
-                      {/* Auth-related routes */}
+                        <Route path="/book/:id" element={
+                          <ProtectedRoute>
+                            <BookChef />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/book-chef" element={
+                          <ProtectedRoute>
+                            <BookChef />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/book-chef-ai" element={
+                          <ProtectedRoute>
+                            <UnifiedAIFeatures mode="booking" />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/ai-features" element={
+                          <ProtectedRoute>
+                            <UnifiedAIFeatures mode="dashboard" />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/chef-onboarding" element={
+                          <ProtectedRoute>
+                            <ChefOnboarding />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/profile" element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/favorites" element={
+                          <ProtectedRoute>
+                            <Favorites />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/edit-profile" element={
+                          <ProtectedRoute>
+                            <EditProfile />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/set-password" element={
+                          <ProtectedRoute>
+                            <SetPassword />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/bookings" element={
+                          <ProtectedRoute>
+                            <ViewBookings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/my-bookings" element={
+                          <ProtectedRoute>
+                            <MyBookings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/chef/bookings" element={
+                          <ProtectedRoute>
+                            <ChefBookings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/chef/earnings" element={
+                          <ProtectedRoute>
+                            <ChefEarnings />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/add-testimonial" element={
+                          <ProtectedRoute>
+                            <AddTestimonial />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/my-testimonials" element={
+                          <ProtectedRoute>
+                            <MyTestimonials />
+                          </ProtectedRoute>
+                        } />
+                        {/* Auth-related routes */}
                         <Route path="/auth-success" element={<AuthSuccess />} />
                         <Route path="/auth-debug" element={<AuthDebug />} />
                         <Route path="/verify-email/:token" element={<VerifyEmail />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
-                    </Routes>
+                      </Routes>
                     </Suspense>
                   </main>
                 </MainLayout>

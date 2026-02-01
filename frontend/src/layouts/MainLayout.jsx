@@ -23,7 +23,7 @@ const MainLayout = ({ children }) => {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
-      
+
       // Handle very small screens (< 360px)
       if (window.innerWidth < 360) {
         document.documentElement.style.setProperty('--mobile-padding', '0.5rem');
@@ -31,36 +31,34 @@ const MainLayout = ({ children }) => {
         document.documentElement.style.setProperty('--mobile-padding', '1rem');
       }
     };
-    
+
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   return (
-  <div className={`flex min-h-screen overflow-x-hidden max-w-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
-    {/* Floating Theme Toggle Button - Always visible */}
-    <React.Suspense fallback={null}>
-      <ThemeToggleButton />
-    </React.Suspense>
+    <div className={`flex min-h-screen overflow-x-hidden max-w-full ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-black'}`}>
+      {/* Floating Theme Toggle Button - Always visible */}
+      <React.Suspense fallback={null}>
+        <ThemeToggleButton />
+      </React.Suspense>
       {/* Sidebar - handles its own responsive behavior */}
       {showSidebar && <Sidebar />}
-{/* import { ThemeToggleButton } from '../components/inputs'; */}
+      {/* import { ThemeToggleButton } from '../components/inputs'; */}
 
       {/* Page content */}
       <div
-        className={`flex flex-col flex-1 transition-all duration-300 overflow-x-hidden max-w-full ${
-          showSidebar ? (isMobile ? 'ml-0' : 'ml-20 mr-20') : ''
-        }`}
+        className={`flex flex-col flex-1 transition-all duration-300 overflow-x-hidden max-w-full ${showSidebar ? (isMobile ? 'ml-0' : 'ml-64') : ''
+          }`}
       >
         {/* Main content with responsive padding and overflow handling */}
-        <main className={`flex-grow w-full overflow-x-hidden max-w-full container-responsive ${
-          showSidebar && isMobile 
+        <main className={`flex-grow w-full overflow-x-hidden max-w-full container-responsive ${showSidebar && isMobile
             ? 'pt-20 px-2 sm:px-4 pb-4' // More top padding for mobile menu button, responsive horizontal padding
-            : showSidebar 
+            : showSidebar
               ? 'p-2 sm:p-4 lg:p-6' // Responsive padding for pages with sidebar
               : 'p-0' // No padding for login/signup pages to allow full control
-        }`}>
+          }`}>
           <div className="w-full max-w-full overflow-x-hidden container-responsive">
             {children}
           </div>

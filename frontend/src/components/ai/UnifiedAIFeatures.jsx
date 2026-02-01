@@ -118,11 +118,37 @@ const AIChefRecommendations = ({ onGetRecommendations }) => {
 // AI Component: Menu Generator
 const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 	const { getClass, classes, isDark } = useThemeAwareStyle();
+	const { token } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const [menu, setMenu] = useState(null);
+	const [usage, setUsage] = useState(null);
+
+	// Fetch usage on mount
+	useEffect(() => {
+		if (token) fetchUsage();
+	}, [token]);
+
+	const fetchUsage = async () => {
+		try {
+			const res = await axios.get(buildApiEndpoint('ai/usage'), {
+				headers: { Authorization: `Bearer ${token}` }
+			});
+			if (res.data.success) {
+				setUsage(res.data.data);
+			}
+		} catch (error) {
+			console.error('Failed to fetch usage:', error);
+		}
+	};
 
 	const generateMenu = async () => {
+		if (!token) {
+			setMenu({ error: 'Please login to generate AI menus.', validation: true });
+			return;
+		}
+
 		setLoading(true);
+		setMenu(null); // Clear previous result or error
 
 		// Validate essential fields
 		if (!eventDetails.cuisine && !eventDetails.serviceType) {
@@ -135,27 +161,44 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 		}
 
 		try {
-
-			const response = await axios.post(buildApiEndpoint('ai/generate-menu'), {
-				eventDetails
-			});
+			const response = await axios.post(
+				buildApiEndpoint('ai/generate-menu'),
+				{ eventDetails },
+				{ headers: { Authorization: `Bearer ${token}` } }
+			);
 
 			const responseData = response.data.data;
 			setMenu(responseData);
+
+			// Update usage from response if available
+			if (response.data.usage) {
+				setUsage(response.data.usage);
+			} else {
+				fetchUsage(); // Fallback fetch
+			}
+
 			onMenuGenerated(responseData);
 		} catch (error) {
 			let errorMessage = 'Sorry, I could not generate a menu right now.';
-			if (error.response?.status === 404) {
-				errorMessage = 'AI service is currently unavailable. Please make sure the backend server is running.';
-			} else if (error.response?.status === 500) {
-				errorMessage = 'AI service error. Please check if the Gemini API key is configured.';
+			let isLimitError = false;
+
+			if (error.response) {
+				if (error.response.status === 403 && error.response.data.code === 'LIMIT_EXCEEDED') {
+					errorMessage = error.response.data.error;
+					isLimitError = true;
+				} else if (error.response.status === 404) {
+					errorMessage = 'AI service is currently unavailable. Please make sure the backend server is running.';
+				} else if (error.response.status === 500) {
+					errorMessage = 'AI service error. Please check if the Gemini API key is configured.';
+				}
 			} else if (error.code === 'ECONNREFUSED') {
 				errorMessage = 'Cannot connect to server. Please make sure the backend is running on localhost:5000 or render.com';
 			}
 
 			setMenu({
 				error: errorMessage,
-				rawResponse: error.response?.data?.error || error.message
+				rawResponse: error.response?.data?.error || error.message,
+				isLimitError
 			});
 		} finally {
 			setLoading(false);
@@ -168,13 +211,26 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 				<h3 className={`text-xl font-bold ${classes.text.heading}`}>
 					AI Menu Generator
 				</h3>
-				<button
-					onClick={generateMenu}
-					disabled={loading}
-					className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
-				>
-					{loading ? 'Creating Menu...' : 'Generate Menu'}
-				</button>
+				<div className="flex items-center space-x-3">
+					{usage && (
+						<div className={`px-3 py-1 rounded-full text-xs font-medium border ${usage.remaining === 0
+								? 'bg-red-100 text-red-700 border-red-200'
+								: 'bg-green-100 text-green-700 border-green-200'
+							}`}>
+							{usage.remaining} / {usage.limit} Free Credits Left
+						</div>
+					)}
+					<button
+						onClick={generateMenu}
+						disabled={loading || (usage && usage.remaining === 0)}
+						className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${usage && usage.remaining === 0
+								? 'bg-gray-400'
+								: 'bg-amber-600 hover:bg-amber-700'
+							}`}
+					>
+						{loading ? 'Creating Menu...' : 'Generate Menu'}
+					</button>
+				</div>
 			</div>
 
 			{loading && (
@@ -187,11 +243,24 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 			{menu && (
 				<div className="space-y-6">
 					{menu.error ? (
-						<div className={`border rounded-lg p-4 ${isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'}`}>
-							<p className={`${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
-								{'Warning: '}{menu.error}
+						<div className={`border rounded-lg p-4 ${menu.isLimitError
+								? 'border-red-200 bg-red-50'
+								: isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'
+							}`}>
+							<p className={`font-medium ${menu.isLimitError ? 'text-red-700' : isDark ? 'text-amber-300' : 'text-amber-800'}`}>
+								{menu.isLimitError ? '🚫 Limit Exceeded' : 'Warning'}
 							</p>
-							{menu.rawResponse && (
+							<p className={`mt-1 ${menu.isLimitError ? 'text-red-600' : isDark ? 'text-amber-400' : 'text-amber-800'}`}>
+								{menu.error}
+							</p>
+
+							{menu.isLimitError && (
+								<button className="mt-3 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-amber-600 hover:to-orange-600 shadow-sm">
+									Upgrade to Premium 💎
+								</button>
+							)}
+
+							{menu.rawResponse && !menu.isLimitError && (
 								<details className="mt-2">
 									<summary className={`text-sm ${isDark ? 'text-amber-400' : 'text-amber-600'} cursor-pointer`}>Show error details</summary>
 									<pre className={`text-xs ${isDark ? 'text-amber-400' : 'text-amber-700'} mt-2 whitespace-pre-wrap`}>
@@ -227,6 +296,11 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 										<li key={index} className={classes.text.primary}>{item}</li>
 									)) || <li className={classes.text.muted}>No desserts available</li>}
 								</ul>
+							</div>
+
+							<div className={`mt-4 pt-4 border-t ${classes.border.default} flex justify-between text-sm ${classes.text.secondary}`}>
+								<span>⏱️ Prep: {menu.preparationTime}</span>
+								<span>💰 Est. Cost: ₹{menu.estimatedCost}</span>
 							</div>
 						</>
 					)}

@@ -5,11 +5,11 @@ import FavoriteButton from '../features/FavoriteButton';
 const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
   return (
     <div className={`group rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border overflow-hidden flex flex-col ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-      <div className="relative">
+      <div className="relative h-48 overflow-hidden">
         <img
           src={chef.profileImage?.url || chef.photo || 'https://images.unsplash.com/photo-1659354219145-dedd2324698e?w=600&auto=format&fit=crop&q=60'}
           alt={chef.name || chef.fullName}
-          className="w-full h-56 object-cover"
+          className="w-full h-full object-cover object-center"
         />
 
         <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t ${isDark ? 'from-gray-800 to-transparent' : 'from-white to-transparent'}`}>
@@ -75,8 +75,8 @@ const ChefCard = ({ chef, onSelect, isDark, getClass, canBook = true }) => {
             chef={chef}
             variant="icon"
             className={`px-4 py-3 rounded-lg shadow-md border transition-all duration-300 transform group-hover:scale-105 ${isDark
-                ? 'bg-gray-700 border-gray-600 text-amber-400 hover:bg-gray-600'
-                : 'bg-white border-gray-200 text-amber-500 hover:bg-amber-50'
+              ? 'bg-gray-700 border-gray-600 text-amber-400 hover:bg-gray-600'
+              : 'bg-white border-gray-200 text-amber-500 hover:bg-amber-50'
               }`}
           />
         </div>

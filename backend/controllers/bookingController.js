@@ -2,6 +2,23 @@ import Booking from '../models/Booking.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 
+// Helper: Check for surge pricing
+const checkSurgePricing = (dateObj) => {
+  const day = dateObj.getDay(); // 0 is Sunday, 6 is Saturday
+  const isWeekend = (day === 0 || day === 5 || day === 6); // Fri, Sat, Sun
+
+  if (isWeekend) {
+    return { multiplier: 1.2, reason: 'Weekend Demand' };
+  }
+
+  // Example Holiday Logic (Hardcoded for demo)
+  // const month = dateObj.getMonth();
+  // const date = dateObj.getDate();
+  // if (month === 11 && (date === 24 || date === 25 || date === 31)) ...
+
+  return { multiplier: 1.0, reason: '' };
+};
+
 // Create a new booking
 export const createBooking = async (req, res) => {
   try {
@@ -16,7 +33,6 @@ export const createBooking = async (req, res) => {
       serviceType,
       specialRequests,
       addOns,
-      totalPrice,
       contactInfo
     } = req.body;
 
@@ -26,7 +42,7 @@ export const createBooking = async (req, res) => {
     const selectedChefId = chef || chefId;
 
     // Validate required fields
-    if (!selectedChefId || !serviceType || !date || !time || !guestCount || !totalPrice) {
+    if (!selectedChefId || !serviceType || !date || !time || !guestCount) { // Removed totalPrice check as we calculate it
       return res.status(400).json({
         success: false,
         message: 'Missing required fields'
@@ -104,6 +120,11 @@ export const createBooking = async (req, res) => {
       });
     }
 
+    // DYNAMIC PRICING LOGIC
+    const surge = checkSurgePricing(new Date(date));
+    const basePrice = chefDoc.pricePerHour * (parseInt(duration) || 2);
+    const finalPrice = Math.round(basePrice * surge.multiplier);
+
     // Create booking
     const booking = new Booking({
       user: req.user.id,
@@ -116,7 +137,10 @@ export const createBooking = async (req, res) => {
       serviceType,
       specialRequests: specialRequests || '',
       addOns: addOns || [],
-      totalPrice: parseFloat(totalPrice),
+      totalPrice: finalPrice,
+      basePrice: basePrice,
+      surgeMultiplier: surge.multiplier,
+      surgeReason: surge.reason,
       contactInfo: contactInfo || {},
       status: 'pending',
       paymentStatus: 'pending',
@@ -504,6 +528,40 @@ export const getBookingStats = async (req, res) => {
       message: 'Internal server error',
       error: error.message
     });
+  }
+};
+
+// Get booking price quote (Dynamic Pricing)
+export const getBookingQuote = async (req, res) => {
+  try {
+    const { chefId, date, duration } = req.body;
+
+    if (!chefId || !date || !duration) {
+      return res.status(400).json({ success: false, message: 'Missing fields' });
+    }
+
+    const chef = await Chef.findById(chefId);
+    if (!chef) {
+      return res.status(404).json({ success: false, message: 'Chef not found' });
+    }
+
+    const surge = checkSurgePricing(new Date(date));
+    const basePrice = chef.pricePerHour * parseInt(duration);
+    const finalPrice = Math.round(basePrice * surge.multiplier);
+
+    res.json({
+      success: true,
+      data: {
+        basePrice,
+        finalPrice,
+        surgeMultiplier: surge.multiplier,
+        surgeReason: surge.reason,
+        currency: 'INR'
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to get quote', error: error.message });
   }
 };
 
