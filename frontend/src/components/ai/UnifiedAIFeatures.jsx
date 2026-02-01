@@ -214,8 +214,8 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 				<div className="flex items-center space-x-3">
 					{usage && (
 						<div className={`px-3 py-1 rounded-full text-xs font-medium border ${usage.remaining === 0
-								? 'bg-red-100 text-red-700 border-red-200'
-								: 'bg-green-100 text-green-700 border-green-200'
+							? 'bg-red-100 text-red-700 border-red-200'
+							: 'bg-green-100 text-green-700 border-green-200'
 							}`}>
 							{usage.remaining} / {usage.limit} Free Credits Left
 						</div>
@@ -224,8 +224,8 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 						onClick={generateMenu}
 						disabled={loading || (usage && usage.remaining === 0)}
 						className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${usage && usage.remaining === 0
-								? 'bg-gray-400'
-								: 'bg-amber-600 hover:bg-amber-700'
+							? 'bg-gray-400'
+							: 'bg-amber-600 hover:bg-amber-700'
 							}`}
 					>
 						{loading ? 'Creating Menu...' : 'Generate Menu'}
@@ -244,8 +244,8 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 				<div className="space-y-6">
 					{menu.error ? (
 						<div className={`border rounded-lg p-4 ${menu.isLimitError
-								? 'border-red-200 bg-red-50'
-								: isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'
+							? 'border-red-200 bg-red-50'
+							: isDark ? 'border-amber-800/30 bg-amber-900/20' : 'border-amber-200 bg-amber-50'
 							}`}>
 							<p className={`font-medium ${menu.isLimitError ? 'text-red-700' : isDark ? 'text-amber-300' : 'text-amber-800'}`}>
 								{menu.isLimitError ? '🚫 Limit Exceeded' : 'Warning'}
@@ -449,7 +449,7 @@ const AIChatAssistant = () => {
 										? 'bg-gray-800 border border-gray-700 rounded-tl-none'
 										: 'bg-white border border-stone-200 rounded-tl-none'
 									}`}>
-									<p className={`text-sm leading-relaxed ${message.type === 'user' ? 'text-white' : classes.text.primary}`}>
+									<p className={`text-sm leading-relaxed ${message.type === 'user' ? 'text-white' : classes.text.primary} ${message.type === 'ai' ? 'whitespace-pre-line' : ''}`}>
 										{message.content}
 									</p>
 								</div>

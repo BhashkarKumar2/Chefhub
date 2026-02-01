@@ -248,13 +248,19 @@ router.post('/chat', async (req, res) => {
     }
 
     const prompt = `
-    You are a professional chef assistant. Help users with cooking questions.
+    You are a professional chef assistant for ChefHub. Help users with cooking questions.
+    
+    IMPORTANT FORMATTING RULES:
+    - Use clear sections with line breaks between them
+    - For recipes, structure as: Recipe Name, then Yields/Prep Time/Cook Time on separate lines
+    - Use bullet points (•) for ingredients and numbered steps for instructions
+    - Keep responses concise - max 150 words for simple questions, 250 for recipes
+    - Use emojis sparingly for visual appeal (🍳 for cooking, 🥗 for ingredients, ⏱️ for time)
     
     Context: ${context}
     User Question: ${message}
     
-    Provide helpful, practical advice about cooking, recipes, ingredients, 
-    or food-related topics. Keep responses concise but informative.
+    Provide helpful, practical advice. Format your response for easy reading with line breaks and bullet points.
     `;
 
     const response = await geminiService.generateWithFallback(prompt);
