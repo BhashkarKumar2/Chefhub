@@ -67,22 +67,23 @@ testimonialSchema.index({ user: 1, createdAt: -1 });
 testimonialSchema.index({ chef: 1, isApproved: 1 });
 testimonialSchema.index({ booking: 1 }, { unique: true, sparse: true }); // Prevent duplicate reviews per booking
 testimonialSchema.index({ isApproved: 1, isFeatured: 1, createdAt: -1 });
+testimonialSchema.index({ isPublic: 1, isFeatured: -1, createdAt: -1 }); // Optimized for home page query
 
 // Post-save hook to update chef rating when testimonial is created or updated
-testimonialSchema.post('save', async function() {
+testimonialSchema.post('save', async function () {
   if (this.chef && this.isApproved) {
     try {
       const Chef = mongoose.model('Chef');
-      
+
       // Aggregate all approved testimonials for this chef
       const stats = await mongoose.model('Testimonial').aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             chef: this.chef,
-            isApproved: true 
-          } 
+            isApproved: true
+          }
         },
-        { 
+        {
           $group: {
             _id: null,
             averageRating: { $avg: '$rating' },
@@ -90,7 +91,7 @@ testimonialSchema.post('save', async function() {
           }
         }
       ]);
-      
+
       if (stats.length > 0) {
         await Chef.findByIdAndUpdate(this.chef, {
           averageRating: Math.round(stats[0].averageRating * 10) / 10, // Round to 1 decimal
@@ -104,20 +105,20 @@ testimonialSchema.post('save', async function() {
 });
 
 // Post-remove hook to update chef rating when testimonial is deleted
-testimonialSchema.post('findOneAndDelete', async function(doc) {
+testimonialSchema.post('findOneAndDelete', async function (doc) {
   if (doc && doc.chef && doc.isApproved) {
     try {
       const Chef = mongoose.model('Chef');
-      
+
       // Recalculate ratings after deletion
       const stats = await mongoose.model('Testimonial').aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             chef: doc.chef,
-            isApproved: true 
-          } 
+            isApproved: true
+          }
         },
-        { 
+        {
           $group: {
             _id: null,
             averageRating: { $avg: '$rating' },
@@ -125,7 +126,7 @@ testimonialSchema.post('findOneAndDelete', async function(doc) {
           }
         }
       ]);
-      
+
       if (stats.length > 0) {
         await Chef.findByIdAndUpdate(doc.chef, {
           averageRating: Math.round(stats[0].averageRating * 10) / 10,

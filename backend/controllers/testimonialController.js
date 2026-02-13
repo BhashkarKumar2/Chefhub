@@ -2,6 +2,10 @@ import Testimonial from '../models/Testimonial.js';
 import User from '../models/User.js';
 import Chef from '../models/Chef.js';
 import Booking from '../models/Booking.js';
+import redis from '../config/redis.js';
+
+const CACHE_KEY_PREFIX = 'testimonials:public';
+const CACHE_TTL = 3600; // 1 hour
 
 // Create a new testimonial
 export const createTestimonial = async (req, res) => {
@@ -11,8 +15,8 @@ export const createTestimonial = async (req, res) => {
 
     // Validate required fields
     if (!rating || !testimonial) {
-      return res.status(400).json({ 
-        message: 'Rating and testimonial text are required' 
+      return res.status(400).json({
+        message: 'Rating and testimonial text are required'
       });
     }
 
@@ -28,32 +32,32 @@ export const createTestimonial = async (req, res) => {
     // If bookingId is provided, validate and get chef from booking
     if (bookingId) {
       booking = await Booking.findById(bookingId).populate('chef');
-      
+
       if (!booking) {
         return res.status(404).json({ message: 'Booking not found' });
       }
-      
+
       // Verify the booking belongs to the user
       if (booking.user.toString() !== userId.toString()) {
         return res.status(403).json({ message: 'Unauthorized to review this booking' });
       }
-      
+
       // Check if booking is eligible for review (completed and within 48 hours)
       if (!booking.isReviewEligible()) {
-        const reason = booking.status !== 'completed' 
+        const reason = booking.status !== 'completed'
           ? 'Only completed bookings can be reviewed'
           : 'Review window expired (48 hours after completion)';
         return res.status(400).json({ message: reason });
       }
-      
+
       // Check for duplicate review
       const existingReview = await Testimonial.findOne({ booking: bookingId });
       if (existingReview) {
-        return res.status(400).json({ 
-          message: 'You have already reviewed this booking' 
+        return res.status(400).json({
+          message: 'You have already reviewed this booking'
         });
       }
-      
+
       // Auto-populate chefId from booking
       finalChefId = booking.chef._id || booking.chef;
     }
@@ -65,8 +69,8 @@ export const createTestimonial = async (req, res) => {
         return res.status(404).json({ message: 'Chef not found' });
       }
     } else {
-      return res.status(400).json({ 
-        message: 'Chef ID is required' 
+      return res.status(400).json({
+        message: 'Chef ID is required'
       });
     }
 
@@ -92,31 +96,43 @@ export const createTestimonial = async (req, res) => {
 
     await newTestimonial.save();
 
+    // Clear public cache
+    await redis.del(`${CACHE_KEY_PREFIX}:default`);
+
+    // Pattern delete is tricky with ioredis without scan, simple clear of main list is good for now
+    // For more robust solution, we'd scan and delete all 'testimonials:public:*'
+
+    // Clear wildcard cache (simplified approach - clear common keys)
+    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+
     res.status(201).json({
       message: 'Testimonial published successfully!',
       testimonial: newTestimonial
     });
   } catch (error) {
     console.error('Create testimonial error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: errors[0] || 'Validation failed',
-        errors 
+        errors
       });
     }
-    
+
     // Handle duplicate key error for booking
     if (error.code === 11000 && error.keyPattern?.booking) {
-      return res.status(400).json({ 
-        message: 'You have already reviewed this booking' 
+      return res.status(400).json({
+        message: 'You have already reviewed this booking'
       });
     }
-    
-    res.status(500).json({ 
-      message: 'Failed to submit testimonial', 
-      error: error.message 
+
+    res.status(500).json({
+      message: 'Failed to submit testimonial',
+      error: error.message
     });
   }
 };
@@ -125,29 +141,43 @@ export const createTestimonial = async (req, res) => {
 export const getTestimonials = async (req, res) => {
   try {
     const { featured, limit = 50, chef } = req.query;
-    
+
     const filter = { isPublic: true };
-    
+
     if (featured === 'true') {
       filter.isFeatured = true;
     }
-    
+
     if (chef) {
       filter.chef = chef;
+    }
+
+    const limitNum = Number(limit);
+
+    // Generate cache key based on query params
+    const cacheKey = `${CACHE_KEY_PREFIX}:${JSON.stringify({ featured, limit: limitNum, chef })}`;
+
+    // Try to get from cache
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return res.json(JSON.parse(cachedData));
     }
 
     const testimonials = await Testimonial.find(filter)
       .populate('chef', 'name specialty profileImage')
       .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(Number(limit))
+      .limit(limitNum)
       .lean();
+
+    // Cache the result
+    await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(testimonials));
 
     res.json(testimonials);
   } catch (error) {
     console.error('Get testimonials error:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch testimonials', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Failed to fetch testimonials',
+      error: error.message
     });
   }
 };
@@ -169,9 +199,9 @@ export const getUserTestimonials = async (req, res) => {
     });
   } catch (error) {
     console.error('Get user testimonials error:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch your testimonials', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Failed to fetch your testimonials',
+      error: error.message
     });
   }
 };
@@ -194,9 +224,9 @@ export const getTestimonialById = async (req, res) => {
     res.json(testimonial);
   } catch (error) {
     console.error('Get testimonial error:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch testimonial', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Failed to fetch testimonial',
+      error: error.message
     });
   }
 };
@@ -209,25 +239,25 @@ export const checkReviewEligibility = async (req, res) => {
 
     // Find the booking
     const booking = await Booking.findById(bookingId).populate('chef', 'name');
-    
+
     if (!booking) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: 'Booking not found' 
+        message: 'Booking not found'
       });
     }
 
     // Verify ownership
     if (booking.user.toString() !== userId.toString()) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: false,
-        message: 'Unauthorized to access this booking' 
+        message: 'Unauthorized to access this booking'
       });
     }
 
     // Check if review already exists
     const existingReview = await Testimonial.findOne({ booking: bookingId });
-    
+
     if (existingReview) {
       return res.json({
         success: true,
@@ -240,10 +270,10 @@ export const checkReviewEligibility = async (req, res) => {
 
     // Check review eligibility
     const isEligible = booking.isReviewEligible();
-    
+
     let reason = '';
     let expiresAt = null;
-    
+
     if (booking.status !== 'completed') {
       reason = 'Booking must be completed before reviewing';
     } else if (!booking.completedAt) {
@@ -275,10 +305,10 @@ export const checkReviewEligibility = async (req, res) => {
     });
   } catch (error) {
     console.error('Check review eligibility error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Failed to check review eligibility', 
-      error: error.message 
+      message: 'Failed to check review eligibility',
+      error: error.message
     });
   }
 };
@@ -304,11 +334,17 @@ export const updateTestimonial = async (req, res) => {
     // Update fields
     if (rating) existingTestimonial.rating = Number(rating);
     if (testimonial) existingTestimonial.testimonial = testimonial;
-    
+
     // Keep testimonial approved - no admin review needed
     existingTestimonial.isApproved = true;
 
     await existingTestimonial.save();
+
+    // Clear cache
+    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
 
     res.json({
       message: 'Testimonial updated successfully!',
@@ -316,18 +352,18 @@ export const updateTestimonial = async (req, res) => {
     });
   } catch (error) {
     console.error('Update testimonial error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(e => e.message);
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: errors[0] || 'Validation failed',
-        errors 
+        errors
       });
     }
-    
-    res.status(500).json({ 
-      message: 'Failed to update testimonial', 
-      error: error.message 
+
+    res.status(500).json({
+      message: 'Failed to update testimonial',
+      error: error.message
     });
   }
 };
@@ -351,12 +387,18 @@ export const deleteTestimonial = async (req, res) => {
 
     await Testimonial.findByIdAndDelete(id);
 
+    // Clear cache
+    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+
     res.json({ message: 'Testimonial deleted successfully' });
   } catch (error) {
     console.error('Delete testimonial error:', error);
-    res.status(500).json({ 
-      message: 'Failed to delete testimonial', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Failed to delete testimonial',
+      error: error.message
     });
   }
 };
@@ -380,15 +422,21 @@ export const approveTestimonial = async (req, res) => {
 
     await testimonial.save();
 
+    // Clear cache
+    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+
     res.json({
       message: 'Testimonial approved successfully',
       testimonial
     });
   } catch (error) {
     console.error('Approve testimonial error:', error);
-    res.status(500).json({ 
-      message: 'Failed to approve testimonial', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Failed to approve testimonial',
+      error: error.message
     });
   }
 };
