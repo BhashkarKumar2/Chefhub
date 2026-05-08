@@ -433,6 +433,93 @@ class GeminiService {
     }
   }
 
+  /**
+   * AI-NATIVE FEATURE 1: Snap & Cook (Vision)
+   * Identify ingredients from a photo
+   */
+  async identifyIngredientsFromImage(base64Image, mimeType) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
+    }
+
+    try {
+      const model = this.genAI.getGenerativeModel({ model: "models/gemini-2.0-flash" }); // Vision capable
+
+      const prompt = "Identify all the food ingredients and kitchen items you see in this photo. Return a clean JSON list of strings.";
+
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: base64Image,
+            mimeType: mimeType
+          }
+        }
+      ]);
+
+      const response = await result.response;
+      return this.parseJSONResponse(response.text());
+    } catch (error) {
+      console.error('[Gemini Vision] Error:', error);
+      throw new Error('Failed to identify ingredients');
+    }
+  }
+
+  /**
+   * AI-NATIVE FEATURE 2: Agentic Booking Parser
+   * Parse natural language into booking details
+   */
+  async parseBookingIntent(userInput) {
+    const prompt = `
+    You are an expert intent parser. Extract booking details from this user sentence.
+    
+    User Sentence: "${userInput}"
+    
+    Return EXACTLY this JSON format:
+    {
+      "date": "ISO format date or 'not_found'",
+      "time": "HH:mm format or 'not_found'",
+      "guestCount": number or 0,
+      "serviceType": "birthday/marriage/daily or 'not_found'",
+      "budget": number or 0,
+      "duration": number or 2
+    }
+    
+    Today's date is ${new Date().toLocaleDateString()}.
+    Only return the JSON.
+    `;
+
+    try {
+      const response = await this.generateWithFallback(prompt);
+      return this.parseJSONResponse(response.text());
+    } catch (error) {
+      console.error('[Gemini Parser] Error:', error);
+      throw new Error('Failed to parse booking intent');
+    }
+  }
+
+  /**
+   * AI-NATIVE FEATURE 3: Culinary Memory
+   * Extract key learning notes from interaction
+   */
+  async extractCulinaryNotes(interactionText) {
+    const prompt = `
+    Extract tiny, one-sentence learning notes about the user's culinary preferences from this interaction.
+    Examples: "User prefers North Indian food", "User is allergic to nuts", "User loves spicy food".
+    
+    Interaction: "${interactionText}"
+    
+    Return a JSON array of strings. If nothing new learned, return [].
+    `;
+
+    try {
+      const response = await this.generateWithFallback(prompt);
+      return this.parseJSONResponse(response.text());
+    } catch (error) {
+      return [];
+    }
+  }
+
   // Generate meal planning suggestions
   async generateMealPlan(preferences) {
     const prompt = `

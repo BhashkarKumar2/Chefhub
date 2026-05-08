@@ -2,6 +2,21 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { verifyFirebaseToken, getFirebaseUserByPhone } from '../services/smsService.js';
+import geminiService from '../services/geminiService.js';
+
+// AI Utility: Learn and update user preferences over time
+export const learnUserPreferences = async (userId, newInteraction) => {
+  try {
+    const notes = await geminiService.extractCulinaryNotes(newInteraction);
+    if (notes && notes.length > 0) {
+      await User.findByIdAndUpdate(userId, {
+        $push: { aiNotes: { $each: notes } }
+      });
+    }
+  } catch (error) {
+    console.error('[AI Memory] Failed to update user preferences:', error);
+  }
+};
 
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
