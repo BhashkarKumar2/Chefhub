@@ -319,7 +319,7 @@ export const resendVerificationEmail = async (req, res) => {
     }
 
     // Generate new OTP (6-digit, 10-minute expiry)
-    const verificationOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationOTP = crypto.randomInt(100000, 1000000).toString();
     const hashedOTP = crypto.createHash('sha256').update(verificationOTP).digest('hex');
 
     // Update pending registration with new OTP (Redis or in-memory)
