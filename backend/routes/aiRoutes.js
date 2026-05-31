@@ -350,6 +350,3 @@ router.post('/chat', verifyToken, async (req, res) => {
 });
 
 export default router;
-
-
-export default router;

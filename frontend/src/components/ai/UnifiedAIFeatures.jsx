@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 
 // AI Component: Personalized Chef Recommendations
 const AIChefRecommendations = ({ onGetRecommendations }) => {
-	const { getClass, classes, isDark } = useThemeAwareStyle();
+	const { classes, isDark } = useThemeAwareStyle();
 	const { token } = useAuth();
 	const [loading, setLoading] = useState(true);
 	const [recommendations, setRecommendations] = useState(null);
@@ -117,7 +117,7 @@ const AIChefRecommendations = ({ onGetRecommendations }) => {
 
 // AI Component: Menu Generator
 const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
-	const { getClass, classes, isDark } = useThemeAwareStyle();
+	const { classes, isDark } = useThemeAwareStyle();
 	const { token } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const [menu, setMenu] = useState(null);
@@ -310,10 +310,194 @@ const AIMenuGenerator = ({ eventDetails, onMenuGenerated }) => {
 	);
 };
 
+// AI-Native Component: Snap & Cook ingredient detection
+const SnapAndCook = () => {
+	const { classes, isDark } = useThemeAwareStyle();
+	const { token } = useAuth();
+	const [image, setImage] = useState(null);
+	const [ingredients, setIngredients] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+
+	const identifyIngredients = async () => {
+		if (!token) {
+			setError('Please login to use Snap & Cook.');
+			return;
+		}
+		if (!image) {
+			setError('Please choose a food or kitchen image first.');
+			return;
+		}
+
+		setLoading(true);
+		setError('');
+		setIngredients([]);
+
+		try {
+			const formData = new FormData();
+			formData.append('image', image);
+
+			const response = await axios.post(buildApiEndpoint('ai/snap-and-cook'), formData, {
+				headers: {
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'multipart/form-data'
+				}
+			});
+
+			setIngredients(response.data.data.ingredients || []);
+		} catch (error) {
+			setError(error.response?.data?.message || 'Could not identify ingredients from this image.');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
+			<div className="flex items-start justify-between gap-4 mb-4">
+				<div>
+					<h3 className={`text-xl font-bold ${classes.text.heading}`}>Snap & Cook</h3>
+					<p className={`text-sm ${classes.text.secondary}`}>Upload a kitchen photo and let AI identify ingredients.</p>
+				</div>
+				<button
+					onClick={identifyIngredients}
+					disabled={loading}
+					className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
+				>
+					{loading ? 'Scanning...' : 'Scan Image'}
+				</button>
+			</div>
+
+			<input
+				type="file"
+				accept="image/*"
+				onChange={(e) => {
+					setImage(e.target.files?.[0] || null);
+					setError('');
+					setIngredients([]);
+				}}
+				className={`block w-full text-sm ${classes.text.secondary} file:mr-4 file:rounded-lg file:border-0 file:bg-emerald-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-emerald-700`}
+			/>
+
+			{error && (
+				<div className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>
+			)}
+
+			{ingredients.length > 0 && (
+				<div className="mt-4 flex flex-wrap gap-2">
+					{ingredients.map((ingredient, index) => (
+						<span
+							key={`${ingredient}-${index}`}
+							className={`rounded-full px-3 py-1 text-sm ${isDark ? 'bg-emerald-900/40 text-emerald-200' : 'bg-emerald-100 text-emerald-800'}`}
+						>
+							{ingredient}
+						</span>
+					))}
+				</div>
+			)}
+		</div>
+	);
+};
+
+// AI-Native Component: natural language booking parser
+const BookingIntentParser = ({ onApply }) => {
+	const { classes, isDark } = useThemeAwareStyle();
+	const { token } = useAuth();
+	const [text, setText] = useState('');
+	const [parsed, setParsed] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+
+	const parseIntent = async () => {
+		if (!token) {
+			setError('Please login to use the booking parser.');
+			return;
+		}
+		if (!text.trim()) {
+			setError('Describe the booking you want to plan.');
+			return;
+		}
+
+		setLoading(true);
+		setError('');
+		setParsed(null);
+
+		try {
+			const response = await axios.post(
+				buildApiEndpoint('ai/parse-booking-intent'),
+				{ text },
+				{ headers: { Authorization: `Bearer ${token}` } }
+			);
+			setParsed(response.data.data);
+		} catch (error) {
+			setError(error.response?.data?.message || 'Could not parse this booking request.');
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const applyParsedDetails = () => {
+		if (!parsed) return;
+		onApply({
+			serviceType: parsed.serviceType && parsed.serviceType !== 'not_found' ? parsed.serviceType : '',
+			guests: parsed.guestCount ? String(parsed.guestCount) : '',
+			budget: parsed.budget ? String(parsed.budget) : ''
+		});
+	};
+
+	return (
+		<div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
+			<div className="flex items-start justify-between gap-4 mb-4">
+				<div>
+					<h3 className={`text-xl font-bold ${classes.text.heading}`}>Agentic Booking Parser</h3>
+					<p className={`text-sm ${classes.text.secondary}`}>Describe your event in plain English and apply the details to menu planning.</p>
+				</div>
+				<button
+					onClick={parseIntent}
+					disabled={loading}
+					className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
+				>
+					{loading ? 'Parsing...' : 'Parse'}
+				</button>
+			</div>
+
+			<textarea
+				value={text}
+				onChange={(e) => setText(e.target.value)}
+				placeholder="Example: I need a chef tomorrow evening for a birthday dinner for 12 guests under 8000 rupees."
+				className={`w-full min-h-24 px-3 py-2 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
+			/>
+
+			{error && (
+				<div className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>
+			)}
+
+			{parsed && (
+				<div className={`mt-4 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800' : 'bg-white'} p-4`}>
+					<div className="grid grid-cols-2 gap-3 text-sm">
+						{Object.entries(parsed).map(([key, value]) => (
+							<div key={key}>
+								<div className={classes.text.muted}>{key}</div>
+								<div className={`font-medium ${classes.text.primary}`}>{String(value)}</div>
+							</div>
+						))}
+					</div>
+					<button
+						onClick={applyParsedDetails}
+						className="mt-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium"
+					>
+						Apply to Menu Details
+					</button>
+				</div>
+			)}
+		</div>
+	);
+};
+
 // AI Component: Chat Assistant
 const AIChatAssistant = () => {
-	const { getClass, classes, isDark } = useThemeAwareStyle();
-	const { user } = useAuth();
+	const { classes, isDark } = useThemeAwareStyle();
+	const { user, token } = useAuth();
 	const [messages, setMessages] = useState([]);
 	const [input, setInput] = useState('');
 	const [loading, setLoading] = useState(false);
@@ -321,6 +505,14 @@ const AIChatAssistant = () => {
 	const sendMessage = async (e) => {
 		e.preventDefault();
 		if (!input.trim()) return;
+		if (!token) {
+			setMessages(prev => [...prev, {
+				type: 'ai',
+				content: 'Please login to use the AI chef assistant.',
+				timestamp: new Date()
+			}]);
+			return;
+		}
 
 		const userMessage = { type: 'user', content: input, timestamp: new Date() };
 		setMessages(prev => [...prev, userMessage]);
@@ -328,10 +520,16 @@ const AIChatAssistant = () => {
 		setLoading(true);
 
 		try {
-			const response = await axios.post(buildApiEndpoint('ai/chat'), {
-				message: input,
-				context: messages.slice(-5).map(m => `${m.type}: ${m.content}`).join('\n')
-			});
+			const response = await axios.post(
+				buildApiEndpoint('ai/chat'),
+				{
+					message: input,
+					context: messages.slice(-5).map(m => `${m.type}: ${m.content}`).join('\n')
+				},
+				{
+					headers: { Authorization: `Bearer ${token}` }
+				}
+			);
 
 			const aiMessage = {
 				type: 'ai',
@@ -519,10 +717,8 @@ const AIChatAssistant = () => {
 };
 
 // Main Unified AI Features Component
-const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
-	const { getClass, classes, isDark } = useThemeAwareStyle();
-	// Only dashboard mode now - removed booking workflow
-	const [activeMode, setActiveMode] = useState('dashboard');
+const UnifiedAIFeatures = () => {
+	const { classes, isDark } = useThemeAwareStyle();
 
 	// Define project-specific data
 	// Define project-specific data
@@ -533,12 +729,6 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 		'Kerala', 'Rajasthani', 'Hyderabadi'
 	]);
 
-	const [occasionOptions, setOccasionOptions] = useState([
-		'Birthday Party', 'Anniversary', 'Wedding Reception',
-		'Corporate Event', 'Dinner Party', 'Date Night',
-		'Family Gathering', 'Festival Celebration', 'House Party'
-	]);
-
 	useEffect(() => {
 		const fetchMetadata = async () => {
 			try {
@@ -546,9 +736,6 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 				if (response.data.success) {
 					if (response.data.cuisines.length > 0) {
 						setCuisineOptions(response.data.cuisines);
-					}
-					if (response.data.occasions && response.data.occasions.length > 0) {
-						setOccasionOptions(response.data.occasions);
 					}
 				}
 			} catch (error) {
@@ -576,15 +763,6 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 		{ id: 'corporate', name: 'Corporate Events', description: 'Business meetings and corporate functions' }
 	];
 
-	// State for user preferences and event details
-	const [userPreferences, setUserPreferences] = useState({
-		cuisine: '',
-		budget: '',
-		occasion: '',
-		guests: '',
-		dietary: ''
-	});
-
 	const [eventDetails, setEventDetails] = useState({
 		serviceType: '',
 		cuisine: '',
@@ -594,10 +772,17 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 		dietary: ''
 	});
 
-	const handleRecommendationsReceived = (recommendations) => {
+	const handleRecommendationsReceived = () => {
 	};
 
-	const handleMenuGenerated = (menu) => {
+	const handleMenuGenerated = () => {
+	};
+
+	const handleApplyBookingIntent = (details) => {
+		setEventDetails(prev => ({
+			...prev,
+			...Object.fromEntries(Object.entries(details).filter(([, value]) => value !== ''))
+		}));
 	};
 
 	return (
@@ -626,6 +811,10 @@ const UnifiedAIFeatures = ({ mode = 'dashboard' }) => {
 							<AIChefRecommendations
 								onGetRecommendations={handleRecommendationsReceived}
 							/>
+							<div className="space-y-8 mt-8">
+								<BookingIntentParser onApply={handleApplyBookingIntent} />
+								<SnapAndCook />
+							</div>
 						</div>
 
 
