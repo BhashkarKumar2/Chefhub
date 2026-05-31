@@ -106,6 +106,12 @@ const userSchema = new mongoose.Schema({
   isPhoneVerified: { type: Boolean, default: false },
   isEmailVerified: { type: Boolean, default: false },
 
+  // AI-Native features
+  aiNotes: {
+    type: [String],
+    default: []
+  },
+
   // Password reset fields
   resetPasswordToken: {
     type: String,

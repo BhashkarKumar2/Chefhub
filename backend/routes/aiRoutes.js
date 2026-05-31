@@ -1,12 +1,54 @@
 import express from 'express';
+import multer from 'multer';
 import geminiService from '../services/geminiService.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import AIUsage from '../models/AIUsage.js';
 import { verifyToken } from '../auth/authMiddleware.js';
+import { learnUserPreferences } from '../controllers/authController.js';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+// AI-NATIVE FEATURE 1: Snap & Cook
+router.post('/snap-and-cook', verifyToken, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Image is required' });
+    }
+
+    const base64Image = req.file.buffer.toString('base64');
+    const ingredients = await geminiService.identifyIngredientsFromImage(base64Image, req.file.mimetype);
+
+    // Update memory: User has these ingredients
+    await learnUserPreferences(req.user.id, `User has these ingredients in their kitchen: ${ingredients.join(', ')}`);
+
+    res.json({
+      success: true,
+      data: { ingredients }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// AI-NATIVE FEATURE 2: Agentic Booking Parser
+router.post('/parse-booking-intent', verifyToken, async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ success: false, message: 'Text is required' });
+
+    const bookingDetails = await geminiService.parseBookingIntent(text);
+
+    res.json({
+      success: true,
+      data: bookingDetails
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
 
 // Get AI-powered chef recommendations
 router.post('/chef-recommendations', verifyToken, async (req, res) => {
@@ -17,15 +59,19 @@ router.post('/chef-recommendations', verifyToken, async (req, res) => {
     }
 
     const userProfile = await User.findById(req.user.id);
+    
+    // ENHANCEMENT: Inject AI Notes (Memory) into the recommendation context
+    const enrichedProfile = userProfile.toObject();
+    if (userProfile.aiNotes && userProfile.aiNotes.length > 0) {
+      enrichedProfile.bio = `${enrichedProfile.bio || ''}\n\nAdditional learned preferences: ${userProfile.aiNotes.join('. ')}`;
+    }
 
     // Get available chefs (can still filter by basic active status)
     let chefQuery = { isActive: true };
     const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations supportedOccasions');
 
-
-
     const recommendations = await geminiService.getChefRecommendations(
-      userProfile,
+      enrichedProfile,
       availableChefs
     );
 
@@ -226,7 +272,7 @@ router.post('/meal-plan', verifyToken, async (req, res) => {
 });
 
 // Chat with AI chef assistant
-router.post('/chat', async (req, res) => {
+router.post('/chat', verifyToken, async (req, res) => {
   try {
     const { message, context = '' } = req.body;
 
@@ -246,6 +292,9 @@ router.post('/chat', async (req, res) => {
         error: 'GEMINI_API_KEY not found'
       });
     }
+
+    // AI-NATIVE FEATURE 3: UPDATE MEMORY ASYNCHRONOUSLY
+    learnUserPreferences(req.user.id, `User asked: ${message}`);
 
     const prompt = `
     You are a professional chef assistant for ChefHub. Help users with cooking questions provided between [QUESTION START] and [QUESTION END].
@@ -299,5 +348,8 @@ router.post('/chat', async (req, res) => {
     });
   }
 });
+
+export default router;
+
 
 export default router;
