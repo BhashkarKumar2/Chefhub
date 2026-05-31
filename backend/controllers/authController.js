@@ -10,7 +10,15 @@ export const learnUserPreferences = async (userId, newInteraction) => {
     const notes = await geminiService.extractCulinaryNotes(newInteraction);
     if (notes && notes.length > 0) {
       await User.findByIdAndUpdate(userId, {
-        $push: { aiNotes: { $each: notes } }
+        $push: {
+          aiNotes: {
+            $each: notes.map(note => ({
+              text: String(note).trim().slice(0, 160),
+              category: 'preference',
+              learnedAt: new Date()
+            }))
+          }
+        }
       });
     }
   } catch (error) {

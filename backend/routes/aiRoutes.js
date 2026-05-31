@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import geminiService from '../services/geminiService.js';
+import bookingAgentService, { validateAgentImage } from '../services/bookingAgentService.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
@@ -14,8 +15,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 // AI-NATIVE FEATURE 1: Snap & Cook
 router.post('/snap-and-cook', verifyToken, upload.single('image'), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Image is required' });
+    const imageValidation = validateAgentImage(req.file);
+    if (!imageValidation.valid) {
+      return res.status(400).json({ success: false, message: imageValidation.message });
     }
 
     const base64Image = req.file.buffer.toString('base64');
@@ -50,6 +52,28 @@ router.post('/parse-booking-intent', verifyToken, async (req, res) => {
   }
 });
 
+// Industry-grade booking agent: planner loop, tools, memory, observability, and confirmation gate
+router.post('/booking-agent', verifyToken, async (req, res) => {
+  try {
+    const { message, context = {}, confirmDraft = false } = req.body;
+    const result = await bookingAgentService.planBooking({
+      userId: req.user.id,
+      message,
+      context,
+      confirmDraft
+    });
+
+    res.status(result.status === 'rejected' ? 400 : 200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      status: 'error',
+      message: 'Failed to run booking agent',
+      error: error.message
+    });
+  }
+});
+
 // Get AI-powered chef recommendations
 router.post('/chef-recommendations', verifyToken, async (req, res) => {
   try {
@@ -63,7 +87,10 @@ router.post('/chef-recommendations', verifyToken, async (req, res) => {
     // ENHANCEMENT: Inject AI Notes (Memory) into the recommendation context
     const enrichedProfile = userProfile.toObject();
     if (userProfile.aiNotes && userProfile.aiNotes.length > 0) {
-      enrichedProfile.bio = `${enrichedProfile.bio || ''}\n\nAdditional learned preferences: ${userProfile.aiNotes.join('. ')}`;
+      const memoryNotes = userProfile.aiNotes
+        .map(note => typeof note === 'string' ? note : note.text)
+        .filter(Boolean);
+      enrichedProfile.bio = `${enrichedProfile.bio || ''}\n\nAdditional learned preferences: ${memoryNotes.join('. ')}`;
     }
 
     // Get available chefs (can still filter by basic active status)

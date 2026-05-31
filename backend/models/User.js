@@ -108,7 +108,22 @@ const userSchema = new mongoose.Schema({
 
   // AI-Native features
   aiNotes: {
-    type: [String],
+    type: [{
+      text: {
+        type: String,
+        trim: true,
+        maxlength: [160, 'AI memory note cannot exceed 160 characters']
+      },
+      category: {
+        type: String,
+        enum: ['preference', 'allergy', 'budget', 'inventory', 'location', 'occasion'],
+        default: 'preference'
+      },
+      learnedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     default: []
   },
 

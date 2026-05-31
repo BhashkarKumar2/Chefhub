@@ -494,6 +494,134 @@ const BookingIntentParser = ({ onApply }) => {
 	);
 };
 
+// AI-Native Component: full booking planner with confirmation gate
+const BookingAgentPlanner = () => {
+	const { classes, isDark } = useThemeAwareStyle();
+	const { token } = useAuth();
+	const [message, setMessage] = useState('');
+	const [result, setResult] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+
+	const runAgent = async (confirmDraft = false) => {
+		if (!token) {
+			setError('Please login to use the booking agent.');
+			return;
+		}
+		if (!message.trim()) {
+			setError('Describe the booking you want the agent to plan.');
+			return;
+		}
+
+		setLoading(true);
+		setError('');
+
+		try {
+			const response = await axios.post(
+				buildApiEndpoint('ai/booking-agent'),
+				{
+					message,
+					context: result?.data?.intent ? { intent: result.data.intent } : {},
+					confirmDraft
+				},
+				{ headers: { Authorization: `Bearer ${token}` } }
+			);
+			setResult(response.data);
+		} catch (error) {
+			setError(error.response?.data?.message || 'Booking agent could not complete the plan.');
+			setResult(error.response?.data || null);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
+			<div className="flex items-start justify-between gap-4 mb-4">
+				<div>
+					<h3 className={`text-xl font-bold ${classes.text.heading}`}>Booking Agent</h3>
+					<p className={`text-sm ${classes.text.secondary}`}>Plans a booking with tool calls, missing-field questions, chef recommendations, menu, quote, and a confirmation gate.</p>
+				</div>
+				<button
+					onClick={() => runAgent(false)}
+					disabled={loading}
+					className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
+				>
+					{loading ? 'Planning...' : 'Plan Booking'}
+				</button>
+			</div>
+
+			<textarea
+				value={message}
+				onChange={(e) => setMessage(e.target.value)}
+				placeholder="Example: Plan a birthday dinner chef for 12 guests tomorrow at 7:30 PM in Mumbai under 8000 rupees."
+				className={`w-full min-h-24 px-3 py-2 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500`}
+			/>
+
+			{error && (
+				<div className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>
+			)}
+
+			{result && (
+				<div className={`mt-4 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800' : 'bg-white'} p-4 space-y-4`}>
+					<div>
+						<div className={`text-xs uppercase tracking-wide ${classes.text.muted}`}>Status</div>
+						<div className={`font-semibold ${classes.text.heading}`}>{result.status}</div>
+						<p className={`text-sm mt-1 ${classes.text.secondary}`}>{result.message}</p>
+					</div>
+
+					{result.data?.questions?.length > 0 && (
+						<div>
+							<div className={`font-medium mb-2 ${classes.text.heading}`}>Follow-up Questions</div>
+							<ul className={`list-disc list-inside text-sm space-y-1 ${classes.text.primary}`}>
+								{result.data.questions.map((question, index) => (
+									<li key={index}>{question}</li>
+								))}
+							</ul>
+						</div>
+					)}
+
+					{result.data?.recommendedChefs?.length > 0 && (
+						<div>
+							<div className={`font-medium mb-2 ${classes.text.heading}`}>Recommended Chefs</div>
+							<div className="space-y-2">
+								{result.data.recommendedChefs.map((chef) => (
+									<div key={chef._id || chef.id} className={`rounded-md border ${classes.border.default} p-3`}>
+										<div className={`font-medium ${classes.text.heading}`}>{chef.name}</div>
+										<div className={`text-sm ${classes.text.secondary}`}>
+											{chef.specialty} • ₹{chef.pricePerHour}/hr • {chef.averageRating || 0} rating
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
+					{result.data?.quote && (
+						<div className={`rounded-md ${isDark ? 'bg-gray-900' : 'bg-amber-50'} p-3`}>
+							<div className={`font-medium ${classes.text.heading}`}>Quote</div>
+							<div className={`text-sm ${classes.text.primary}`}>₹{result.data.quote.finalPrice} {result.data.quote.currency}</div>
+						</div>
+					)}
+
+					{result.data?.draftBooking && (
+						<div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+							<p className={`text-sm ${classes.text.secondary}`}>No booking or payment is created until you confirm.</p>
+							<button
+								onClick={() => runAgent(true)}
+								disabled={loading}
+								className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+							>
+								Create Draft Booking
+							</button>
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+	);
+};
+
 // AI Component: Chat Assistant
 const AIChatAssistant = () => {
 	const { classes, isDark } = useThemeAwareStyle();
@@ -812,6 +940,7 @@ const UnifiedAIFeatures = () => {
 								onGetRecommendations={handleRecommendationsReceived}
 							/>
 							<div className="space-y-8 mt-8">
+								<BookingAgentPlanner />
 								<BookingIntentParser onApply={handleApplyBookingIntent} />
 								<SnapAndCook />
 							</div>
