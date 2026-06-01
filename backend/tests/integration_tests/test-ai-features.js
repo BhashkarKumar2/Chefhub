@@ -169,16 +169,15 @@ test('frontend AI dashboard wires new agentic endpoints with auth headers', () =
 
   assert.match(aiDashboard, /buildApiEndpoint\('ai\/booking-agent'\)/);
   assert.match(aiDashboard, /buildApiEndpoint\('ai\/snap-and-cook'\)/);
-  assert.match(aiDashboard, /buildApiEndpoint\('ai\/parse-booking-intent'\)/);
   assert.match(aiDashboard, /buildApiEndpoint\('ai\/chat'\)/);
   assert.match(aiDashboard, /Authorization: `Bearer \$\{token\}`/);
   assert.match(aiDashboard, /FormData/);
-  assert.match(aiDashboard, /Apply to Menu Details/);
   assert.match(aiDashboard, /Create Draft Booking/);
   assert.match(aiDashboard, /Answer Missing Details/);
   assert.match(aiDashboard, /Continue Planning/);
   assert.match(aiDashboard, /missingFields\.map/);
   assert.match(aiDashboard, /intentOverrides/);
+  assert.doesNotMatch(aiDashboard, /Agentic Booking Parser/);
 });
 
 test('validateBookingIntent reports missing fields and normalizes valid fields', () => {

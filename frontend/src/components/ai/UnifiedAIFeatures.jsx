@@ -399,101 +399,6 @@ const SnapAndCook = () => {
 	);
 };
 
-// AI-Native Component: natural language booking parser
-const BookingIntentParser = ({ onApply }) => {
-	const { classes, isDark } = useThemeAwareStyle();
-	const { token } = useAuth();
-	const [text, setText] = useState('');
-	const [parsed, setParsed] = useState(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState('');
-
-	const parseIntent = async () => {
-		if (!token) {
-			setError('Please login to use the booking parser.');
-			return;
-		}
-		if (!text.trim()) {
-			setError('Describe the booking you want to plan.');
-			return;
-		}
-
-		setLoading(true);
-		setError('');
-		setParsed(null);
-
-		try {
-			const response = await axios.post(
-				buildApiEndpoint('ai/parse-booking-intent'),
-				{ text },
-				{ headers: { Authorization: `Bearer ${token}` } }
-			);
-			setParsed(response.data.data);
-		} catch (error) {
-			setError(error.response?.data?.message || 'Could not parse this booking request.');
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	const applyParsedDetails = () => {
-		if (!parsed) return;
-		onApply({
-			serviceType: parsed.serviceType && parsed.serviceType !== 'not_found' ? parsed.serviceType : '',
-			guests: parsed.guestCount ? String(parsed.guestCount) : '',
-			budget: parsed.budget ? String(parsed.budget) : ''
-		});
-	};
-
-	return (
-		<div className={`${classes.bg.card} rounded-lg shadow-lg p-6 border ${classes.border.default}`}>
-			<div className="flex items-start justify-between gap-4 mb-4">
-				<div>
-					<h3 className={`text-xl font-bold ${classes.text.heading}`}>Agentic Booking Parser</h3>
-					<p className={`text-sm ${classes.text.secondary}`}>Describe your event in plain English and apply the details to menu planning.</p>
-				</div>
-				<button
-					onClick={parseIntent}
-					disabled={loading}
-					className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
-				>
-					{loading ? 'Parsing...' : 'Parse'}
-				</button>
-			</div>
-
-			<textarea
-				value={text}
-				onChange={(e) => setText(e.target.value)}
-				placeholder="Example: I need a chef tomorrow evening for a birthday dinner for 12 guests under 8000 rupees."
-				className={`w-full min-h-24 px-3 py-2 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
-			/>
-
-			{error && (
-				<div className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>
-			)}
-
-			{parsed && (
-				<div className={`mt-4 rounded-lg border ${classes.border.default} ${isDark ? 'bg-gray-800' : 'bg-white'} p-4`}>
-					<div className="grid grid-cols-2 gap-3 text-sm">
-						{Object.entries(parsed).map(([key, value]) => (
-							<div key={key}>
-								<div className={classes.text.muted}>{key}</div>
-								<div className={`font-medium ${classes.text.primary}`}>{String(value)}</div>
-							</div>
-						))}
-					</div>
-					<button
-						onClick={applyParsedDetails}
-						className="mt-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium"
-					>
-						Apply to Menu Details
-					</button>
-				</div>
-			)}
-		</div>
-	);
-};
-
 // AI-Native Component: full booking planner with confirmation gate
 const BookingAgentPlanner = () => {
 	const { classes, isDark } = useThemeAwareStyle();
@@ -1042,13 +947,6 @@ const UnifiedAIFeatures = () => {
 	const handleMenuGenerated = () => {
 	};
 
-	const handleApplyBookingIntent = (details) => {
-		setEventDetails(prev => ({
-			...prev,
-			...Object.fromEntries(Object.entries(details).filter(([, value]) => value !== ''))
-		}));
-	};
-
 	return (
 		<div className={`min-h-screen ${isDark ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100'}`}>
 			<div className="max-w-7xl mx-auto px-6 py-8">
@@ -1077,7 +975,6 @@ const UnifiedAIFeatures = () => {
 							/>
 							<div className="space-y-8 mt-8">
 								<BookingAgentPlanner />
-								<BookingIntentParser onApply={handleApplyBookingIntent} />
 								<SnapAndCook />
 							</div>
 						</div>
