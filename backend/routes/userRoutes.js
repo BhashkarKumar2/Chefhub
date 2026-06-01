@@ -7,7 +7,7 @@ import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
 import Testimonial from '../models/Testimonial.js';
-import { verifyToken, optionalAuth } from '../auth/authMiddleware.js';
+import { verifyToken, optionalAuth } from '../middleware/authMiddleware.js';
 import { validate, updateProfileValidationRules } from '../middleware/validationMiddleware.js';
 
 // Configure multer for memory storage

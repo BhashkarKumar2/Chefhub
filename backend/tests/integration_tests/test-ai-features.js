@@ -118,9 +118,9 @@ test('agentic API routes are registered with authentication and memory hooks', (
 
   assert.match(aiRoutes, /router\.post\('\/booking-agent', verifyToken/);
   assert.match(aiRoutes, /router\.post\('\/snap-and-cook', verifyToken, upload\.single\('image'\)/);
-  assert.match(aiRoutes, /router\.post\('\/parse-booking-intent', verifyToken/);
   assert.match(aiRoutes, /router\.post\('\/chat', verifyToken/);
   assert.match(aiRoutes, /learnUserPreferences\(req\.user\.id/);
+  assert.doesNotMatch(aiRoutes, /parse-booking-intent/);
   assert.equal((aiRoutes.match(/export default router/g) || []).length, 1);
 });
 

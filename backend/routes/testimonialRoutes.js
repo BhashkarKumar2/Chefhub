@@ -10,7 +10,7 @@ import {
   approveTestimonial,
   checkReviewEligibility
 } from '../controllers/testimonialController.js';
-import { verifyToken } from '../auth/authMiddleware.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 // Public routes
 router.get('/', getTestimonials);

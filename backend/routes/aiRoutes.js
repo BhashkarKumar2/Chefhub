@@ -6,8 +6,8 @@ import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
 import AIUsage from '../models/AIUsage.js';
-import { verifyToken } from '../auth/authMiddleware.js';
-import { learnUserPreferences } from '../controllers/authController.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
+import { learnUserPreferences } from '../services/aiMemoryService.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -29,23 +29,6 @@ router.post('/snap-and-cook', verifyToken, upload.single('image'), async (req, r
     res.json({
       success: true,
       data: { ingredients }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// AI-NATIVE FEATURE 2: Agentic Booking Parser
-router.post('/parse-booking-intent', verifyToken, async (req, res) => {
-  try {
-    const { text } = req.body;
-    if (!text) return res.status(400).json({ success: false, message: 'Text is required' });
-
-    const bookingDetails = await geminiService.parseBookingIntent(text);
-
-    res.json({
-      success: true,
-      data: bookingDetails
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
