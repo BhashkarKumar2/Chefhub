@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import logo from '../../assets/logo.png'
 
 const Sidebar = () => {
-  const { theme, setTheme } = useTheme();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { theme } = useTheme();
+  const [isCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated: isLoggedIn, user: userData, logout } = useAuth();
@@ -42,9 +42,9 @@ const Sidebar = () => {
       category: 'Support',
       items: [
         { name: 'My Testimonials', href: '/my-testimonials', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>), requiresAuth: true },
-        { name: 'About', href: '/about', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>), public: true },
-        { name: 'Services', href: '/services', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2h8z" /></svg>), public: true },
-        { name: 'Contact', href: '/contact', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>), public: true }
+        { name: 'Services', href: '/#services', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2h8z" /></svg>), public: true },
+        { name: 'About', href: '/#about', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>), public: true },
+        { name: 'Contact', href: '/#contact', icon: (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2z" /></svg>), public: true }
       ]
     }
   ];
@@ -54,7 +54,7 @@ const Sidebar = () => {
   const inactiveClass = theme === 'dark' ? 'text-gray-200 hover:bg-gray-800/40 hover:text-white' : 'text-orange-700 hover:bg-orange-200/40 hover:text-orange-800 hover:scale-105';
 
   const handleLogout = async () => {
-    try { await logout(); navigate('/'); } catch (error) { }
+    try { await logout(); navigate('/'); } catch { /* keep user on the current page if logout fails */ }
     setIsMobileOpen(false);
   };
 
@@ -91,7 +91,7 @@ const Sidebar = () => {
       </div>
 
       <nav className="flex-1 p-3 space-y-4">
-        {navigationGroups.map((group, groupIndex) => {
+        {navigationGroups.map((group) => {
           const visibleItems = group.items.filter(item => {
             if (item.public) return true;
             if (item.requiresAuth) return isLoggedIn;
@@ -107,7 +107,7 @@ const Sidebar = () => {
                   {group.category}
                 </div>
               )}
-              {visibleItems.map((item, index) => {
+              {visibleItems.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
                   <div key={item.name} className="relative" onMouseEnter={() => setHoveredItem(item.name)} onMouseLeave={() => setHoveredItem(null)}>

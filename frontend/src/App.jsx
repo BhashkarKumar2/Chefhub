@@ -33,9 +33,6 @@ const UnifiedAIFeatures = lazy(() => import('./components/ai/UnifiedAIFeatures')
 const AdvancedSearch = lazy(() => import('./components/AdvancedSearch'));
 
 // Smaller pages - lazy load but less critical
-const About = lazy(() => import('./pages/basic/About'));
-const Contact = lazy(() => import('./pages/basic/Contact'));
-const Services = lazy(() => import('./pages/basic/Services'));
 const Profile = lazy(() => import('./pages/user/Profile'));
 const Favorites = lazy(() => import('./pages/user/Favorites'));
 const EditProfile = lazy(() => import('./pages/user/EditProfile'));
@@ -56,7 +53,7 @@ const VerifyOTP = lazy(() => import('./pages/auth/VerifyOTP'));
 const App = () => {
   // Prevent scroll wheel from changing number inputs globally
   useEffect(() => {
-    const handleWheel = (e) => {
+    const handleWheel = () => {
       if (document.activeElement.type === 'number') {
         document.activeElement.blur();
       }
@@ -110,9 +107,9 @@ const App = () => {
                         <Route path="/reset-password/:token" element={<ResetPassword />} />
                         <Route path="/register" element={<Signup />} />
                         <Route path="/signup" element={<Signup />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/services" element={<Services />} />
-                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/about" element={<Navigate to="/#about" replace />} />
+                        <Route path="/services" element={<Navigate to="/#services" replace />} />
+                        <Route path="/contact" element={<Navigate to="/#contact" replace />} />
                         <Route path="/search" element={<AdvancedSearch />} />
                         <Route path="/chefs" element={<Navigate to="/book-chef" replace />} />
                         {/* Protected routes - require authentication */}
