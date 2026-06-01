@@ -499,11 +499,26 @@ const BookingAgentPlanner = () => {
 	const { classes, isDark } = useThemeAwareStyle();
 	const { token } = useAuth();
 	const [message, setMessage] = useState('');
+	const [followUpValues, setFollowUpValues] = useState({});
 	const [result, setResult] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
-	const runAgent = async (confirmDraft = false) => {
+	const fieldLabels = {
+		serviceType: 'Service Type',
+		date: 'Date',
+		time: 'Start Time',
+		guestCount: 'Guests',
+		location: 'Location'
+	};
+
+	const serviceTypeOptions = [
+		{ value: 'birthday', label: 'Birthday Party' },
+		{ value: 'marriage', label: 'Marriage Ceremony' },
+		{ value: 'daily', label: 'Daily Cooking' }
+	];
+
+	const runAgent = async ({ confirmDraft = false, intentOverrides = {} } = {}) => {
 		if (!token) {
 			setError('Please login to use the booking agent.');
 			return;
@@ -521,18 +536,114 @@ const BookingAgentPlanner = () => {
 				buildApiEndpoint('ai/booking-agent'),
 				{
 					message,
-					context: result?.data?.intent ? { intent: result.data.intent } : {},
+					context: {
+						intent: {
+							...(result?.data?.intent || {}),
+							...intentOverrides
+						}
+					},
 					confirmDraft
 				},
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			setResult(response.data);
+			if (response.data.status !== 'needs_input') {
+				setFollowUpValues({});
+			}
 		} catch (error) {
 			setError(error.response?.data?.message || 'Booking agent could not complete the plan.');
 			setResult(error.response?.data || null);
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const updateFollowUpValue = (field, value) => {
+		setFollowUpValues(prev => ({ ...prev, [field]: value }));
+	};
+
+	const submitFollowUpAnswers = () => {
+		const missingFields = result?.data?.missingFields || [];
+		const intentOverrides = {};
+
+		missingFields.forEach((field) => {
+			const value = followUpValues[field];
+			if (value !== undefined && String(value).trim() !== '') {
+				intentOverrides[field] = field === 'guestCount' ? Number(value) : value;
+			}
+		});
+
+		if (Object.keys(intentOverrides).length === 0) {
+			setError('Answer at least one follow-up question before continuing.');
+			return;
+		}
+
+		runAgent({ intentOverrides });
+	};
+
+	const renderFollowUpInput = (field) => {
+		const commonClasses = `w-full px-3 py-2 border ${classes.input.border} ${classes.input.bg} ${classes.input.text} ${classes.input.placeholder} rounded-md focus:outline-none focus:ring-2 focus:ring-violet-500`;
+		const value = followUpValues[field] || result?.data?.intent?.[field] || '';
+
+		if (field === 'serviceType') {
+			return (
+				<select
+					value={value}
+					onChange={(e) => updateFollowUpValue(field, e.target.value)}
+					className={commonClasses}
+				>
+					<option value="">Select service type</option>
+					{serviceTypeOptions.map(option => (
+						<option key={option.value} value={option.value}>{option.label}</option>
+					))}
+				</select>
+			);
+		}
+
+		if (field === 'date') {
+			return (
+				<input
+					type="date"
+					value={value}
+					onChange={(e) => updateFollowUpValue(field, e.target.value)}
+					className={commonClasses}
+				/>
+			);
+		}
+
+		if (field === 'time') {
+			return (
+				<input
+					type="time"
+					value={value}
+					onChange={(e) => updateFollowUpValue(field, e.target.value)}
+					className={commonClasses}
+				/>
+			);
+		}
+
+		if (field === 'guestCount') {
+			return (
+				<input
+					type="number"
+					min="1"
+					value={value}
+					onChange={(e) => updateFollowUpValue(field, e.target.value)}
+					placeholder="Number of guests"
+					className={commonClasses}
+				/>
+			);
+		}
+
+		return (
+			<input
+				type="text"
+				value={value}
+				onChange={(e) => updateFollowUpValue(field, e.target.value)}
+				placeholder="City, area, or full address"
+				className={commonClasses}
+			/>
+		);
 	};
 
 	return (
@@ -543,7 +654,7 @@ const BookingAgentPlanner = () => {
 					<p className={`text-sm ${classes.text.secondary}`}>Plans a booking with tool calls, missing-field questions, chef recommendations, menu, quote, and a confirmation gate.</p>
 				</div>
 				<button
-					onClick={() => runAgent(false)}
+					onClick={() => runAgent()}
 					disabled={loading}
 					className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg transition-colors text-sm font-medium"
 				>
@@ -581,6 +692,31 @@ const BookingAgentPlanner = () => {
 						</div>
 					)}
 
+					{result.status === 'needs_input' && result.data?.missingFields?.length > 0 && (
+						<div className={`rounded-md border ${classes.border.default} ${isDark ? 'bg-gray-900' : 'bg-violet-50'} p-4`}>
+							<div className={`font-medium mb-3 ${classes.text.heading}`}>Answer Missing Details</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								{result.data.missingFields.map((field) => (
+									<div key={field}>
+										<label className={`block text-sm font-medium ${classes.text.primary} mb-1`}>
+											{fieldLabels[field] || field}
+										</label>
+										{renderFollowUpInput(field)}
+									</div>
+								))}
+							</div>
+							<div className="flex justify-end mt-4">
+								<button
+									onClick={submitFollowUpAnswers}
+									disabled={loading}
+									className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+								>
+									{loading ? 'Continuing...' : 'Continue Planning'}
+								</button>
+							</div>
+						</div>
+					)}
+
 					{result.data?.recommendedChefs?.length > 0 && (
 						<div>
 							<div className={`font-medium mb-2 ${classes.text.heading}`}>Recommended Chefs</div>
@@ -608,7 +744,7 @@ const BookingAgentPlanner = () => {
 						<div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
 							<p className={`text-sm ${classes.text.secondary}`}>No booking or payment is created until you confirm.</p>
 							<button
-								onClick={() => runAgent(true)}
+								onClick={() => runAgent({ confirmDraft: true })}
 								disabled={loading}
 								className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
 							>

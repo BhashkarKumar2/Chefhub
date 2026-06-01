@@ -175,6 +175,10 @@ test('frontend AI dashboard wires new agentic endpoints with auth headers', () =
   assert.match(aiDashboard, /FormData/);
   assert.match(aiDashboard, /Apply to Menu Details/);
   assert.match(aiDashboard, /Create Draft Booking/);
+  assert.match(aiDashboard, /Answer Missing Details/);
+  assert.match(aiDashboard, /Continue Planning/);
+  assert.match(aiDashboard, /missingFields\.map/);
+  assert.match(aiDashboard, /intentOverrides/);
 });
 
 test('validateBookingIntent reports missing fields and normalizes valid fields', () => {
