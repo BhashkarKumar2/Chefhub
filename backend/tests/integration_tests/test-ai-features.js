@@ -124,6 +124,31 @@ test('agentic API routes are registered with authentication and memory hooks', (
   assert.equal((aiRoutes.match(/export default router/g) || []).length, 1);
 });
 
+test('OAuth routes are stateless and do not depend on Redis sessions', () => {
+  const authRoutes = fs.readFileSync(path.join(backendDir, 'auth/authRoutes.js'), 'utf8');
+
+  assert.match(authRoutes, /passport\.authenticate\('google', \{ scope: \['profile', 'email'\], session: false \}\)/);
+  assert.match(authRoutes, /passport\.authenticate\('google', \{\s*session: false,/);
+  assert.match(authRoutes, /passport\.authenticate\('facebook', \{ scope: \['public_profile', 'email'\], session: false \}\)/);
+  assert.match(authRoutes, /passport\.authenticate\('facebook', \{\s*session: false,/);
+});
+
+test('auth limiter skips OAuth redirect and callback routes', () => {
+  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
+
+  assert.match(server, /skip: \(req\) => \['\/google', '\/google\/callback', '\/facebook', '\/facebook\/callback'\]\.includes\(req\.path\)/);
+});
+
+test('Redis is optional and does not default to localhost without Redis env', () => {
+  const redisConfig = fs.readFileSync(path.join(backendDir, 'config/redis.js'), 'utf8');
+  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
+
+  assert.match(redisConfig, /const hasRedisConfig = Boolean/);
+  assert.match(redisConfig, /process\.env\.REDIS_URL/);
+  assert.match(redisConfig, /const redis = hasRedisConfig \? createRedisClient\(\) : createMemoryFallback\(\)/);
+  assert.match(server, /if \(redis\.isEnabled\) \{/);
+});
+
 test('user model includes long-term culinary memory field', () => {
   const userModel = fs.readFileSync(path.join(backendDir, 'models/User.js'), 'utf8');
 

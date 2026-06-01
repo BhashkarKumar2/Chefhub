@@ -105,17 +105,14 @@ const authLimiter = process.env.NODE_ENV === 'production'
     max: 5, // Limit each IP to 5 login attempts per windowMs
     message: 'Too many login attempts, please try again after 15 minutes.',
     skipSuccessfulRequests: true,
+    skip: (req) => ['/google', '/google/callback', '/facebook', '/facebook/callback'].includes(req.path),
   })
   : (req, res, next) => next();
 
 app.use(generalLimiter);
 
-// Session Middleware with Redis Store (production-ready)
-app.use(session({
-  store: new RedisStore({
-    client: redis,
-    prefix: 'chefhub:sess:',
-  }),
+// Session Middleware. Redis is optional; OAuth routes use stateless Passport.
+const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -126,7 +123,16 @@ app.use(session({
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   },
   name: 'sessionId', // Don't use default 'connect.sid' name
-}));
+};
+
+if (redis.isEnabled) {
+  sessionOptions.store = new RedisStore({
+    client: redis,
+    prefix: 'chefhub:sess:',
+  });
+}
+
+app.use(session(sessionOptions));
 
 //optimizers
 

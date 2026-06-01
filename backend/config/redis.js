@@ -1,37 +1,73 @@
 import Redis from 'ioredis';
 
-// Create Redis client
-const redis = new Redis({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-  retryStrategy: (times) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
+const hasRedisConfig = Boolean(
+  process.env.REDIS_URL ||
+  process.env.REDIS_HOST ||
+  process.env.REDIS_PASSWORD
+);
+
+const createMemoryFallback = () => ({
+  isEnabled: false,
+  async get() {
+    return null;
   },
-  maxRetriesPerRequest: 3
+  async setex() {
+    return 'OK';
+  },
+  async del() {
+    return 0;
+  },
+  async keys() {
+    return [];
+  },
+  async quit() {
+    return 'OK';
+  },
+  on() {
+    return this;
+  }
 });
 
-redis.on('error', (err) => {
-  // console.error('❌ Redis connection error:', err.message);
-});
+const createRedisClient = () => {
+  const redis = process.env.REDIS_URL
+    ? new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      connectTimeout: 5000,
+      retryStrategy: (times) => Math.min(times * 100, 2000)
+    })
+    : new Redis({
+      host: process.env.REDIS_HOST || 'localhost',
+      port: Number(process.env.REDIS_PORT || 6379),
+      password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      connectTimeout: 5000,
+      retryStrategy: (times) => Math.min(times * 100, 2000)
+    });
 
-redis.on('connect', () => {
-  // console.log('✅ Redis connected successfully');
-});
+  redis.isEnabled = true;
 
-redis.on('ready', () => {
-  // console.log('✅ Redis ready to accept commands');
-});
+  redis.on('error', (err) => {
+    console.warn('[REDIS] Connection error:', err.message);
+  });
 
-redis.on('reconnecting', () => {
-  // console.log('🔄 Redis reconnecting...');
-});
+  redis.on('connect', () => {
+    console.log('[REDIS] Connected successfully');
+  });
+
+  redis.on('ready', () => {
+    console.log('[REDIS] Ready to accept commands');
+  });
+
+  return redis;
+};
+
+const redis = hasRedisConfig ? createRedisClient() : createMemoryFallback();
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   await redis.quit();
-  // console.log('Redis connection closed');
 });
 
 export default redis;

@@ -90,11 +90,12 @@ router.post('/reset-password/:token', resetPasswordValidationRules(), validate, 
 
 // Google OAuth routes
 router.get('/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', { scope: ['profile', 'email'], session: false })
 );
 
 router.get('/google/callback',
   passport.authenticate('google', {
+    session: false,
     failureRedirect: process.env.NODE_ENV === 'production'
       ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
@@ -140,11 +141,12 @@ router.get('/google/callback',
 
 // Facebook OAuth routes
 router.get('/facebook',
-  passport.authenticate('facebook', { scope: ['public_profile', 'email'] })
+  passport.authenticate('facebook', { scope: ['public_profile', 'email'], session: false })
 );
 
 router.get('/facebook/callback',
   passport.authenticate('facebook', {
+    session: false,
     failureRedirect: process.env.NODE_ENV === 'production'
       ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
