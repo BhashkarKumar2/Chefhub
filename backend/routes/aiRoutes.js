@@ -31,7 +31,7 @@ router.post('/snap-and-cook', verifyToken, upload.single('image'), async (req, r
       data: { ingredients }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 });
 

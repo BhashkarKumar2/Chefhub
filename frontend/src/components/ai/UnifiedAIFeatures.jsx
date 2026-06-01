@@ -339,14 +339,17 @@ const SnapAndCook = () => {
 
 			const response = await axios.post(buildApiEndpoint('ai/snap-and-cook'), formData, {
 				headers: {
-					Authorization: `Bearer ${token}`,
-					'Content-Type': 'multipart/form-data'
+					Authorization: `Bearer ${token}`
 				}
 			});
 
 			setIngredients(response.data.data.ingredients || []);
 		} catch (error) {
-			setError(error.response?.data?.message || 'Could not identify ingredients from this image.');
+			const message = error.response?.data?.message ||
+				(error.response?.status === 429
+					? 'AI image scanning quota is temporarily exhausted. Please try again later.'
+					: 'Could not identify ingredients from this image.');
+			setError(message);
 		} finally {
 			setLoading(false);
 		}

@@ -461,7 +461,19 @@ class GeminiService {
       return this.parseJSONResponse(response.text());
     } catch (error) {
       console.error('[Gemini Vision] Error:', error);
-      throw new Error('Failed to identify ingredients');
+      const isQuotaError = error.message && (
+        error.message.includes('429') ||
+        error.message.includes('Too Many Requests') ||
+        error.message.toLowerCase().includes('quota')
+      );
+
+      const visionError = new Error(
+        isQuotaError
+          ? 'AI image scanning quota is temporarily exhausted. Please try again later.'
+          : 'Failed to identify ingredients'
+      );
+      visionError.statusCode = isQuotaError ? 429 : 500;
+      throw visionError;
     }
   }
 

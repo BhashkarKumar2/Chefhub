@@ -107,6 +107,27 @@ test('identifyIngredientsFromImage sends image bytes to a vision-capable model',
   assert.deepEqual(ingredients, ['tomato', 'onion']);
 });
 
+test('identifyIngredientsFromImage preserves Gemini quota errors as 429', async () => {
+  geminiService.genAI = {
+    getGenerativeModel() {
+      return {
+        async generateContent() {
+          throw new Error('[429 Too Many Requests] quota exceeded');
+        }
+      };
+    }
+  };
+
+  await assert.rejects(
+    () => geminiService.identifyIngredientsFromImage('base64-image', 'image/png'),
+    (error) => {
+      assert.equal(error.statusCode, 429);
+      assert.match(error.message, /quota/i);
+      return true;
+    }
+  );
+});
+
 test('parseJSONResponse accepts fenced JSON returned by LLMs', () => {
   const parsed = geminiService.parseJSONResponse('```json\n{"ok":true}\n```');
 
@@ -172,6 +193,7 @@ test('frontend AI dashboard wires new agentic endpoints with auth headers', () =
   assert.match(aiDashboard, /buildApiEndpoint\('ai\/chat'\)/);
   assert.match(aiDashboard, /Authorization: `Bearer \$\{token\}`/);
   assert.match(aiDashboard, /FormData/);
+  assert.match(aiDashboard, /AI image scanning quota is temporarily exhausted/);
   assert.match(aiDashboard, /Create Draft Booking/);
   assert.match(aiDashboard, /Answer Missing Details/);
   assert.match(aiDashboard, /Continue Planning/);
