@@ -147,6 +147,8 @@ test('Redis is optional and does not default to localhost without Redis env', ()
   assert.match(redisConfig, /process\.env\.REDIS_URL/);
   assert.match(redisConfig, /const redis = hasRedisConfig \? createRedisClient\(\) : createMemoryFallback\(\)/);
   assert.match(server, /if \(redis\.isEnabled\) \{/);
+  assert.match(server, /app\.use\(session\(\{/);
+  assert.match(server, /app\.use\(passport\.session\(\)\)/);
 });
 
 test('user model includes long-term culinary memory field', () => {

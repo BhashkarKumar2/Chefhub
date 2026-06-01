@@ -111,28 +111,24 @@ const authLimiter = process.env.NODE_ENV === 'production'
 
 app.use(generalLimiter);
 
-// Session Middleware. Redis is optional; OAuth routes use stateless Passport.
-const sessionOptions = {
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // true in production (requires HTTPS)
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  },
-  name: 'sessionId', // Don't use default 'connect.sid' name
-};
-
 if (redis.isEnabled) {
-  sessionOptions.store = new RedisStore({
-    client: redis,
-    prefix: 'chefhub:sess:',
-  });
+  app.use(session({
+    store: new RedisStore({
+      client: redis,
+      prefix: 'chefhub:sess:',
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', // true in production (requires HTTPS)
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    },
+    name: 'sessionId', // Don't use default 'connect.sid' name
+  }));
 }
-
-app.use(session(sessionOptions));
 
 //optimizers
 
@@ -162,7 +158,9 @@ app.use(hpp());
 
 // Passport Middleware
 app.use(passport.initialize());
-app.use(passport.session());
+if (redis.isEnabled) {
+  app.use(passport.session());
+}
 
 // Routes
 
