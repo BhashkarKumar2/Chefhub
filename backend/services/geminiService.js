@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { redactForTracing, withLangfuseObservation } from './langfuseService.js';
 
 class GeminiService {
   constructor() {
@@ -27,6 +28,15 @@ class GeminiService {
 
   // Method to try different models if one fails
   async generateWithFallback(prompt) {
+    return withLangfuseObservation({
+      name: 'gemini.generateWithFallback',
+      asType: 'generation',
+      input: { prompt: redactForTracing(prompt) },
+      metadata: { provider: 'google-generative-ai' }
+    }, async (observation) => this.generateWithFallbackUntraced(prompt, observation));
+  }
+
+  async generateWithFallbackUntraced(prompt, observation) {
     // Check if API key is available
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not configured');
@@ -57,6 +67,11 @@ class GeminiService {
           throw new Error('Invalid response from AI model');
         }
 
+        observation?.update?.({
+          model: this.availableModels[this.currentModelIndex],
+          output: redactForTracing(response.text()),
+          usageDetails: this.toLangfuseUsage(response.usageMetadata)
+        });
         return response;
       } catch (error) {
         lastError = error;
@@ -85,6 +100,14 @@ class GeminiService {
     }
 
     throw lastError || new Error('All AI models are currently unavailable');
+  }
+
+  toLangfuseUsage(usageMetadata = {}) {
+    const input = usageMetadata.promptTokenCount || 0;
+    const output = usageMetadata.candidatesTokenCount || 0;
+    const total = usageMetadata.totalTokenCount || input + output;
+
+    return { input, output, total };
   }
 
   // Generate chef recommendations based on user profile
@@ -438,6 +461,16 @@ class GeminiService {
    * Identify ingredients from a photo
    */
   async identifyIngredientsFromImage(base64Image, mimeType) {
+    return withLangfuseObservation({
+      name: 'gemini.identifyIngredientsFromImage',
+      asType: 'generation',
+      input: { mimeType, imageBytes: base64Image?.length || 0 },
+      metadata: { feature: 'snap-and-cook' },
+      model: 'models/gemini-2.0-flash'
+    }, async (observation) => this.identifyIngredientsFromImageUntraced(base64Image, mimeType, observation));
+  }
+
+  async identifyIngredientsFromImageUntraced(base64Image, mimeType, observation) {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not configured');
     }
@@ -458,7 +491,12 @@ class GeminiService {
       ]);
 
       const response = await result.response;
-      return this.parseJSONResponse(response.text());
+      const ingredients = this.parseJSONResponse(response.text());
+      observation?.update?.({
+        output: ingredients,
+        usageDetails: this.toLangfuseUsage(response.usageMetadata)
+      });
+      return ingredients;
     } catch (error) {
       console.error('[Gemini Vision] Error:', error);
       const isQuotaError = error.message && (

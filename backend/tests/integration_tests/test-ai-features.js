@@ -23,6 +23,7 @@ const originalCheckAvailability = bookingAgentService.checkAvailability;
 const originalGenerateMenu = bookingAgentService.generateMenu;
 const originalCreateDraftBooking = bookingAgentService.createDraftBooking;
 const originalUpdateMemory = bookingAgentService.updateMemory;
+const originalGetMemoryContext = bookingAgentService.getMemoryContext;
 
 const responseWithText = (text) => ({
   text: () => text
@@ -180,6 +181,35 @@ test('user model includes long-term culinary memory field', () => {
   assert.match(userModel, /category:\s*{/);
   assert.match(userModel, /learnedAt:\s*{/);
   assert.match(userModel, /default:\s*\[\]/);
+  assert.match(userModel, /food_preferences/);
+  assert.match(userModel, /budget_preferences/);
+  assert.match(userModel, /chef_preferences/);
+});
+
+test('chef model supports agentic availability constraints', () => {
+  const chefModel = fs.readFileSync(path.join(backendDir, 'models/Chef.js'), 'utf8');
+
+  assert.match(chefModel, /workingHours:\s*{/);
+  assert.match(chefModel, /blockedDates:\s*{/);
+  assert.match(chefModel, /travelRadiusKm:\s*{/);
+  assert.match(chefModel, /minimumNoticeHours:\s*{/);
+  assert.match(chefModel, /maxGuests:\s*{/);
+  assert.match(chefModel, /supportedEventTypes:\s*{/);
+});
+
+test('Langfuse tracing is wired with redaction and AI observations', () => {
+  const langfuseService = fs.readFileSync(path.join(backendDir, 'services/langfuseService.js'), 'utf8');
+  const gemini = fs.readFileSync(path.join(backendDir, 'services/geminiService.js'), 'utf8');
+  const bookingAgent = fs.readFileSync(path.join(backendDir, 'services/bookingAgentService.js'), 'utf8');
+  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
+
+  assert.match(langfuseService, /LangfuseSpanProcessor/);
+  assert.match(langfuseService, /redactForTracing/);
+  assert.match(langfuseService, /forceFlush/);
+  assert.match(gemini, /withLangfuseObservation/);
+  assert.match(bookingAgent, /withLangfuseTrace/);
+  assert.match(server, /initLangfuse\(\)/);
+  assert.match(server, /shutdownLangfuse\(\)/);
 });
 
 test('frontend AI dashboard wires new agentic endpoints with auth headers', () => {
@@ -201,7 +231,25 @@ test('frontend AI dashboard wires new agentic endpoints with auth headers', () =
   assert.match(aiDashboard, /Continue Planning/);
   assert.match(aiDashboard, /missingFields\.map/);
   assert.match(aiDashboard, /intentOverrides/);
+  assert.match(aiDashboard, /selectedChefId/);
+  assert.match(aiDashboard, /confirmations/);
   assert.doesNotMatch(aiDashboard, /Agentic Booking Parser/);
+});
+
+test('chef onboarding exposes availability rules for the booking agent', () => {
+  const onboarding = fs.readFileSync(
+    path.join(repoDir, 'frontend/src/pages/chef/ChefOnboarding.jsx'),
+    'utf8'
+  );
+
+  assert.match(onboarding, /workingStart/);
+  assert.match(onboarding, /workingEnd/);
+  assert.match(onboarding, /workingDays/);
+  assert.match(onboarding, /blockedDates/);
+  assert.match(onboarding, /travelRadiusKm/);
+  assert.match(onboarding, /minimumNoticeHours/);
+  assert.match(onboarding, /maxGuests/);
+  assert.match(onboarding, /supportedEventTypes/);
 });
 
 test('AI chat prompt forbids raw markdown markers', () => {
@@ -279,7 +327,7 @@ test('booking agent rejects prompt injection attempts before tool calls', async 
   assert.ok(result.trace.steps.some(step => step.step === 'guardrail.reject.prompt_injection'));
 });
 
-test('booking agent plans all tools but requires confirmation before creating drafts', async () => {
+test('booking agent requires chef selection before pricing and drafting', async () => {
   let createCalled = false;
   geminiService.parseBookingIntent = async () => ({
     serviceType: 'birthday',
@@ -315,19 +363,24 @@ test('booking agent plans all tools but requires confirmation before creating dr
   bookingAgentService.updateMemory = async (userId, interactionText, run) => {
     run.record('memory.noop');
   };
+  bookingAgentService.getMemoryContext = async (userId, run) => {
+    run.record('memory.context_loaded', { notes: 0 });
+    return { notes: [], groupedNotes: {}, intentHints: {} };
+  };
 
   const result = await bookingAgentService.planBooking({
     userId: 'user-1',
     message: 'Plan a birthday dinner in Mumbai for 12 guests on 2099-01-02 at 19:30'
   });
 
-  assert.equal(result.status, 'needs_confirmation');
+  assert.equal(result.status, 'needs_chef_confirmation');
   assert.equal(createCalled, false);
-  assert.equal(result.data.draftBooking.totalPrice, 7200);
-  assert.ok(result.trace.steps.some(step => step.step === 'human_confirmation.required'));
+  assert.equal(result.data.recommendedChefs.length, 1);
+  assert.deepEqual(result.data.requiredConfirmations, ['chef']);
+  assert.ok(result.trace.steps.some(step => step.step === 'human_confirmation.chef_required'));
 });
 
-test('booking agent creates a draft only after explicit confirmation', async () => {
+test('booking agent prices selected chef but requires detail confirmations before draft creation', async () => {
   let createCalled = false;
   geminiService.parseBookingIntent = async () => ({
     serviceType: 'birthday',
@@ -364,10 +417,72 @@ test('booking agent creates a draft only after explicit confirmation', async () 
   bookingAgentService.updateMemory = async (userId, interactionText, run) => {
     run.record('memory.noop');
   };
+  bookingAgentService.getMemoryContext = async (userId, run) => {
+    run.record('memory.context_loaded', { notes: 0 });
+    return { notes: [], groupedNotes: {}, intentHints: {} };
+  };
 
   const result = await bookingAgentService.planBooking({
     userId: 'user-1',
     message: 'Plan a birthday dinner in Mumbai for 12 guests on 2099-01-02 at 19:30',
+    context: { selectedChefId: 'chef-1', confirmations: { chef: true } }
+  });
+
+  assert.equal(result.status, 'needs_confirmation');
+  assert.equal(createCalled, false);
+  assert.equal(result.data.draftBooking.totalPrice, 7200);
+  assert.deepEqual(result.data.requiredConfirmations.sort(), ['details', 'menu', 'price'].sort());
+});
+
+test('booking agent creates a draft only after every explicit confirmation', async () => {
+  let createCalled = false;
+  geminiService.parseBookingIntent = async () => ({
+    serviceType: 'birthday',
+    date: '2099-01-02',
+    time: '19:30',
+    guestCount: 12,
+    location: 'Mumbai',
+    budget: 8000,
+    duration: 3
+  });
+  bookingAgentService.findChefs = async (intent, run) => {
+    run.record('tool.findChefs.success', { count: 1 });
+    return [{
+      _id: 'chef-1',
+      name: 'Chef A',
+      specialty: 'North Indian',
+      pricePerHour: 2000,
+      averageRating: 4.8
+    }];
+  };
+  bookingAgentService.checkAvailability = async (chefs, intent, run) => {
+    run.record('tool.checkAvailability.success', { checked: 1, available: 1 });
+    return chefs;
+  };
+  bookingAgentService.generateMenu = async (intent, run) => {
+    run.record('tool.generateMenu.success', { estimatedCostUnits: 1 });
+    return { appetizers: ['Paneer tikka'] };
+  };
+  bookingAgentService.createDraftBooking = async (userId, draft, run) => {
+    createCalled = true;
+    run.record('tool.createDraftBooking.success', { bookingId: 'booking-1' });
+    return { _id: 'booking-1', user: userId, chef: draft.chefId };
+  };
+  bookingAgentService.updateMemory = async (userId, interactionText, run) => {
+    run.record('memory.noop');
+  };
+  bookingAgentService.getMemoryContext = async (userId, run) => {
+    run.record('memory.context_loaded', { notes: 0 });
+    return { notes: [], groupedNotes: {}, intentHints: {} };
+  };
+
+  const result = await bookingAgentService.planBooking({
+    userId: 'user-1',
+    message: 'Plan a birthday dinner in Mumbai for 12 guests on 2099-01-02 at 19:30',
+    context: {
+      selectedChefId: 'chef-1',
+      confirmations: { chef: true, details: true, menu: true, price: true }
+    },
     confirmDraft: true
   });
 
@@ -397,6 +512,7 @@ try {
       bookingAgentService.generateMenu = originalGenerateMenu;
       bookingAgentService.createDraftBooking = originalCreateDraftBooking;
       bookingAgentService.updateMemory = originalUpdateMemory;
+      bookingAgentService.getMemoryContext = originalGetMemoryContext;
     }
   }
 } finally {
@@ -409,6 +525,7 @@ try {
   bookingAgentService.generateMenu = originalGenerateMenu;
   bookingAgentService.createDraftBooking = originalCreateDraftBooking;
   bookingAgentService.updateMemory = originalUpdateMemory;
+  bookingAgentService.getMemoryContext = originalGetMemoryContext;
 }
 
 if (failed > 0) {

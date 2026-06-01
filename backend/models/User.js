@@ -116,8 +116,18 @@ const userSchema = new mongoose.Schema({
       },
       category: {
         type: String,
-        enum: ['preference', 'allergy', 'budget', 'inventory', 'location', 'occasion'],
-        default: 'preference'
+        enum: [
+          'preference',
+          'food_preferences',
+          'allergies',
+          'budget_preferences',
+          'location_preferences',
+          'past_events',
+          'chef_preferences',
+          'inventory',
+          'occasion'
+        ],
+        default: 'food_preferences'
       },
       learnedAt: {
         type: Date,

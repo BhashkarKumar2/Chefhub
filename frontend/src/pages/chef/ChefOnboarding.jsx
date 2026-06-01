@@ -10,7 +10,7 @@ import TextareaInput from '../../components/inputs/TextareaInput';
 import { prepareImageForUpload } from '../../utils/imageOptimizer';
 
 const ChefOnboarding = () => {
-  const { getClass, classes, isDark } = useThemeAwareStyle();
+  const { getClass, classes } = useThemeAwareStyle();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +30,14 @@ const ChefOnboarding = () => {
     profileImage: null,
     certifications: [],
     availability: 'full-time',
+    workingStart: '09:00',
+    workingEnd: '22:00',
+    workingDays: [0, 1, 2, 3, 4, 5, 6],
+    blockedDates: '',
+    travelRadiusKm: 20,
+    minimumNoticeHours: 24,
+    maxGuests: 100,
+    supportedEventTypes: ['birthday', 'marriage', 'daily'],
     address: '',
     city: '',
     state: '',
@@ -46,6 +54,16 @@ const ChefOnboarding = () => {
     { value: 'birthday', label: '🎂 Birthday Parties', description: 'Celebrate special birthdays with custom menus' },
     { value: 'marriage', label: '💍 Wedding Events', description: 'Catering for weddings and receptions' },
     { value: 'daily', label: '🍳 Daily Meal Service', description: 'Regular home cooking and meal prep' }
+  ];
+
+  const dayOptions = [
+    { value: 0, label: 'Sun' },
+    { value: 1, label: 'Mon' },
+    { value: 2, label: 'Tue' },
+    { value: 3, label: 'Wed' },
+    { value: 4, label: 'Thu' },
+    { value: 5, label: 'Fri' },
+    { value: 6, label: 'Sat' }
   ];
 
   const certificationOptions = [
@@ -134,6 +152,16 @@ const ChefOnboarding = () => {
     }));
   };
 
+  const toggleArrayValue = (field, value) => {
+    setFormData((prev) => {
+      const current = prev[field] || [];
+      const next = current.includes(value)
+        ? current.filter(item => item !== value)
+        : [...current, value];
+      return { ...prev, [field]: next };
+    });
+  };
+
   const handleFileChange = async (e) => {
     const { name, files } = e.target;
     const file = files[0];
@@ -212,6 +240,24 @@ const ChefOnboarding = () => {
     }
     if (!formData.locationLat || !formData.locationLon) {
       errors.push('You must set your location using the Set Location button');
+    }
+    if (formData.workingStart >= formData.workingEnd) {
+      errors.push('Working start time must be before working end time');
+    }
+    if (formData.workingDays.length === 0) {
+      errors.push('Select at least one working day');
+    }
+    if (formData.supportedEventTypes.length === 0) {
+      errors.push('Select at least one supported event type');
+    }
+    if (Number(formData.travelRadiusKm) < 0 || Number(formData.travelRadiusKm) > 1000) {
+      errors.push('Travel radius must be between 0 and 1000 km');
+    }
+    if (Number(formData.minimumNoticeHours) < 0 || Number(formData.minimumNoticeHours) > 8760) {
+      errors.push('Minimum notice must be between 0 and 8760 hours');
+    }
+    if (Number(formData.maxGuests) < 1 || Number(formData.maxGuests) > 1000) {
+      errors.push('Max guests must be between 1 and 1000');
     }
 
     // Validate bio
@@ -295,6 +341,14 @@ const ChefOnboarding = () => {
       formDataToSend.append('experienceYears', Number(formData.experience));
       formDataToSend.append('certifications', formData.certifications.join(', '));
       formDataToSend.append('availability', formData.availability);
+      formDataToSend.append('workingStart', formData.workingStart);
+      formDataToSend.append('workingEnd', formData.workingEnd);
+      formDataToSend.append('workingDays', formData.workingDays.join(','));
+      formDataToSend.append('blockedDates', formData.blockedDates);
+      formDataToSend.append('travelRadiusKm', Number(formData.travelRadiusKm));
+      formDataToSend.append('minimumNoticeHours', Number(formData.minimumNoticeHours));
+      formDataToSend.append('maxGuests', Number(formData.maxGuests));
+      formDataToSend.append('supportedEventTypes', formData.supportedEventTypes.join(','));
       formDataToSend.append('address', formData.address);
       formDataToSend.append('city', formData.city);
       formDataToSend.append('state', formData.state);
@@ -310,25 +364,14 @@ const ChefOnboarding = () => {
       // Add profile image if uploaded
       if (formData.profileImage) {
         formDataToSend.append('profileImage', formData.profileImage);
-      } else {
       }
 
-      // Log FormData contents
-      for (let [key, value] of formDataToSend.entries()) {
-        if (key === 'profileImage') {
-        } else {
-        }
-      }
-
-      const response = await api.post('/chefs', formDataToSend, {
+      await api.post('/chefs', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-
-      const savedChef = response.data;
-      
       // Success message and redirect
       toast.success('Chef profile created successfully! Redirecting to dashboard...');
       navigate('/dashboard');
@@ -672,6 +715,122 @@ const ChefOnboarding = () => {
                   <option value="weekends">Weekends only</option>
                   <option value="events">Events only</option>
                 </select>
+              </div>
+
+              <div className="space-y-4 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <h4 className={getClass('font-semibold text-gray-800', 'font-semibold text-gray-100')}>Agent Availability Rules</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Working Start</label>
+                    <input
+                      type="time"
+                      name="workingStart"
+                      value={formData.workingStart}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Working End</label>
+                    <input
+                      type="time"
+                      name="workingEnd"
+                      value={formData.workingEnd}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={getClass('block text-xs font-medium text-gray-600 mb-2', 'block text-xs font-medium text-gray-300 mb-2')}>Working Days</label>
+                  <div className="flex flex-wrap gap-2">
+                    {dayOptions.map(day => (
+                      <button
+                        key={day.value}
+                        type="button"
+                        onClick={() => toggleArrayValue('workingDays', day.value)}
+                        className={`px-3 py-1 rounded-full text-sm border ${formData.workingDays.includes(day.value)
+                          ? 'bg-orange-600 text-white border-orange-600'
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700'
+                          }`}
+                      >
+                        {day.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Travel Radius (km)</label>
+                    <input
+                      type="number"
+                      name="travelRadiusKm"
+                      min="0"
+                      max="1000"
+                      value={formData.travelRadiusKm}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Minimum Notice (hours)</label>
+                    <input
+                      type="number"
+                      name="minimumNoticeHours"
+                      min="0"
+                      max="8760"
+                      value={formData.minimumNoticeHours}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Max Guests</label>
+                    <input
+                      type="number"
+                      name="maxGuests"
+                      min="1"
+                      max="1000"
+                      value={formData.maxGuests}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={getClass('block text-xs font-medium text-gray-600 mb-2', 'block text-xs font-medium text-gray-300 mb-2')}>Supported Event Types</label>
+                  <div className="flex flex-wrap gap-2">
+                    {serviceTypeOptions.map(service => (
+                      <button
+                        key={service.value}
+                        type="button"
+                        onClick={() => toggleArrayValue('supportedEventTypes', service.value)}
+                        className={`px-3 py-1 rounded-full text-sm border ${formData.supportedEventTypes.includes(service.value)
+                          ? 'bg-orange-600 text-white border-orange-600'
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700'
+                          }`}
+                      >
+                        {service.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className={getClass('block text-xs font-medium text-gray-600 mb-1', 'block text-xs font-medium text-gray-300 mb-1')}>Blocked Dates</label>
+                  <input
+                    type="text"
+                    name="blockedDates"
+                    value={formData.blockedDates}
+                    onChange={handleChange}
+                    placeholder="2026-12-25, 2026-12-31"
+                    className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 ${classes.input.bg} ${classes.input.border} ${classes.input.text}`}
+                  />
+                  <p className={getClass('text-xs text-gray-500 mt-1', 'text-xs text-gray-400 mt-1')}>Comma-separated dates the booking agent should avoid.</p>
+                </div>
               </div>
             </div>
 

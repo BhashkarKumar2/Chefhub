@@ -108,6 +108,53 @@ const chefSchema = new mongoose.Schema({
       message: '{VALUE} is not a valid availability option'
     }
   },
+  workingHours: {
+    start: {
+      type: String,
+      default: '09:00',
+      match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Working start time must be in HH:MM format']
+    },
+    end: {
+      type: String,
+      default: '22:00',
+      match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Working end time must be in HH:MM format']
+    },
+    daysOfWeek: {
+      type: [Number],
+      default: [0, 1, 2, 3, 4, 5, 6],
+      validate: {
+        validator: (days) => days.every(day => Number.isInteger(day) && day >= 0 && day <= 6),
+        message: 'Working days must be numbers from 0 to 6'
+      }
+    }
+  },
+  blockedDates: {
+    type: [Date],
+    default: []
+  },
+  travelRadiusKm: {
+    type: Number,
+    default: 20,
+    min: [0, 'Travel radius cannot be negative'],
+    max: [1000, 'Travel radius cannot exceed 1000 km']
+  },
+  minimumNoticeHours: {
+    type: Number,
+    default: 24,
+    min: [0, 'Minimum notice cannot be negative'],
+    max: [8760, 'Minimum notice cannot exceed one year']
+  },
+  maxGuests: {
+    type: Number,
+    default: 1000,
+    min: [1, 'Max guests must be at least 1'],
+    max: [1000, 'Max guests cannot exceed 1000']
+  },
+  supportedEventTypes: {
+    type: [String],
+    enum: ['birthday', 'marriage', 'daily'],
+    default: ['birthday', 'marriage', 'daily']
+  },
   profileImage: {
     url: {
       type: String,

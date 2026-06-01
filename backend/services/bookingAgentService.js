@@ -2,6 +2,7 @@ import Booking from '../models/Booking.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
 import geminiService from './geminiService.js';
+import { withLangfuseObservation, withLangfuseTrace } from './langfuseService.js';
 
 const REQUIRED_BOOKING_FIELDS = ['serviceType', 'date', 'time', 'guestCount', 'location'];
 const VALID_SERVICE_TYPES = ['birthday', 'marriage', 'daily'];
@@ -9,6 +10,7 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_MEMORY_NOTES = 30;
 const MEMORY_TTL_DAYS = 180;
+const CONFIRMATION_FIELDS = ['chef', 'details', 'menu', 'price'];
 
 const PII_PATTERNS = [
   /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i,
@@ -69,6 +71,24 @@ const redactPII = (text) => {
 };
 
 const hasPromptInjection = (text) => INJECTION_PATTERNS.some(pattern => pattern.test(String(text || '')));
+
+const getMinutes = (timeStr) => {
+  const [hours, minutes] = String(timeStr || '00:00').split(':').map(Number);
+  return (hours * 60) + minutes;
+};
+
+const formatTime = (minutes) => {
+  const safeMinutes = Math.max(0, Math.min(23 * 60 + 59, minutes));
+  const hours = Math.floor(safeMinutes / 60);
+  const mins = safeMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+};
+
+const sameDate = (left, right) => {
+  const leftDate = new Date(left);
+  const rightDate = new Date(right);
+  return leftDate.toISOString().slice(0, 10) === rightDate.toISOString().slice(0, 10);
+};
 
 const buildMissingQuestions = (missingFields) => {
   const prompts = {
@@ -162,6 +182,21 @@ class AgentRun {
 
 export class BookingAgentService {
   async planBooking({ userId, message, context = {}, confirmDraft = false }) {
+    return withLangfuseTrace({
+      name: 'booking-agent.plan',
+      userId,
+      sessionId: context.sessionId,
+      input: {
+        message,
+        hasContextIntent: Boolean(context.intent),
+        confirmDraft
+      },
+      metadata: { feature: 'booking-agent' },
+      tags: ['agentic-ai', 'booking']
+    }, () => this.planBookingUntraced({ userId, message, context, confirmDraft }));
+  }
+
+  async planBookingUntraced({ userId, message, context = {}, confirmDraft = false }) {
     const run = new AgentRun({ userId, input: message });
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -187,7 +222,9 @@ export class BookingAgentService {
     run.record('input.accepted');
 
     const parsedIntent = await this.safeParseIntent(safeMessage, run);
+    const memoryContext = await this.getMemoryContext(userId, run);
     const mergedIntent = {
+      ...memoryContext.intentHints,
       ...parsedIntent,
       ...context.intent,
       location: context.intent?.location || parsedIntent.location || ''
@@ -223,36 +260,73 @@ export class BookingAgentService {
       });
     }
 
-    const availableChefs = await this.checkAvailability(chefs, validation.intent, run);
-    const recommendedChefs = availableChefs.slice(0, 3);
+    const rawAvailabilityResult = await this.checkAvailability(chefs, validation.intent, run);
+    const availabilityResult = Array.isArray(rawAvailabilityResult)
+      ? { availableChefs: rawAvailabilityResult, insights: [] }
+      : rawAvailabilityResult;
+    const recommendedChefs = availabilityResult.availableChefs.slice(0, 3);
 
     if (recommendedChefs.length === 0) {
       await this.updateMemory(userId, safeMessage, run);
       return this.buildResponse({
         status: 'no_availability',
-        message: 'The matching chefs are not available for that time slot.',
-        data: { intent: validation.intent, chefs: [] },
+        message: 'The matching chefs are not available for that time slot. Try another time or choose a different chef.',
+        data: {
+          intent: validation.intent,
+          chefs: [],
+          availabilityInsights: availabilityResult.insights
+        },
         run
       });
     }
 
-    const quote = this.estimatePrice(recommendedChefs[0], validation.intent, run);
-    const menu = await this.generateMenu(validation.intent, run);
-    const draft = this.buildDraftBooking(recommendedChefs[0], validation.intent, quote, menu, run);
+    const selectedChefId = context.selectedChefId || context.chefId || context.confirmedChefId;
+    const selectedChef = selectedChefId
+      ? recommendedChefs.find(chef => String(chef._id) === String(selectedChefId))
+      : null;
 
-    await this.updateMemory(userId, safeMessage, run);
-
-    if (!confirmDraft) {
-      run.record('human_confirmation.required');
+    if (!selectedChef) {
+      await this.updateMemory(userId, safeMessage, run);
+      run.record('human_confirmation.chef_required', { recommendations: recommendedChefs.length });
       return this.buildResponse({
-        status: 'needs_confirmation',
-        message: 'Review this draft before creating a booking. No booking or payment has been created yet.',
+        status: 'needs_chef_confirmation',
+        message: 'Choose one chef before I price the menu and prepare the booking draft.',
         data: {
           intent: validation.intent,
           recommendedChefs,
+          availabilityInsights: availabilityResult.insights,
+          memoryContext,
+          requiredConfirmations: ['chef']
+        },
+        run
+      });
+    }
+
+    const quote = this.estimatePrice(selectedChef, validation.intent, run);
+    const menu = await this.generateMenu(validation.intent, run);
+    const draft = this.buildDraftBooking(selectedChef, validation.intent, quote, menu, run);
+
+    await this.updateMemory(userId, safeMessage, run);
+
+    const confirmations = context.confirmations || {};
+    const missingConfirmations = CONFIRMATION_FIELDS.filter(field => !confirmations[field]);
+
+    if (!confirmDraft || missingConfirmations.length > 0) {
+      run.record('human_confirmation.required', { missingConfirmations });
+      return this.buildResponse({
+        status: 'needs_confirmation',
+        message: 'Review and confirm each booking detail before creating a draft. No booking or payment has been created yet.',
+        data: {
+          intent: validation.intent,
+          selectedChef,
+          recommendedChefs,
+          availabilityInsights: availabilityResult.insights,
+          memoryContext,
           quote,
           menu,
-          draftBooking: draft
+          draftBooking: draft,
+          confirmations,
+          requiredConfirmations: missingConfirmations
         },
         run
       });
@@ -274,7 +348,12 @@ export class BookingAgentService {
   async safeParseIntent(message, run) {
     const started = now();
     try {
-      const parsed = await geminiService.parseBookingIntent(message);
+      const parsed = await withLangfuseObservation({
+        name: 'booking-agent.parse-request',
+        asType: 'generation',
+        input: { message },
+        metadata: { tool: 'parseBookingIntent' }
+      }, () => geminiService.parseBookingIntent(message));
       run.record('tool.parseBookingIntent.success', {
         latencyMs: now().getTime() - started.getTime(),
         estimatedCostUnits: 1
@@ -290,42 +369,62 @@ export class BookingAgentService {
   }
 
   async findChefs(intent, run) {
-    const query = { isActive: true };
-    const orFilters = [];
+    return withLangfuseObservation({
+      name: 'booking-agent.findChefs',
+      asType: 'tool',
+      input: {
+        serviceType: intent.serviceType,
+        cuisine: intent.cuisine,
+        location: intent.location
+      }
+    }, async () => {
+      const query = { isActive: true };
+      const orFilters = [];
 
-    if (intent.cuisine) {
-      orFilters.push({ specialty: new RegExp(intent.cuisine, 'i') });
-    }
+      if (intent.cuisine) {
+        orFilters.push({ specialty: new RegExp(intent.cuisine, 'i') });
+      }
 
-    if (intent.location) {
-      orFilters.push({ city: new RegExp(intent.location, 'i') });
-      orFilters.push({ serviceableLocations: new RegExp(intent.location, 'i') });
-    }
+      if (intent.location) {
+        orFilters.push({ city: new RegExp(intent.location, 'i') });
+        orFilters.push({ serviceableLocations: new RegExp(intent.location, 'i') });
+      }
 
-    if (orFilters.length > 0) {
-      query.$or = orFilters;
-    }
+      if (orFilters.length > 0) {
+        query.$or = orFilters;
+      }
 
-    let chefs = await Chef.find(query)
-      .select('name specialty city serviceableLocations pricePerHour experienceYears averageRating totalReviews bio supportedOccasions profileImage')
-      .sort({ averageRating: -1, totalReviews: -1 })
-      .limit(10)
-      .lean();
-
-    if (chefs.length === 0) {
-      chefs = await Chef.find({ isActive: true })
-        .select('name specialty city serviceableLocations pricePerHour experienceYears averageRating totalReviews bio supportedOccasions profileImage')
+      let chefs = await Chef.find(query)
+        .select('name specialty city state serviceableLocations pricePerHour experienceYears averageRating totalReviews bio supportedOccasions supportedEventTypes workingHours blockedDates travelRadiusKm minimumNoticeHours maxGuests profileImage')
         .sort({ averageRating: -1, totalReviews: -1 })
         .limit(10)
         .lean();
-    }
 
-    run.record('tool.findChefs.success', { count: chefs.length });
-    return chefs;
+      if (chefs.length === 0) {
+        chefs = await Chef.find({ isActive: true })
+          .select('name specialty city state serviceableLocations pricePerHour experienceYears averageRating totalReviews bio supportedOccasions supportedEventTypes workingHours blockedDates travelRadiusKm minimumNoticeHours maxGuests profileImage')
+          .sort({ averageRating: -1, totalReviews: -1 })
+          .limit(10)
+          .lean();
+      }
+
+      run.record('tool.findChefs.success', { count: chefs.length });
+      return chefs;
+    });
   }
 
   async checkAvailability(chefs, intent, run) {
-    const requestedDate = new Date(intent.date);
+    return withLangfuseObservation({
+      name: 'booking-agent.checkAvailability',
+      asType: 'tool',
+      input: {
+        chefCount: chefs.length,
+        date: intent.date,
+        time: intent.time,
+        guests: intent.guestCount
+      }
+    }, async () => {
+      const requestedDate = new Date(intent.date);
     const startOfDay = new Date(requestedDate);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(requestedDate);
@@ -338,14 +437,10 @@ export class BookingAgentService {
       status: { $nin: ['cancelled'] }
     }).select('chef time duration').lean();
 
-    const getMinutes = (timeStr) => {
-      const [hours, minutes] = String(timeStr).split(':').map(Number);
-      return hours * 60 + minutes;
-    };
-
     const requestedStart = getMinutes(intent.time);
     const requestedEnd = requestedStart + (intent.duration * 60);
     const blockedChefIds = new Set();
+    const insights = [];
 
     bookings.forEach(booking => {
       const bookingStart = getMinutes(booking.time);
@@ -355,13 +450,81 @@ export class BookingAgentService {
       }
     });
 
-    const available = chefs.filter(chef => !blockedChefIds.has(String(chef._id)));
+    const available = chefs.filter(chef => {
+      const reasons = this.getChefAvailabilityIssues(chef, intent, requestedDate, requestedStart, requestedEnd, blockedChefIds);
+      const isAvailable = reasons.length === 0;
+      insights.push({
+        chefId: String(chef._id),
+        chefName: chef.name,
+        available: isAvailable,
+        reasons,
+        alternatives: isAvailable ? [] : this.suggestAlternativeTimes(chef, requestedStart, intent.duration)
+      });
+      return isAvailable;
+    });
+
     run.record('tool.checkAvailability.success', {
       checked: chefs.length,
       available: available.length,
       conflicts: blockedChefIds.size
     });
-    return available;
+      return { availableChefs: available, insights };
+    });
+  }
+
+  getChefAvailabilityIssues(chef, intent, requestedDate, requestedStart, requestedEnd, blockedChefIds) {
+    const issues = [];
+    const chefId = String(chef._id);
+    const workingHours = chef.workingHours || {};
+    const workingStart = getMinutes(workingHours.start || '09:00');
+    const workingEnd = getMinutes(workingHours.end || '22:00');
+    const workingDays = Array.isArray(workingHours.daysOfWeek) && workingHours.daysOfWeek.length > 0
+      ? workingHours.daysOfWeek
+      : [0, 1, 2, 3, 4, 5, 6];
+
+    if (!workingDays.includes(requestedDate.getDay())) {
+      issues.push('Chef does not work on that day.');
+    }
+    if (requestedStart < workingStart || requestedEnd > workingEnd) {
+      issues.push(`Chef works ${formatTime(workingStart)}-${formatTime(workingEnd)}.`);
+    }
+    if ((chef.blockedDates || []).some(date => sameDate(date, requestedDate))) {
+      issues.push('Chef has blocked this date.');
+    }
+    if (blockedChefIds.has(chefId)) {
+      issues.push('Chef already has a booking during that slot.');
+    }
+    if (Number(chef.minimumNoticeHours || 0) > 0) {
+      const noticeHours = (requestedDate.getTime() - now().getTime()) / (1000 * 60 * 60);
+      if (noticeHours < Number(chef.minimumNoticeHours)) {
+        issues.push(`Chef requires at least ${chef.minimumNoticeHours} hours notice.`);
+      }
+    }
+    if (Number(chef.maxGuests || 1000) < intent.guestCount) {
+      issues.push(`Chef supports up to ${chef.maxGuests} guests.`);
+    }
+    if (Array.isArray(chef.supportedEventTypes) && chef.supportedEventTypes.length > 0 && !chef.supportedEventTypes.includes(intent.serviceType)) {
+      issues.push(`Chef does not support ${intent.serviceType} events.`);
+    }
+
+    return issues;
+  }
+
+  suggestAlternativeTimes(chef, requestedStart, duration) {
+    const workingHours = chef.workingHours || {};
+    const workingStart = getMinutes(workingHours.start || '09:00');
+    const workingEnd = getMinutes(workingHours.end || '22:00');
+    const durationMinutes = duration * 60;
+    const candidates = [
+      Math.max(workingStart, requestedStart - 60),
+      Math.max(workingStart, requestedStart),
+      Math.min(workingEnd - durationMinutes, requestedStart + 60)
+    ];
+
+    return [...new Set(candidates)]
+      .filter(start => start >= workingStart && start + durationMinutes <= workingEnd)
+      .map(formatTime)
+      .slice(0, 3);
   }
 
   estimatePrice(chef, intent, run) {
@@ -388,13 +551,23 @@ export class BookingAgentService {
   async generateMenu(intent, run) {
     const started = now();
     try {
-      const menu = await geminiService.generateEventMenu({
+      const menu = await withLangfuseObservation({
+        name: 'booking-agent.generateMenu',
+        asType: 'generation',
+        input: {
+          serviceType: intent.serviceType,
+          guestCount: intent.guestCount,
+          budget: intent.budget,
+          cuisine: intent.cuisine,
+          dietary: intent.dietary
+        }
+      }, () => geminiService.generateEventMenu({
         serviceType: intent.serviceType,
         guests: intent.guestCount,
         budget: intent.budget,
         cuisine: intent.cuisine,
         dietary: intent.dietary
-      });
+      }));
       run.record('tool.generateMenu.success', {
         latencyMs: now().getTime() - started.getTime(),
         estimatedCostUnits: 1
@@ -437,7 +610,16 @@ export class BookingAgentService {
   }
 
   async createDraftBooking(userId, draft, run) {
-    const booking = await Booking.create({
+    const booking = await withLangfuseObservation({
+      name: 'booking-agent.createDraftBooking',
+      asType: 'tool',
+      input: {
+        chefId: draft.chefId,
+        date: draft.date,
+        time: draft.time,
+        totalPrice: draft.totalPrice
+      }
+    }, () => Booking.create({
       user: userId,
       chef: draft.chefId,
       date: new Date(draft.date),
@@ -454,7 +636,7 @@ export class BookingAgentService {
       status: 'pending',
       paymentStatus: 'pending',
       notes: 'AI agent draft. Payment requires explicit confirmation.'
-    });
+    }));
 
     run.record('tool.createDraftBooking.success', { bookingId: String(booking._id) });
     return booking;
@@ -479,6 +661,72 @@ export class BookingAgentService {
       });
     } catch (error) {
       run.record('memory.failure', { error: error.message });
+    }
+  }
+
+  async getMemoryContext(userId, run) {
+    const started = now();
+    const emptyContext = {
+      notes: [],
+      groupedNotes: {},
+      intentHints: {}
+    };
+
+    try {
+      if (!userId) return emptyContext;
+
+      const user = await User.findById(userId).select('aiNotes city location cuisinePreferences');
+      if (!user) return emptyContext;
+
+      const cutoff = now();
+      cutoff.setDate(cutoff.getDate() - MEMORY_TTL_DAYS);
+
+      const notes = (user.aiNotes || [])
+        .map(note => typeof note === 'string'
+          ? { text: sanitizeText(redactPII(note), 160), category: this.classifyMemoryNote(note), learnedAt: now() }
+          : {
+            text: sanitizeText(redactPII(note.text), 160),
+            category: note.category || this.classifyMemoryNote(note.text || ''),
+            learnedAt: note.learnedAt || now()
+          })
+        .filter(note => note.text && new Date(note.learnedAt) >= cutoff)
+        .slice(-MAX_MEMORY_NOTES);
+
+      const groupedNotes = notes.reduce((acc, note) => {
+        acc[note.category] = acc[note.category] || [];
+        acc[note.category].push(note.text);
+        return acc;
+      }, {});
+
+      const intentHints = {};
+      if (groupedNotes.budget_preferences?.length) {
+        const budgetMatch = groupedNotes.budget_preferences.join(' ').match(/(?:rs\.?|₹|under|budget)\s*(\d{3,7})/i);
+        if (budgetMatch) intentHints.budget = Number(budgetMatch[1]);
+      }
+      if (groupedNotes.location_preferences?.length) {
+        intentHints.location = groupedNotes.location_preferences.at(-1).replace(/^User (?:often books in|prefers|is in)\s*/i, '');
+      } else if (user.city) {
+        intentHints.location = user.city;
+      }
+      if (groupedNotes.food_preferences?.length) {
+        intentHints.cuisine = groupedNotes.food_preferences.at(-1).replace(/^User (?:prefers|likes|loves)\s*/i, '');
+      } else if (Array.isArray(user.cuisinePreferences) && user.cuisinePreferences.length > 0) {
+        intentHints.cuisine = user.cuisinePreferences[0];
+      }
+      if (groupedNotes.allergies?.length) {
+        intentHints.dietary = groupedNotes.allergies.join('; ');
+      }
+
+      run.record('memory.context_loaded', {
+        notes: notes.length,
+        categories: Object.keys(groupedNotes),
+        latencyMs: now().getTime() - started.getTime()
+      });
+
+      return { notes, groupedNotes, intentHints };
+    } catch (error) {
+      run.record('memory.context_failure', { error: error.message });
+      return emptyContext;
     }
   }
 
@@ -510,13 +758,13 @@ export class BookingAgentService {
         if (typeof note === 'string') {
           return {
             text: sanitizeText(redactPII(note), 160),
-            category: 'preference',
+            category: 'food_preferences',
             learnedAt: now()
           };
         }
         return {
           text: sanitizeText(redactPII(note.text), 160),
-          category: note.category || 'preference',
+          category: note.category || this.classifyMemoryNote(note.text || ''),
           learnedAt: note.learnedAt || now()
         };
       })
@@ -539,11 +787,14 @@ export class BookingAgentService {
 
   classifyMemoryNote(note) {
     const lower = note.toLowerCase();
-    if (lower.includes('allerg')) return 'allergy';
-    if (lower.includes('budget')) return 'budget';
-    if (lower.includes('spicy') || lower.includes('prefer') || lower.includes('loves')) return 'preference';
+    if (lower.includes('allerg') || lower.includes('no nuts') || lower.includes('avoid')) return 'allergies';
+    if (lower.includes('budget') || lower.includes('under') || lower.includes('₹') || lower.includes('rs.')) return 'budget_preferences';
+    if (lower.includes('patna') || lower.includes('mumbai') || lower.includes('delhi') || lower.includes('location') || lower.includes('books in')) return 'location_preferences';
+    if (lower.includes('chef')) return 'chef_preferences';
+    if (lower.includes('birthday') || lower.includes('marriage') || lower.includes('event')) return 'past_events';
+    if (lower.includes('spicy') || lower.includes('vegetarian') || lower.includes('north indian') || lower.includes('prefer') || lower.includes('loves')) return 'food_preferences';
     if (lower.includes('ingredient') || lower.includes('kitchen')) return 'inventory';
-    return 'preference';
+    return 'food_preferences';
   }
 
   buildResponse({ status, message, data = {}, run }) {

@@ -24,12 +24,15 @@ import compression from 'compression';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import { initScheduledJobs } from './services/cronService.js';
+import { initLangfuse, shutdownLangfuse } from './services/langfuseService.js';
 
 const RedisStore = connectRedis(session);
 
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 5000;
+
+initLangfuse();
 
 // Trust proxy (important for production deployments)
 app.set('trust proxy', 1);
@@ -236,22 +239,16 @@ mongoose.connect(process.env.MONGO_URI)
   });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, closing server gracefully...');
+const gracefulShutdown = async (signal) => {
+  logger.info(`${signal} received, closing server gracefully...`);
+  await shutdownLangfuse();
   server.close(() => {
     logger.info('Server closed');
     redis.quit();
     mongoose.connection.close();
     process.exit(0);
   });
-});
+};
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, closing server gracefully...');
-  server.close(() => {
-    logger.info('Server closed');
-    redis.quit();
-    mongoose.connection.close();
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));

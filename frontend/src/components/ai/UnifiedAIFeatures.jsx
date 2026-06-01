@@ -408,6 +408,13 @@ const BookingAgentPlanner = () => {
 	const { token } = useAuth();
 	const [message, setMessage] = useState('');
 	const [followUpValues, setFollowUpValues] = useState({});
+	const [selectedChefId, setSelectedChefId] = useState('');
+	const [confirmations, setConfirmations] = useState({
+		chef: false,
+		details: false,
+		menu: false,
+		price: false
+	});
 	const [result, setResult] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -426,7 +433,19 @@ const BookingAgentPlanner = () => {
 		{ value: 'daily', label: 'Daily Cooking' }
 	];
 
-	const runAgent = async ({ confirmDraft = false, intentOverrides = {} } = {}) => {
+	const confirmationLabels = {
+		chef: 'Chef',
+		details: 'Date, time, guests, and location',
+		menu: 'Menu',
+		price: 'Estimated price'
+	};
+
+	const runAgent = async ({
+		confirmDraft = false,
+		intentOverrides = {},
+		selectedChefOverride,
+		confirmationOverrides = {}
+	} = {}) => {
 		if (!token) {
 			setError('Please login to use the booking agent.');
 			return;
@@ -440,6 +459,11 @@ const BookingAgentPlanner = () => {
 		setError('');
 
 		try {
+			const nextSelectedChefId = selectedChefOverride || selectedChefId;
+			const nextConfirmations = {
+				...confirmations,
+				...confirmationOverrides
+			};
 			const response = await axios.post(
 				buildApiEndpoint('ai/booking-agent'),
 				{
@@ -450,11 +474,18 @@ const BookingAgentPlanner = () => {
 							...intentOverrides
 						}
 					},
+					selectedChefId: nextSelectedChefId,
+					confirmations: nextConfirmations,
 					confirmDraft
 				},
 				{ headers: { Authorization: `Bearer ${token}` } }
 			);
 			setResult(response.data);
+			setSelectedChefId(response.data.data?.selectedChef?._id || nextSelectedChefId || '');
+			setConfirmations({
+				...nextConfirmations,
+				...(response.data.data?.confirmations || {})
+			});
 			if (response.data.status !== 'needs_input') {
 				setFollowUpValues({});
 			}
@@ -487,6 +518,18 @@ const BookingAgentPlanner = () => {
 		}
 
 		runAgent({ intentOverrides });
+	};
+
+	const chooseChef = (chefId) => {
+		setSelectedChefId(chefId);
+		runAgent({
+			selectedChefOverride: chefId,
+			confirmationOverrides: { chef: true }
+		});
+	};
+
+	const toggleConfirmation = (field) => {
+		setConfirmations(prev => ({ ...prev, [field]: !prev[field] }));
 	};
 
 	const renderFollowUpInput = (field) => {
@@ -630,10 +673,28 @@ const BookingAgentPlanner = () => {
 							<div className={`font-medium mb-2 ${classes.text.heading}`}>Recommended Chefs</div>
 							<div className="space-y-2">
 								{result.data.recommendedChefs.map((chef) => (
-									<div key={chef._id || chef.id} className={`rounded-md border ${classes.border.default} p-3`}>
-										<div className={`font-medium ${classes.text.heading}`}>{chef.name}</div>
-										<div className={`text-sm ${classes.text.secondary}`}>
-											{chef.specialty} • ₹{chef.pricePerHour}/hr • {chef.averageRating || 0} rating
+									<div
+										key={chef._id || chef.id}
+										className={`rounded-md border p-3 ${selectedChefId === String(chef._id || chef.id) ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30' : classes.border.default}`}
+									>
+										<div className="flex items-start justify-between gap-3">
+											<div>
+												<div className={`font-medium ${classes.text.heading}`}>{chef.name}</div>
+												<div className={`text-sm ${classes.text.secondary}`}>
+													{chef.specialty} • ₹{chef.pricePerHour}/hr • {chef.averageRating || 0} rating
+												</div>
+											</div>
+											<button
+												type="button"
+												onClick={() => chooseChef(String(chef._id || chef.id))}
+												disabled={loading}
+												className={`px-3 py-1 rounded-md text-sm font-medium ${selectedChefId === String(chef._id || chef.id)
+													? 'bg-violet-700 text-white'
+													: 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+													}`}
+											>
+												{selectedChefId === String(chef._id || chef.id) ? 'Selected' : 'Choose'}
+											</button>
 										</div>
 									</div>
 								))}
@@ -649,15 +710,31 @@ const BookingAgentPlanner = () => {
 					)}
 
 					{result.data?.draftBooking && (
-						<div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-							<p className={`text-sm ${classes.text.secondary}`}>No booking or payment is created until you confirm.</p>
-							<button
-								onClick={() => runAgent({ confirmDraft: true })}
-								disabled={loading}
-								className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
-							>
-								Create Draft Booking
-							</button>
+						<div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+							<div className={`font-medium ${classes.text.heading}`}>Confirm Before Draft</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+								{['chef', 'details', 'menu', 'price'].map(field => (
+									<label key={field} className={`flex items-center gap-2 text-sm ${classes.text.primary}`}>
+										<input
+											type="checkbox"
+											checked={Boolean(confirmations[field])}
+											onChange={() => toggleConfirmation(field)}
+											className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+										/>
+										<span>{confirmationLabels[field]}</span>
+									</label>
+								))}
+							</div>
+							<div className="flex items-center justify-between gap-4">
+								<p className={`text-sm ${classes.text.secondary}`}>No booking or payment is created until every item is confirmed.</p>
+								<button
+									onClick={() => runAgent({ confirmDraft: true })}
+									disabled={loading || !['chef', 'details', 'menu', 'price'].every(field => confirmations[field])}
+									className="px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
+								>
+									Create Draft Booking
+								</button>
+							</div>
 						</div>
 					)}
 				</div>

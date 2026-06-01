@@ -50,6 +50,18 @@ export const createChefProfile = async (req, res) => {
     if (typeof supportedOccasions === 'string') {
       supportedOccasions = supportedOccasions.split(',').map(o => o.trim()).filter(Boolean);
     }
+    let supportedEventTypes = req.body.supportedEventTypes;
+    if (typeof supportedEventTypes === 'string') {
+      supportedEventTypes = supportedEventTypes.split(',').map(o => o.trim()).filter(Boolean);
+    }
+    let blockedDates = req.body.blockedDates;
+    if (typeof blockedDates === 'string') {
+      blockedDates = blockedDates.split(',').map(date => date.trim()).filter(Boolean);
+    }
+    let workingDays = req.body.workingDays || req.body['workingHours[daysOfWeek]'];
+    if (typeof workingDays === 'string') {
+      workingDays = workingDays.split(',').map(day => Number(day.trim())).filter(Number.isFinite);
+    }
 
     const chefData = {
       name: req.body.name,
@@ -64,9 +76,21 @@ export const createChefProfile = async (req, res) => {
       experienceYears: req.body.experienceYears,
       certifications: req.body.certifications,
       availability: req.body.availability,
+      workingHours: {
+        start: req.body.workingStart || req.body['workingHours[start]'] || '09:00',
+        end: req.body.workingEnd || req.body['workingHours[end]'] || '22:00',
+        daysOfWeek: Array.isArray(workingDays) && workingDays.length > 0 ? workingDays : [0, 1, 2, 3, 4, 5, 6]
+      },
+      blockedDates: Array.isArray(blockedDates)
+        ? blockedDates.map(date => new Date(date)).filter(date => !Number.isNaN(date.getTime()))
+        : [],
+      travelRadiusKm: req.body.travelRadiusKm !== undefined ? Number(req.body.travelRadiusKm) : 20,
+      minimumNoticeHours: req.body.minimumNoticeHours !== undefined ? Number(req.body.minimumNoticeHours) : 24,
+      maxGuests: req.body.maxGuests !== undefined ? Number(req.body.maxGuests) : 1000,
 
       serviceableLocations: serviceableLocations || [],
       supportedOccasions: supportedOccasions || [],
+      supportedEventTypes: supportedEventTypes || ['birthday', 'marriage', 'daily'],
       locationCoords: req.body.locationCoords ? {
         lat: parseFloat(req.body.locationCoords.lat),
         lon: parseFloat(req.body.locationCoords.lon)
@@ -409,6 +433,28 @@ export const updateChefProfile = async (req, res) => {
     // Parse supportedOccasions for update
     if (updateData.supportedOccasions && typeof updateData.supportedOccasions === 'string') {
       updateData.supportedOccasions = updateData.supportedOccasions.split(',').map(o => o.trim()).filter(Boolean);
+    }
+    if (updateData.supportedEventTypes && typeof updateData.supportedEventTypes === 'string') {
+      updateData.supportedEventTypes = updateData.supportedEventTypes.split(',').map(o => o.trim()).filter(Boolean);
+    }
+    if (updateData.blockedDates && typeof updateData.blockedDates === 'string') {
+      updateData.blockedDates = updateData.blockedDates.split(',').map(date => new Date(date.trim())).filter(date => !Number.isNaN(date.getTime()));
+    }
+    if (updateData.workingDays && typeof updateData.workingDays === 'string') {
+      updateData.workingHours = {
+        ...(updateData.workingHours || {}),
+        daysOfWeek: updateData.workingDays.split(',').map(day => Number(day.trim())).filter(Number.isFinite)
+      };
+      delete updateData.workingDays;
+    }
+    if (updateData.workingStart || updateData.workingEnd) {
+      updateData.workingHours = {
+        ...(updateData.workingHours || {}),
+        ...(updateData.workingStart ? { start: updateData.workingStart } : {}),
+        ...(updateData.workingEnd ? { end: updateData.workingEnd } : {})
+      };
+      delete updateData.workingStart;
+      delete updateData.workingEnd;
     }
 
     // Handle location coordinates update
