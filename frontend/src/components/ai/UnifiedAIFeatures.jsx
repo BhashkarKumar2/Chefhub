@@ -674,6 +674,15 @@ const AIChatAssistant = () => {
 	const [input, setInput] = useState('');
 	const [loading, setLoading] = useState(false);
 
+	const formatAIChatText = (content) => {
+		return String(content || '')
+			.replace(/\*\*(.*?)\*\*/g, '$1')
+			.replace(/__(.*?)__/g, '$1')
+			.replace(/`([^`]+)`/g, '$1')
+			.replace(/^#{1,6}\s+/gm, '')
+			.trim();
+	};
+
 	const sendMessage = async (e) => {
 		e.preventDefault();
 		if (!input.trim()) return;
@@ -705,7 +714,7 @@ const AIChatAssistant = () => {
 
 			const aiMessage = {
 				type: 'ai',
-				content: response.data.data.response,
+				content: formatAIChatText(response.data.data.response),
 				timestamp: new Date()
 			};
 			setMessages(prev => [...prev, aiMessage]);
@@ -820,7 +829,7 @@ const AIChatAssistant = () => {
 										: 'bg-white border border-stone-200 rounded-tl-none'
 									}`}>
 									<p className={`text-sm leading-relaxed ${message.type === 'user' ? 'text-white' : classes.text.primary} ${message.type === 'ai' ? 'whitespace-pre-line' : ''}`}>
-										{message.content}
+										{message.type === 'ai' ? formatAIChatText(message.content) : message.content}
 									</p>
 								</div>
 								<span className={`text-xs ${classes.text.muted} mt-1 px-2`}>

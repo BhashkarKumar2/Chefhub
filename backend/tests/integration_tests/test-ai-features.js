@@ -194,12 +194,21 @@ test('frontend AI dashboard wires new agentic endpoints with auth headers', () =
   assert.match(aiDashboard, /Authorization: `Bearer \$\{token\}`/);
   assert.match(aiDashboard, /FormData/);
   assert.match(aiDashboard, /AI image scanning quota is temporarily exhausted/);
+  assert.match(aiDashboard, /formatAIChatText/);
+  assert.match(aiDashboard, /replace\(\/\\\*\\\*\(\.\*\?\)\\\*\\\*\/g, '\$1'\)/);
   assert.match(aiDashboard, /Create Draft Booking/);
   assert.match(aiDashboard, /Answer Missing Details/);
   assert.match(aiDashboard, /Continue Planning/);
   assert.match(aiDashboard, /missingFields\.map/);
   assert.match(aiDashboard, /intentOverrides/);
   assert.doesNotMatch(aiDashboard, /Agentic Booking Parser/);
+});
+
+test('AI chat prompt forbids raw markdown markers', () => {
+  const aiRoutes = fs.readFileSync(path.join(backendDir, 'routes/aiRoutes.js'), 'utf8');
+
+  assert.match(aiRoutes, /Do not use Markdown syntax/);
+  assert.match(aiRoutes, /Write headings as plain text followed by a colon/);
 });
 
 test('validateBookingIntent reports missing fields and normalizes valid fields', () => {
