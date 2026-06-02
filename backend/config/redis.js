@@ -6,27 +6,63 @@ const hasRedisConfig = Boolean(
   process.env.REDIS_PASSWORD
 );
 
-const createMemoryFallback = () => ({
-  isEnabled: false,
-  async get() {
-    return null;
-  },
-  async setex() {
-    return 'OK';
-  },
-  async del() {
-    return 0;
-  },
-  async keys() {
-    return [];
-  },
-  async quit() {
-    return 'OK';
-  },
-  on() {
-    return this;
-  }
-});
+const createMemoryFallback = () => {
+  const store = new Map();
+
+  const isExpired = (entry) => entry.expiresAt && entry.expiresAt <= Date.now();
+
+  const purgeExpired = () => {
+    for (const [key, entry] of store.entries()) {
+      if (isExpired(entry)) {
+        store.delete(key);
+      }
+    }
+  };
+
+  const patternToRegex = (pattern = '*') => {
+    const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+    return new RegExp(`^${escaped}$`);
+  };
+
+  return {
+    isEnabled: false,
+    async get(key) {
+      const entry = store.get(key);
+      if (!entry) return null;
+      if (isExpired(entry)) {
+        store.delete(key);
+        return null;
+      }
+      return entry.value;
+    },
+    async setex(key, ttlSeconds, value) {
+      store.set(key, {
+        value,
+        expiresAt: Date.now() + Number(ttlSeconds) * 1000
+      });
+      return 'OK';
+    },
+    async del(...keys) {
+      let deleted = 0;
+      for (const key of keys.flat()) {
+        if (store.delete(key)) deleted += 1;
+      }
+      return deleted;
+    },
+    async keys(pattern = '*') {
+      purgeExpired();
+      const regex = patternToRegex(pattern);
+      return [...store.keys()].filter((key) => regex.test(key));
+    },
+    async quit() {
+      store.clear();
+      return 'OK';
+    },
+    on() {
+      return this;
+    }
+  };
+};
 
 const createRedisClient = () => {
   const redis = process.env.REDIS_URL

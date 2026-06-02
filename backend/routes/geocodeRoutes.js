@@ -1,6 +1,11 @@
 import express from 'express';
 import axios from 'axios';
+import cacheService from '../services/cacheService.js';
 const router = express.Router();
+
+const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
+
+const normalizeAddress = (address) => address.trim().toLowerCase().replace(/\s+/g, ' ');
 
 // POST /api/geocode
 router.post('/', async (req, res) => {
@@ -20,14 +25,18 @@ router.post('/', async (req, res) => {
     return res.status(500).json({ error: 'Geocoding service not configured' });
   }
   
-  const geocodeUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
   // console.log('ðŸŒ Making request to OpenRouteService for address:', address);
   
   try {
-    const orsRes = await axios.get(geocodeUrl);
-    // console.log('ðŸ“¡ OpenRouteService response status:', orsRes.status);
-    
-    const data = orsRes.data;
+    const cacheKey = `geocode:post:v1:${cacheService.stableHash({ address: normalizeAddress(address) })}`;
+    const cached = await cacheService.remember(cacheKey, GEOCODE_CACHE_TTL_SECONDS, async () => {
+      const geocodeUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
+      const orsRes = await axios.get(geocodeUrl);
+      // console.log('ðŸ“¡ OpenRouteService response status:', orsRes.status);
+      return orsRes.data;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
+    const data = cached.value;
     // console.log('âœ… Geocoding successful, found', data.features?.length || 0, 'results');
     res.json(data);
   } catch (err) {

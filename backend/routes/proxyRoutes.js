@@ -1,7 +1,12 @@
 import express from 'express';
 import axios from 'axios';
+import cacheService from '../services/cacheService.js';
 
 const router = express.Router();
+const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
+const DIRECTIONS_CACHE_TTL_SECONDS = 15 * 60;
+
+const normalizeAddress = (address) => address.trim().toLowerCase().replace(/\s+/g, ' ');
 
 /**
  * Email Service Route - Using Brevo (Sendinblue) API
@@ -137,25 +142,31 @@ router.get('/geocode', async (req, res) => {
       });
     }
 
-    const response = await axios.get(
-      `https://api.openrouteservice.org/geocode/search`,
-      {
-        params: {
-          api_key: process.env.ORS_API_KEY,
-          text: address
+    const cacheKey = `geocode:proxy:v1:${cacheService.stableHash({ address: normalizeAddress(address) })}`;
+    const cached = await cacheService.remember(cacheKey, GEOCODE_CACHE_TTL_SECONDS, async () => {
+      const response = await axios.get(
+        `https://api.openrouteservice.org/geocode/search`,
+        {
+          params: {
+            api_key: process.env.ORS_API_KEY,
+            text: address
+          }
         }
-      }
-    );
+      );
+      return response.data;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
+    const geocodeData = cached.value;
 
     // Return the geocoding results
-    if (response.data.features && response.data.features.length > 0) {
-      const coordinates = response.data.features[0].geometry.coordinates;
+    if (geocodeData.features && geocodeData.features.length > 0) {
+      const coordinates = geocodeData.features[0].geometry.coordinates;
       res.json({ 
         success: true, 
         data: {
           latitude: coordinates[1],
           longitude: coordinates[0],
-          fullResponse: response.data
+          fullResponse: geocodeData
         }
       });
     } else {
@@ -196,20 +207,25 @@ router.get('/reverse-geocode', async (req, res) => {
       });
     }
 
-    const response = await axios.get(
-      `https://api.openrouteservice.org/geocode/reverse`,
-      {
-        params: {
-          api_key: process.env.ORS_API_KEY,
-          'point.lon': lon,
-          'point.lat': lat
+    const cacheKey = `geocode:reverse:v1:${cacheService.stableHash({ lat, lon })}`;
+    const cached = await cacheService.remember(cacheKey, GEOCODE_CACHE_TTL_SECONDS, async () => {
+      const response = await axios.get(
+        `https://api.openrouteservice.org/geocode/reverse`,
+        {
+          params: {
+            api_key: process.env.ORS_API_KEY,
+            'point.lon': lon,
+            'point.lat': lat
+          }
         }
-      }
-    );
+      );
+      return response.data;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
 
     res.json({ 
       success: true, 
-      data: response.data 
+      data: cached.value 
     });
   } catch (error) {
     console.error('Reverse geocoding error:', error.response?.data || error.message);
@@ -243,22 +259,27 @@ router.post('/directions', async (req, res) => {
       });
     }
 
-    const response = await axios.post(
-      `https://api.openrouteservice.org/v2/directions/driving-car`,
-      {
-        coordinates: coordinates
-      },
-      {
-        headers: {
-          'Authorization': process.env.ORS_API_KEY,
-          'Content-Type': 'application/json'
+    const cacheKey = `directions:driving-car:v1:${cacheService.stableHash({ coordinates })}`;
+    const cached = await cacheService.remember(cacheKey, DIRECTIONS_CACHE_TTL_SECONDS, async () => {
+      const response = await axios.post(
+        `https://api.openrouteservice.org/v2/directions/driving-car`,
+        {
+          coordinates: coordinates
+        },
+        {
+          headers: {
+            'Authorization': process.env.ORS_API_KEY,
+            'Content-Type': 'application/json'
+          }
         }
-      }
-    );
+      );
+      return response.data;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
 
     res.json({ 
       success: true, 
-      data: response.data 
+      data: cached.value 
     });
   } catch (error) {
     console.error('Directions error:', error.response?.data || error.message);

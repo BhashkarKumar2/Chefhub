@@ -1,5 +1,17 @@
 import Chef from '../models/Chef.js';
 import cloudinary from '../config/cloudinary.js';
+import cacheService from '../services/cacheService.js';
+
+const CHEF_CACHE_TTL_SECONDS = {
+  list: 300,
+  search: 300,
+  detail: 600,
+  metadata: 900
+};
+
+const invalidateChefCaches = async () => {
+  await cacheService.deleteByPrefix('chefs:');
+};
 
 export const createChefProfile = async (req, res) => {
   // console.log(' === CHEF PROFILE CREATION STARTED ===');
@@ -132,6 +144,7 @@ export const createChefProfile = async (req, res) => {
     // console.log('Creating chef profile in database...');
     const newChef = new Chef(chefData);
     await newChef.save();
+    await invalidateChefCaches();
 
     res.status(201).json({
       message: 'Chef profile created successfully',
@@ -178,14 +191,18 @@ export const createChefProfile = async (req, res) => {
 
 export const getAllChefs = async (req, res) => {
   try {
-    const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 }).lean();
+    const cached = await cacheService.remember('chefs:all:v1', CHEF_CACHE_TTL_SECONDS.list, async () => {
+      const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 }).lean();
+      return {
+        message: 'Chefs retrieved successfully',
+        chefs: chefs,
+        success: true
+      };
+    });
+    cacheService.setCacheHeader(res, cached.hit);
 
     // console.log(' Chefs retrieved successfully:', chefs.length);
-    res.status(200).json({
-      message: 'Chefs retrieved successfully',
-      chefs: chefs,
-      success: true
-    });
+    res.status(200).json(cached.value);
   } catch (err) {
     // console.error(' Error retrieving chefs:', err);
     res.status(500).json({
@@ -199,84 +216,86 @@ export const getAllChefs = async (req, res) => {
 // Advanced search functionality
 export const searchChefs = async (req, res) => {
   try {
-    const {
-      q,           // Query text
-      cuisine,     // Comma-separated cuisine types
-      minPrice,    // Minimum price per hour
-      maxPrice,    // Maximum price per hour
-      minRating,   // Minimum rating
-      location,    // Location filter (for distance)
-      city,        // City filter
-      state,       // State filter
-      minExp,      // Minimum experience
-      maxExp,      // Maximum experience
-      page = 1,    // Pagination
-      limit = 12   // Results per page
-    } = req.query;
+    const cacheKey = `chefs:search:v1:${cacheService.stableHash(req.query)}`;
+    const cached = await cacheService.remember(cacheKey, CHEF_CACHE_TTL_SECONDS.search, async () => {
+      const {
+        q,           // Query text
+        cuisine,     // Comma-separated cuisine types
+        minPrice,    // Minimum price per hour
+        maxPrice,    // Maximum price per hour
+        minRating,   // Minimum rating
+        location,    // Location filter (for distance)
+        city,        // City filter
+        state,       // State filter
+        minExp,      // Minimum experience
+        maxExp,      // Maximum experience
+        page = 1,    // Pagination
+        limit = 12   // Results per page
+      } = req.query;
 
-    // Build search query
-    let searchQuery = { isActive: true };
+      // Build search query
+      let searchQuery = { isActive: true };
 
     // Text search (name, specialty, bio)
-    if (q) {
-      searchQuery.$or = [
-        { name: { $regex: q, $options: 'i' } },
-        { specialty: { $regex: q, $options: 'i' } },
-        { bio: { $regex: q, $options: 'i' } }
-      ];
-    }
+      if (q) {
+        searchQuery.$or = [
+          { name: { $regex: q, $options: 'i' } },
+          { specialty: { $regex: q, $options: 'i' } },
+          { bio: { $regex: q, $options: 'i' } }
+        ];
+      }
 
     // Cuisine filter
-    if (cuisine) {
-      const cuisineArray = cuisine.split(',').map(c => c.trim());
-      searchQuery.specialty = { $in: cuisineArray.map(c => new RegExp(c, 'i')) };
-    }
+      if (cuisine) {
+        const cuisineArray = cuisine.split(',').map(c => c.trim());
+        searchQuery.specialty = { $in: cuisineArray.map(c => new RegExp(c, 'i')) };
+      }
 
     // Price range filter
-    if (minPrice || maxPrice) {
-      searchQuery.pricePerHour = {};
-      if (minPrice) searchQuery.pricePerHour.$gte = parseInt(minPrice);
-      if (maxPrice) searchQuery.pricePerHour.$lte = parseInt(maxPrice);
-    }
+      if (minPrice || maxPrice) {
+        searchQuery.pricePerHour = {};
+        if (minPrice) searchQuery.pricePerHour.$gte = parseInt(minPrice);
+        if (maxPrice) searchQuery.pricePerHour.$lte = parseInt(maxPrice);
+      }
 
     // Rating filter
-    if (minRating) {
-      searchQuery.averageRating = { $gte: parseFloat(minRating) };
-    }
+      if (minRating) {
+        searchQuery.averageRating = { $gte: parseFloat(minRating) };
+      }
 
     // Experience filter
-    if (minExp || maxExp) {
-      searchQuery.experienceYears = {};
-      if (minExp) searchQuery.experienceYears.$gte = parseInt(minExp);
-      if (maxExp) searchQuery.experienceYears.$lte = parseInt(maxExp);
-    }
+      if (minExp || maxExp) {
+        searchQuery.experienceYears = {};
+        if (minExp) searchQuery.experienceYears.$gte = parseInt(minExp);
+        if (maxExp) searchQuery.experienceYears.$lte = parseInt(maxExp);
+      }
 
     // Location filters
-    if (city) {
-      searchQuery.city = { $regex: city, $options: 'i' };
-    }
+      if (city) {
+        searchQuery.city = { $regex: city, $options: 'i' };
+      }
 
-    if (state) {
-      searchQuery.state = { $regex: state, $options: 'i' };
-    }
+      if (state) {
+        searchQuery.state = { $regex: state, $options: 'i' };
+      }
 
     // Location filter (now uses serviceableLocations array for broader area coverage)
-    if (location) {
-      searchQuery.$or = [
-        ...(searchQuery.$or || []),
-        { serviceableLocations: { $regex: location, $options: 'i' } },
-        { address: { $regex: location, $options: 'i' } }
-      ];
-    }
+      if (location) {
+        searchQuery.$or = [
+          ...(searchQuery.$or || []),
+          { serviceableLocations: { $regex: location, $options: 'i' } },
+          { address: { $regex: location, $options: 'i' } }
+        ];
+      }
 
     // console.log(' Search query:', JSON.stringify(searchQuery, null, 2));
 
     // Execute search with pagination
-    let chefs;
-    let totalCount;
+      let chefs;
+      let totalCount;
 
     // Smart Sorting Logic
-    if (page === '1' && (!req.query.sortBy || req.query.sortBy === 'smart')) {
+      if (page === '1' && (!req.query.sortBy || req.query.sortBy === 'smart')) {
       // For smart sort, we fetch more candidates to rank them effectively
       const candidateLimit = 50;
       const candidates = await Chef.find(searchQuery).lean();
@@ -361,7 +380,7 @@ export const searchChefs = async (req, res) => {
       const end = start + parseInt(limit);
       chefs = scoredChefs.slice(start, end);
 
-    } else {
+      } else {
       // Standard Mongo Sort
       const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -380,24 +399,27 @@ export const searchChefs = async (req, res) => {
       ]);
       chefs = result[0];
       totalCount = result[1];
-    }
-
-    const totalPages = Math.ceil(totalCount / parseInt(limit));
-
-    // console.log(` Search completed: ${chefs.length} results found`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Search completed successfully',
-      chefs: chefs,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages,
-        totalResults: totalCount,
-        hasNextPage: parseInt(page) < totalPages,
-        hasPrevPage: parseInt(page) > 1
       }
+
+      const totalPages = Math.ceil(totalCount / parseInt(limit));
+
+      // console.log(` Search completed: ${chefs.length} results found`);
+
+      return {
+        success: true,
+        message: 'Search completed successfully',
+        chefs: chefs,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages,
+          totalResults: totalCount,
+          hasNextPage: parseInt(page) < totalPages,
+          hasPrevPage: parseInt(page) > 1
+        }
+      };
     });
+    cacheService.setCacheHeader(res, cached.hit);
+    res.status(200).json(cached.value);
 
   } catch (error) {
     // console.error(' Search error:', error);
@@ -411,7 +433,12 @@ export const searchChefs = async (req, res) => {
 
 export const getChefById = async (req, res) => {
   try {
-    const chef = await Chef.findById(req.params.id).lean();
+    const cached = await cacheService.remember(`chefs:detail:v1:${req.params.id}`, CHEF_CACHE_TTL_SECONDS.detail, async () => {
+      const chef = await Chef.findById(req.params.id).lean();
+      return chef || false;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
+    const chef = cached.value;
     if (!chef) {
       return res.status(404).json({ message: 'Chef not found' });
     }
@@ -515,6 +542,7 @@ export const updateChefProfile = async (req, res) => {
       updateData,
       { new: true, runValidators: true }
     );
+    await invalidateChefCaches();
 
     res.json({
       message: 'Chef profile updated successfully',
@@ -566,6 +594,7 @@ export const deleteChef = async (req, res) => {
       { isActive: false },
       { new: true }
     );
+    await invalidateChefCaches();
 
     res.json({ message: 'Chef profile deactivated successfully' });
   } catch (err) {
@@ -576,15 +605,19 @@ export const deleteChef = async (req, res) => {
 // Get metadata for filters (Cuisines, etc.)
 export const getChefMetadata = async (req, res) => {
   try {
-    const cuisines = await Chef.distinct('specialty', { isActive: true });
-    // Flatten and unique supportedOccasions if they are arrays, but distinct works well on arrays in Mongo
-    const occasions = await Chef.distinct('supportedOccasions', { isActive: true });
+    const cached = await cacheService.remember('chefs:metadata:v1', CHEF_CACHE_TTL_SECONDS.metadata, async () => {
+      const cuisines = await Chef.distinct('specialty', { isActive: true });
+      // Flatten and unique supportedOccasions if they are arrays, but distinct works well on arrays in Mongo
+      const occasions = await Chef.distinct('supportedOccasions', { isActive: true });
 
-    res.status(200).json({
-      success: true,
-      cuisines: cuisines.sort(),
-      occasions: occasions.sort()
+      return {
+        success: true,
+        cuisines: cuisines.sort(),
+        occasions: occasions.sort()
+      };
     });
+    cacheService.setCacheHeader(res, cached.hit);
+    res.status(200).json(cached.value);
   } catch (error) {
     res.status(500).json({
       success: false,

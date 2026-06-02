@@ -168,9 +168,38 @@ test('Redis is optional and does not default to localhost without Redis env', ()
   assert.match(redisConfig, /const hasRedisConfig = Boolean/);
   assert.match(redisConfig, /process\.env\.REDIS_URL/);
   assert.match(redisConfig, /const redis = hasRedisConfig \? createRedisClient\(\) : createMemoryFallback\(\)/);
+  assert.match(redisConfig, /const store = new Map\(\)/);
+  assert.match(redisConfig, /expiresAt/);
+  assert.match(redisConfig, /patternToRegex/);
   assert.match(server, /if \(redis\.isEnabled\) \{/);
   assert.match(server, /app\.use\(session\(\{/);
   assert.match(server, /app\.use\(passport\.session\(\)\)/);
+});
+
+test('backend read caching is wired for chefs and geocoding', () => {
+  const cacheService = fs.readFileSync(path.join(backendDir, 'services/cacheService.js'), 'utf8');
+  const chefController = fs.readFileSync(path.join(backendDir, 'controllers/chefController.js'), 'utf8');
+  const geocodeRoutes = fs.readFileSync(path.join(backendDir, 'routes/geocodeRoutes.js'), 'utf8');
+  const proxyRoutes = fs.readFileSync(path.join(backendDir, 'routes/proxyRoutes.js'), 'utf8');
+
+  assert.match(cacheService, /export const remember/);
+  assert.match(cacheService, /export const stableHash/);
+  assert.match(cacheService, /export const deleteByPrefix/);
+  assert.match(cacheService, /X-Cache/);
+
+  assert.match(chefController, /cacheService\.remember\('chefs:all:v1'/);
+  assert.match(chefController, /chefs:search:v1/);
+  assert.match(chefController, /chefs:detail:v1/);
+  assert.match(chefController, /cacheService\.remember\('chefs:metadata:v1'/);
+  assert.match(chefController, /cacheService\.deleteByPrefix\('chefs:'\)/);
+  assert.match(chefController, /cacheService\.setCacheHeader/);
+
+  assert.match(geocodeRoutes, /GEOCODE_CACHE_TTL_SECONDS = 7 \* 24 \* 60 \* 60/);
+  assert.match(geocodeRoutes, /geocode:post:v1/);
+  assert.match(geocodeRoutes, /cacheService\.remember/);
+  assert.match(proxyRoutes, /geocode:proxy:v1/);
+  assert.match(proxyRoutes, /geocode:reverse:v1/);
+  assert.match(proxyRoutes, /directions:driving-car:v1/);
 });
 
 test('user model includes long-term culinary memory field', () => {
