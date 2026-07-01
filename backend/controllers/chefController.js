@@ -296,10 +296,18 @@ export const searchChefs = async (req, res) => {
 
     // Smart Sorting Logic
       if (page === '1' && (!req.query.sortBy || req.query.sortBy === 'smart')) {
-      // For smart sort, we fetch more candidates to rank them effectively
+      // For smart sort, we fetch a bounded set of candidates to rank them
+      // effectively instead of pulling the entire matching collection into
+      // memory. Pre-filter by rating so the best candidates survive the cap.
       const candidateLimit = 50;
-      const candidates = await Chef.find(searchQuery).lean();
-      totalCount = candidates.length;
+      const [candidates, matchTotal] = await Promise.all([
+        Chef.find(searchQuery)
+          .sort({ averageRating: -1, totalReviews: -1 })
+          .limit(candidateLimit)
+          .lean(),
+        Chef.countDocuments(searchQuery)
+      ]);
+      totalCount = matchTotal;
 
       // Helper for distance (Haversine)
       const getDistance = (lat1, lon1, lat2, lon2) => {
@@ -606,9 +614,12 @@ export const deleteChef = async (req, res) => {
 export const getChefMetadata = async (req, res) => {
   try {
     const cached = await cacheService.remember('chefs:metadata:v1', CHEF_CACHE_TTL_SECONDS.metadata, async () => {
-      const cuisines = await Chef.distinct('specialty', { isActive: true });
-      // Flatten and unique supportedOccasions if they are arrays, but distinct works well on arrays in Mongo
-      const occasions = await Chef.distinct('supportedOccasions', { isActive: true });
+      // Run both distinct scans in parallel — they are independent.
+      const [cuisines, occasions] = await Promise.all([
+        Chef.distinct('specialty', { isActive: true }),
+        // distinct works well on arrays in Mongo, flattening supportedOccasions
+        Chef.distinct('supportedOccasions', { isActive: true })
+      ]);
 
       return {
         success: true,

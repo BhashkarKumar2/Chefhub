@@ -58,8 +58,8 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // Check if chef exists
-    const chefDoc = await Chef.findById(selectedChefId);
+    // Check if chef exists (only pricePerHour is needed for the quote below)
+    const chefDoc = await Chef.findById(selectedChefId).select('pricePerHour').lean();
     if (!chefDoc) {
       return res.status(404).json({
         success: false,
@@ -82,7 +82,7 @@ export const createBooking = async (req, res) => {
         $lte: endOfDay
       },
       status: { $nin: ['cancelled', 'rejected'] }
-    });
+    }).select('time duration').lean();
 
     const getMinutes = (timeStr) => {
       const [hours, minutes] = timeStr.split(':').map(Number);
@@ -474,39 +474,53 @@ export const deleteBooking = async (req, res) => {
 // Get booking statistics (for analytics)
 export const getBookingStats = async (req, res) => {
   try {
-    const totalBookings = await Booking.countDocuments();
-    const pendingBookings = await Booking.countDocuments({ status: 'pending' });
-    const confirmedBookings = await Booking.countDocuments({ status: 'confirmed' });
-    const completedBookings = await Booking.countDocuments({ status: 'completed' });
-    const cancelledBookings = await Booking.countDocuments({ status: 'cancelled' });
-
-    // Service type breakdown
-    const birthdayBookings = await Booking.countDocuments({ serviceType: 'birthday' });
-    const marriageBookings = await Booking.countDocuments({ serviceType: 'marriage' });
-    const dailyBookings = await Booking.countDocuments({ serviceType: 'daily' });
-
-    // Revenue calculation
-    const totalRevenue = await Booking.aggregate([
-      { $match: { status: { $in: ['confirmed', 'completed'] } } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+    // Compute every metric in a single pass over the collection instead of
+    // issuing 10 separate queries (5 status counts + 3 service-type counts +
+    // total + revenue). $facet runs the sub-pipelines against one cursor.
+    const [facet] = await Booking.aggregate([
+      {
+        $facet: {
+          total: [{ $count: 'count' }],
+          statusBreakdown: [
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+          ],
+          serviceTypeBreakdown: [
+            { $group: { _id: '$serviceType', count: { $sum: 1 } } }
+          ],
+          revenue: [
+            { $match: { status: { $in: ['confirmed', 'completed'] } } },
+            { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+          ]
+        }
+      }
     ]);
+
+    // Fold the grouped arrays into keyed objects with sane defaults.
+    const countsByKey = (rows) =>
+      (rows || []).reduce((acc, { _id, count }) => {
+        if (_id) acc[_id] = count;
+        return acc;
+      }, {});
+
+    const statusCounts = countsByKey(facet.statusBreakdown);
+    const serviceCounts = countsByKey(facet.serviceTypeBreakdown);
 
     res.status(200).json({
       success: true,
       data: {
-        totalBookings,
+        totalBookings: facet.total[0]?.count || 0,
         statusBreakdown: {
-          pending: pendingBookings,
-          confirmed: confirmedBookings,
-          completed: completedBookings,
-          cancelled: cancelledBookings
+          pending: statusCounts.pending || 0,
+          confirmed: statusCounts.confirmed || 0,
+          completed: statusCounts.completed || 0,
+          cancelled: statusCounts.cancelled || 0
         },
         serviceTypeBreakdown: {
-          birthday: birthdayBookings,
-          marriage: marriageBookings,
-          daily: dailyBookings
+          birthday: serviceCounts.birthday || 0,
+          marriage: serviceCounts.marriage || 0,
+          daily: serviceCounts.daily || 0
         },
-        totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0
+        totalRevenue: facet.revenue[0]?.total || 0
       }
     });
 

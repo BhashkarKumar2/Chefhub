@@ -76,9 +76,15 @@ router.post('/chef-recommendations', verifyToken, async (req, res) => {
       enrichedProfile.bio = `${enrichedProfile.bio || ''}\n\nAdditional learned preferences: ${memoryNotes.join('. ')}`;
     }
 
-    // Get available chefs (can still filter by basic active status)
-    let chefQuery = { isActive: true };
-    const availableChefs = await Chef.find(chefQuery).select('name specialty pricePerHour experienceYears bio averageRating totalReviews serviceableLocations supportedOccasions');
+    // Get available chefs (top-rated active chefs only). Bounding this set keeps
+    // the LLM prompt (and its token cost/latency) constant as the roster grows,
+    // and .lean() avoids hydrating full Mongoose documents we only read from.
+    // city/state are included because the recommendation prompt ranks on location.
+    const availableChefs = await Chef.find({ isActive: true })
+      .select('name specialty city state pricePerHour experienceYears bio averageRating totalReviews serviceableLocations supportedOccasions')
+      .sort({ averageRating: -1, totalReviews: -1 })
+      .limit(40)
+      .lean();
 
     const recommendations = await geminiService.getChefRecommendations(
       enrichedProfile,

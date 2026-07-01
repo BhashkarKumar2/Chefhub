@@ -321,6 +321,8 @@ bookingSchema.index({ chef: 1, date: 1 });
 bookingSchema.index({ user: 1, createdAt: -1 });
 bookingSchema.index({ status: 1, serviceType: 1 });
 bookingSchema.index({ date: 1, status: 1 });
+// Backs the chef earnings dashboard (chef + payment/booking status lookups).
+bookingSchema.index({ chef: 1, paymentStatus: 1 });
 
 // Legacy indexes
 bookingSchema.index({ chefId: 1, userId: 1 });

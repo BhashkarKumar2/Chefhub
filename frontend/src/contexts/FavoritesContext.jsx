@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -14,20 +14,28 @@ export const useFavorites = () => {
 };
 
 export const FavoritesProvider = ({ children }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Sync with backend when authenticated, or load from localStorage when not
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchFavoritesFromBackend();
-    } else {
-      loadFavoritesFromStorage();
+  const updateLocalStorage = useCallback((newFavorites) => {
+    try {
+      localStorage.setItem('chefFavorites', JSON.stringify(newFavorites));
+    } catch (error) {
+      console.error('Error updating localStorage:', error);
     }
-  }, [isAuthenticated]);
+  }, []);
 
-  const fetchFavoritesFromBackend = async () => {
+  const loadFavoritesFromStorage = useCallback(() => {
+    try {
+      const savedFavorites = localStorage.getItem('chefFavorites');
+      setFavorites(savedFavorites ? JSON.parse(savedFavorites) : []);
+    } catch (error) {
+      console.error('Error loading favorites from storage:', error);
+    }
+  }, []);
+
+  const fetchFavoritesFromBackend = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get('/user/favorites');
@@ -39,51 +47,55 @@ export const FavoritesProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadFavoritesFromStorage]);
 
-  const loadFavoritesFromStorage = () => {
-    try {
-      const savedFavorites = localStorage.getItem('chefFavorites');
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
-      } else {
-        setFavorites([]);
-      }
-    } catch (error) {
-      console.error('Error loading favorites from storage:', error);
+  // Sync with backend when authenticated, or load from localStorage when not
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchFavoritesFromBackend();
+    } else {
+      loadFavoritesFromStorage();
     }
-  };
+  }, [isAuthenticated, fetchFavoritesFromBackend, loadFavoritesFromStorage]);
 
-  // Add chef to favorites
-  const addToFavorites = async (chef) => {
-    // Optimistic update
-    const isAlreadyFavorite = favorites.some(fav => fav._id === chef._id);
-    if (isAlreadyFavorite) return;
-
+  // Add chef to favorites. Uses functional state updates so the callback
+  // identity stays stable across favorite changes.
+  const addToFavorites = useCallback(async (chef) => {
     const newFavorite = { ...chef, dateAdded: new Date().toISOString() };
-    setFavorites(prev => [...prev, newFavorite]);
+
+    let alreadyPresent = false;
+    setFavorites(prev => {
+      if (prev.some(fav => fav._id === chef._id)) {
+        alreadyPresent = true;
+        return prev;
+      }
+      const next = [...prev, newFavorite];
+      if (!isAuthenticated) updateLocalStorage(next);
+      return next;
+    });
+    if (alreadyPresent) return;
 
     if (isAuthenticated) {
       try {
         await api.post(`/user/favorites/${chef._id}`);
-        // Optional: Re-fetch to ensure sync, or trust optimistic update
       } catch (error) {
         console.error('Error adding favorite to backend:', error);
         toast.error('Failed to save favorite to account');
         // Revert optimistic update
         setFavorites(prev => prev.filter(f => f._id !== chef._id));
       }
-    } else {
-      // Local storage update
-      updateLocalStorage([...favorites, newFavorite]);
     }
-  };
+  }, [isAuthenticated, updateLocalStorage]);
 
   // Remove chef from favorites
-  const removeFromFavorites = async (chefId) => {
-    // Optimistic update
-    const previousFavorites = [...favorites];
-    setFavorites(prev => prev.filter(chef => chef._id !== chefId));
+  const removeFromFavorites = useCallback(async (chefId) => {
+    let previousFavorites = [];
+    setFavorites(prev => {
+      previousFavorites = prev;
+      const next = prev.filter(chef => chef._id !== chefId);
+      if (!isAuthenticated) updateLocalStorage(next);
+      return next;
+    });
 
     if (isAuthenticated) {
       try {
@@ -94,49 +106,34 @@ export const FavoritesProvider = ({ children }) => {
         // Revert optimistic update
         setFavorites(previousFavorites);
       }
-    } else {
-      // Local storage update
-      const newFavorites = favorites.filter(chef => chef._id !== chefId);
-      updateLocalStorage(newFavorites);
     }
-  };
-
-  const updateLocalStorage = (newFavorites) => {
-    try {
-      localStorage.setItem('chefFavorites', JSON.stringify(newFavorites));
-    } catch (error) {
-      console.error('Error updating localStorage:', error);
-    }
-  };
+  }, [isAuthenticated, updateLocalStorage]);
 
   // Check if chef is in favorites
-  const isFavorite = (chefId) => {
+  const isFavorite = useCallback((chefId) => {
     return favorites.some(chef => chef._id === chefId);
-  };
+  }, [favorites]);
 
   // Toggle favorite status
-  const toggleFavorite = (chef) => {
-    if (isFavorite(chef._id)) {
+  const toggleFavorite = useCallback((chef) => {
+    if (favorites.some(f => f._id === chef._id)) {
       removeFromFavorites(chef._id);
       return false; // Removed
-    } else {
-      addToFavorites(chef);
-      return true; // Added
     }
-  };
+    addToFavorites(chef);
+    return true; // Added
+  }, [favorites, addToFavorites, removeFromFavorites]);
 
-  // Get favorite count
-  const getFavoriteCount = () => favorites.length;
+  const getFavoriteCount = useCallback(() => favorites.length, [favorites]);
 
-  // Clear all favorites
-  const clearAllFavorites = () => {
+  const clearAllFavorites = useCallback(() => {
     setFavorites([]);
     if (!isAuthenticated) {
       localStorage.removeItem('chefFavorites');
     }
-  };
+  }, [isAuthenticated]);
 
-  const value = {
+  const value = useMemo(() => ({
     favorites,
     addToFavorites,
     removeFromFavorites,
@@ -145,7 +142,7 @@ export const FavoritesProvider = ({ children }) => {
     getFavoriteCount,
     clearAllFavorites,
     loading
-  };
+  }), [favorites, addToFavorites, removeFromFavorites, isFavorite, toggleFavorite, getFavoriteCount, clearAllFavorites, loading]);
 
   return (
     <FavoritesContext.Provider value={value}>

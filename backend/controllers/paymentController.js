@@ -357,48 +357,52 @@ export const getChefEarnings = async (req, res) => {
     }
 
     const chefId = req.user.id;
+    const chefObjectId = new mongoose.Types.ObjectId(chefId);
 
-    // Aggregation pipeline to calculate totals
-    const stats = await Booking.aggregate([
-      {
-        $match: {
-          chef: new mongoose.Types.ObjectId(chefId),
-          paymentStatus: 'paid'
+    // These three reads are independent — run them concurrently instead of
+    // waiting for each round-trip in series.
+    const [stats, recentTransactions, pendingStats] = await Promise.all([
+      // Aggregation pipeline to calculate totals
+      Booking.aggregate([
+        {
+          $match: {
+            chef: chefObjectId,
+            paymentStatus: 'paid'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalEarnings: { $sum: '$chefEarnings' },
+            totalBookings: { $sum: 1 }
+          }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          totalEarnings: { $sum: '$chefEarnings' },
-          totalBookings: { $sum: 1 }
+      ]),
+      // Get recent transactions
+      Booking.find({
+        chef: chefId,
+        paymentStatus: 'paid'
+      })
+        .select('date totalPrice chefEarnings adminCommission status paymentStatus createdAt user serviceType')
+        .populate('user', 'name')
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      Booking.aggregate([
+        {
+          $match: {
+            chef: chefObjectId,
+            status: 'pending'
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            potentialEarnings: { $sum: '$chefEarnings' },
+            count: { $sum: 1 }
+          }
         }
-      }
-    ]);
-
-    // Get recent transactions
-    const recentTransactions = await Booking.find({
-      chef: chefId,
-      paymentStatus: 'paid'
-    })
-      .select('date totalPrice chefEarnings adminCommission status paymentStatus createdAt user serviceType')
-      .populate('user', 'name')
-      .sort({ createdAt: -1 })
-      .limit(10);
-
-    const pendingStats = await Booking.aggregate([
-      {
-        $match: {
-          chef: new mongoose.Types.ObjectId(chefId),
-          status: 'pending'
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          potentialEarnings: { $sum: '$chefEarnings' },
-          count: { $sum: 1 }
-        }
-      }
+      ])
     ]);
 
     res.status(200).json({

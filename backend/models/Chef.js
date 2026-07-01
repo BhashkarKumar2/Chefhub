@@ -200,6 +200,9 @@ chefSchema.index({ specialty: 1 }); // For cuisine filtering
 chefSchema.index({ city: 1 }); // For location filtering
 chefSchema.index({ isActive: 1 }); // For filtering active chefs
 chefSchema.index({ averageRating: -1 }); // For sorting by rating
+// Compound index backing the default listing/search sort (active chefs ranked
+// by rating then review count) so Mongo can serve it index-only, no in-memory sort.
+chefSchema.index({ isActive: 1, averageRating: -1, totalReviews: -1 });
 chefSchema.index({ rating: -1 }); // Legacy index for backward compatibility
 chefSchema.index({ pricePerHour: 1 }); // For price range filtering
 chefSchema.index({ 'locationCoords.lat': 1, 'locationCoords.lon': 1 }); // For geo queries

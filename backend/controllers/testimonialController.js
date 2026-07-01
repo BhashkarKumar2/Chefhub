@@ -2,10 +2,13 @@ import Testimonial from '../models/Testimonial.js';
 import User from '../models/User.js';
 import Chef from '../models/Chef.js';
 import Booking from '../models/Booking.js';
-import redis from '../config/redis.js';
+import cacheService from '../services/cacheService.js';
 
 const CACHE_KEY_PREFIX = 'testimonials:public';
 const CACHE_TTL = 3600; // 1 hour
+
+// Invalidate every cached public-testimonial list via a non-blocking SCAN.
+const invalidateTestimonialCaches = () => cacheService.deleteByPrefix(`${CACHE_KEY_PREFIX}:`);
 
 // Create a new testimonial
 export const createTestimonial = async (req, res) => {
@@ -96,17 +99,8 @@ export const createTestimonial = async (req, res) => {
 
     await newTestimonial.save();
 
-    // Clear public cache
-    await redis.del(`${CACHE_KEY_PREFIX}:default`);
-
-    // Pattern delete is tricky with ioredis without scan, simple clear of main list is good for now
-    // For more robust solution, we'd scan and delete all 'testimonials:public:*'
-
-    // Clear wildcard cache (simplified approach - clear common keys)
-    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
+    // Clear public testimonial caches (non-blocking SCAN under the hood)
+    await invalidateTestimonialCaches();
 
     res.status(201).json({
       message: 'Testimonial published successfully!',
@@ -154,25 +148,19 @@ export const getTestimonials = async (req, res) => {
 
     const limitNum = Number(limit);
 
-    // Generate cache key based on query params
-    const cacheKey = `${CACHE_KEY_PREFIX}:${JSON.stringify({ featured, limit: limitNum, chef })}`;
+    // Generate a stable cache key based on query params
+    const cacheKey = `${CACHE_KEY_PREFIX}:${cacheService.stableHash({ featured, limit: limitNum, chef })}`;
 
-    // Try to get from cache
-    const cachedData = await redis.get(cacheKey);
-    if (cachedData) {
-      return res.json(JSON.parse(cachedData));
-    }
+    const cached = await cacheService.remember(cacheKey, CACHE_TTL, async () => {
+      return Testimonial.find(filter)
+        .populate('chef', 'name specialty profileImage')
+        .sort({ isFeatured: -1, createdAt: -1 })
+        .limit(limitNum)
+        .lean();
+    });
+    cacheService.setCacheHeader(res, cached.hit);
 
-    const testimonials = await Testimonial.find(filter)
-      .populate('chef', 'name specialty profileImage')
-      .sort({ isFeatured: -1, createdAt: -1 })
-      .limit(limitNum)
-      .lean();
-
-    // Cache the result
-    await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(testimonials));
-
-    res.json(testimonials);
+    res.json(cached.value);
   } catch (error) {
     console.error('Get testimonials error:', error);
     res.status(500).json({
@@ -340,11 +328,8 @@ export const updateTestimonial = async (req, res) => {
 
     await existingTestimonial.save();
 
-    // Clear cache
-    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
+    // Clear cache (non-blocking SCAN under the hood)
+    await invalidateTestimonialCaches();
 
     res.json({
       message: 'Testimonial updated successfully!',
@@ -387,11 +372,8 @@ export const deleteTestimonial = async (req, res) => {
 
     await Testimonial.findByIdAndDelete(id);
 
-    // Clear cache
-    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
+    // Clear cache (non-blocking SCAN under the hood)
+    await invalidateTestimonialCaches();
 
     res.json({ message: 'Testimonial deleted successfully' });
   } catch (error) {
@@ -422,11 +404,8 @@ export const approveTestimonial = async (req, res) => {
 
     await testimonial.save();
 
-    // Clear cache
-    const keys = await redis.keys(`${CACHE_KEY_PREFIX}:*`);
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
+    // Clear cache (non-blocking SCAN under the hood)
+    await invalidateTestimonialCaches();
 
     res.json({
       message: 'Testimonial approved successfully',
