@@ -9,7 +9,7 @@ import {
   getBookingStats
 } from '../controllers/bookingController.js';
 
-import authMiddleware from '../middleware/authMiddleware.js';
+import authMiddleware, { requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ router.delete('/:id', authMiddleware, deleteBooking);
 router.get('/chef/:chefId', authMiddleware, getChefBookings);
 
 // Admin routes
-// Get booking statistics
-router.get('/admin/stats', getBookingStats);
+// Get booking statistics (auth + admin allowlist required)
+router.get('/admin/stats', authMiddleware, requireAdmin, getBookingStats);
 
 export default router;

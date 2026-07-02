@@ -2,6 +2,7 @@ import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
+import { logger } from '../utils/logger.js';
 
 // Initialize Razorpay instance
 const razorpay = new Razorpay({
@@ -12,39 +13,56 @@ const razorpay = new Razorpay({
 // Create payment order
 export const createPaymentOrder = async (req, res) => {
   try {
-    const { amount, currency = 'INR', bookingId } = req.body;
+    const { bookingId } = req.body;
 
-    // console.log('=== Payment Order Creation Debug ===');
-    // console.log('Request body:', req.body);
-    // console.log('Amount received:', amount, typeof amount);
-    // console.log('Currency:', currency);
-    // console.log('Booking ID:', bookingId);
-
-    // Validate required fields
-    if (!amount || !bookingId) {
-      // console.log('Validation failed: Missing amount or bookingId');
+    if (!bookingId) {
       return res.status(400).json({
         success: false,
-        message: 'Amount and booking ID are required'
+        message: 'Booking ID is required'
       });
     }
 
     // Verify booking exists
     const booking = await Booking.findById(bookingId);
     if (!booking) {
-      // console.log('Booking not found for ID:', bookingId);
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
       });
     }
 
-    // console.log('Booking found:', booking._id);
+    // SECURITY: only the user who owns the booking may pay for it.
+    if (!booking.user || booking.user.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to pay for this booking'
+      });
+    }
+
+    // Idempotency: never create a fresh order for an already-paid booking.
+    if (booking.paymentStatus === 'paid') {
+      return res.status(409).json({
+        success: false,
+        message: 'This booking has already been paid'
+      });
+    }
+
+    // SECURITY: the payable amount is derived from the trusted server-side
+    // booking total, never from the client. This prevents a client from
+    // paying an arbitrary (e.g. ₹1) amount for an expensive booking.
+    const amount = booking.totalPrice;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Booking has no payable amount'
+      });
+    }
+    const currency = booking.currency || 'INR';
 
     // Create Razorpay order
     const orderOptions = {
       amount: Math.round(amount * 100), // Amount in paise
-      currency: currency,
+      currency,
       receipt: `bk_${bookingId.slice(-8)}_${Date.now().toString().slice(-8)}`, // Max 40 chars
       notes: {
         bookingId: bookingId,
@@ -54,17 +72,9 @@ export const createPaymentOrder = async (req, res) => {
       }
     };
 
-    // console.log('Order options for Razorpay:', orderOptions);
-    // // console.log('Razorpay instance configured with:',
-    //  {
-    //   key_id: process.env.RAZORPAY_KEY_ID ? 'Set' : 'Not set',
-    //   key_secret: process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set'
-    // });
-
     const order = await razorpay.orders.create(orderOptions);
-    // console.log('Razorpay order created successfully:', order);
 
-    // COMMISSION LOGIC (20% Split)
+    // COMMISSION LOGIC (20% Split) — computed from the trusted amount.
     const COMMISSION_RATE = 20; // 20%
     const adminCommission = Math.round((amount * COMMISSION_RATE) / 100);
     const chefEarnings = amount - adminCommission;
@@ -94,22 +104,10 @@ export const createPaymentOrder = async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('=== Payment Order Creation Error ===');
-    // console.error('Error details:', error);
-    // console.error('Error message:', error.message);
-    // console.error('Error stack:', error.stack);
-
-    // Check if it's a Razorpay specific error
-    if (error.statusCode) {
-      // console.error('Razorpay Error Code:', error.statusCode);
-      // console.error('Razorpay Error Details:', error.error);
-    }
-
+    logger.error('Payment order creation failed', { error: error.message });
     res.status(500).json({
       success: false,
-      message: 'Error creating payment order',
-      error: error.message,
-      details: error.error || null
+      message: 'Error creating payment order'
     });
   }
 };
@@ -148,15 +146,48 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // SECURITY: Verify Razorpay signature
+    // SECURITY: only the booking owner may confirm its payment.
+    if (!booking.user || booking.user.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized for this booking'
+      });
+    }
+
+    // Idempotency: if already paid, succeed without re-processing.
+    if (booking.paymentStatus === 'paid') {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already verified',
+        data: { booking }
+      });
+    }
+
+    // SECURITY: the order being verified must be the exact order that was
+    // created for this booking (createPaymentOrder stored it in paymentId).
+    // Without this, a valid signature from any cheap order the attacker
+    // created could be replayed to confirm a different/expensive booking.
+    if (!booking.paymentId || booking.paymentId !== razorpay_order_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order does not match this booking'
+      });
+    }
+
+    // SECURITY: Verify Razorpay signature (constant-time comparison)
     const body = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
       .update(body.toString())
       .digest('hex');
 
-    if (expectedSignature !== razorpay_signature) {
-      console.error('Payment signature verification failed');
+    const expectedBuf = Buffer.from(expectedSignature, 'utf8');
+    const providedBuf = Buffer.from(String(razorpay_signature), 'utf8');
+    const signatureValid = expectedBuf.length === providedBuf.length &&
+      crypto.timingSafeEqual(expectedBuf, providedBuf);
+
+    if (!signatureValid) {
+      logger.warn('Payment signature verification failed', { bookingId });
       return res.status(400).json({
         success: false,
         message: 'Payment verification failed: Invalid signature'
@@ -187,11 +218,10 @@ export const verifyPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error verifying payment:', error);
+    logger.error('Payment verification failed', { error: error.message });
     res.status(500).json({
       success: false,
-      message: 'Error verifying payment',
-      error: error.message
+      message: 'Error verifying payment'
     });
   }
 };
@@ -217,10 +247,27 @@ export const handlePaymentFailure = async (req, res) => {
       });
     }
 
-    // Update booking status
+    // SECURITY: only the booking owner may mark their booking as failed.
+    if (!booking.user || booking.user.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized for this booking'
+      });
+    }
+
+    // SECURITY: never let a "failure" report cancel an already-paid booking.
+    if (booking.paymentStatus === 'paid') {
+      return res.status(409).json({
+        success: false,
+        message: 'Cannot mark a paid booking as failed'
+      });
+    }
+
+    // Update booking status (sanitize/limit the client-supplied reason)
+    const reason = String(error?.description || 'Unknown error').replace(/[<>]/g, '').slice(0, 200);
     booking.paymentStatus = 'failed';
     booking.status = 'cancelled';
-    booking.notes = `Payment failed: ${error?.description || 'Unknown error'}`;
+    booking.notes = `Payment failed: ${reason}`;
     booking.updatedAt = new Date();
     await booking.save();
 
@@ -231,11 +278,10 @@ export const handlePaymentFailure = async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('Error handling payment failure:', error);
+    logger.error('Handling payment failure failed', { error: error.message });
     res.status(500).json({
       success: false,
-      message: 'Error handling payment failure',
-      error: error.message
+      message: 'Error handling payment failure'
     });
   }
 };
@@ -256,6 +302,18 @@ export const getPaymentStatus = async (req, res) => {
       });
     }
 
+    // SECURITY: this response contains customer + chef PII. Only the booking
+    // owner or the assigned chef may read it (IDOR prevention).
+    const requesterId = req.user.id.toString();
+    const ownerId = booking.user && (booking.user._id || booking.user).toString();
+    const chefId = booking.chef && (booking.chef._id || booking.chef).toString();
+    if (requesterId !== ownerId && requesterId !== chefId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to view this booking'
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -269,11 +327,10 @@ export const getPaymentStatus = async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('Error getting payment status:', error);
+    logger.error('Getting payment status failed', { error: error.message });
     res.status(500).json({
       success: false,
-      message: 'Error getting payment status',
-      error: error.message
+      message: 'Error getting payment status'
     });
   }
 };
@@ -289,6 +346,15 @@ export const refundPayment = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
+      });
+    }
+
+    // SECURITY: only the booking owner may request a refund on their booking.
+    // Without this, anyone could trigger real refunds on arbitrary bookings.
+    if (!booking.user || booking.user.toString() !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to refund this booking'
       });
     }
 
@@ -336,11 +402,10 @@ export const refundPayment = async (req, res) => {
     });
 
   } catch (error) {
-    // console.error('Error processing refund:', error);
+    logger.error('Processing refund failed', { error: error.message });
     res.status(500).json({
       success: false,
-      message: 'Error processing refund',
-      error: error.message
+      message: 'Error processing refund'
     });
   }
 };

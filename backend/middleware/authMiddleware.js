@@ -91,7 +91,10 @@ export const validateToken = (token) => {
   }
 };
 
-// Middleware to check if user is admin
+// Middleware to check if user is admin.
+// The User model has no `role` field yet, so admins are recognised via an
+// ADMIN_EMAILS allowlist (comma-separated). Fails closed: if the allowlist is
+// unset or the user is not on it, access is denied.
 export const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -100,7 +103,15 @@ export const requireAdmin = async (req, res, next) => {
       });
     }
 
-    if (req.user.role !== 'admin') {
+    const adminEmails = (process.env.ADMIN_EMAILS || '')
+      .split(',')
+      .map(email => email.trim().toLowerCase())
+      .filter(Boolean);
+
+    const userEmail = (req.user.email || '').toLowerCase();
+    const isAdmin = req.user.role === 'admin' || (userEmail && adminEmails.includes(userEmail));
+
+    if (!isAdmin) {
       return res.status(403).json({
         message: 'Access denied. Admin privileges required.'
       });

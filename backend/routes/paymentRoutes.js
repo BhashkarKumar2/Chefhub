@@ -15,19 +15,19 @@ const router = express.Router();
 // Get earnings stats (Protected)
 router.get('/earnings', authMiddleware, getChefEarnings);
 
-// Create payment order
-router.post('/create-order', createPaymentOrder);
+// Create payment order (Protected — must own the booking)
+router.post('/create-order', authMiddleware, createPaymentOrder);
 
-// Verify payment
-router.post('/verify', verifyPayment);
+// Verify payment (Protected — must own the booking)
+router.post('/verify', authMiddleware, verifyPayment);
 
-// Handle payment failure
-router.post('/failure', handlePaymentFailure);
+// Handle payment failure (Protected — must own the booking)
+router.post('/failure', authMiddleware, handlePaymentFailure);
 
-// Get payment status
-router.get('/status/:bookingId', getPaymentStatus);
+// Get payment status (Protected — owner or chef only)
+router.get('/status/:bookingId', authMiddleware, getPaymentStatus);
 
-// Process refund (protected route) - temporarily disabled auth
-router.post('/refund', refundPayment);
+// Process refund (Protected — owner only)
+router.post('/refund', authMiddleware, refundPayment);
 
 export default router;

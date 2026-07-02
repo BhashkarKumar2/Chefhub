@@ -1,14 +1,28 @@
 import express from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { registerUser, loginUser, validateToken, getCurrentUser, verifyFirebaseOTP } from './authController.js';
 import { verifyToken as authMiddleware } from '../middleware/authMiddleware.js';
 import { setPassword, changePassword, checkPasswordStatus, forgotPassword, verifyResetToken, resetPassword } from '../controllers/passwordController.js';
 import { verifyEmail, resendVerificationEmail } from '../controllers/emailVerificationController.js';
 import { validate, registerValidationRules, loginValidationRules, forgotPasswordValidationRules, resetPasswordValidationRules } from '../middleware/validationMiddleware.js';
+import redis from '../config/redis.js';
 
 const router = express.Router();
+
+// SECURITY: Instead of redirecting the browser to the frontend with the JWT in
+// the URL query string (which leaks via history, Referer headers and logs), we
+// mint a short-lived, single-use handoff code, stash the token server-side, and
+// let the SPA exchange the code for the token over a POST.
+const OAUTH_CODE_TTL_SECONDS = 120;
+
+const storeOAuthHandoff = async (payload) => {
+  const code = crypto.randomBytes(32).toString('hex');
+  await redis.setex(`oauth:code:${code}`, OAUTH_CODE_TTL_SECONDS, JSON.stringify(payload));
+  return code;
+};
 
 // Rate limiters for authentication endpoints
 const registerLimiter = process.env.NODE_ENV === 'production'
@@ -75,6 +89,30 @@ router.post('/verify-firebase-otp', verifyFirebaseOTP);
 // Token validation route
 router.post('/validate-token', validateToken);
 
+// OAuth handoff: exchange a short-lived single-use code for the JWT.
+router.post('/exchange-code', async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code || !/^[a-f0-9]{64}$/.test(code)) {
+      return res.status(400).json({ message: 'Invalid code' });
+    }
+
+    const key = `oauth:code:${code}`;
+    const raw = await redis.get(key);
+    if (!raw) {
+      return res.status(400).json({ message: 'Code expired or already used' });
+    }
+
+    // Single-use: delete before returning so a code can never be replayed.
+    await redis.del(key);
+
+    const payload = JSON.parse(raw);
+    res.json(payload); // { token, user }
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to complete sign-in' });
+  }
+});
+
 // Get current user (protected route)
 router.get('/me', authMiddleware, getCurrentUser);
 
@@ -100,7 +138,7 @@ router.get('/google/callback',
       ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
   }),
-  (req, res) => {
+  async (req, res) => {
     try {
       // console.log('Google OAuth callback triggered');
       // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
@@ -119,16 +157,18 @@ router.get('/google/callback',
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('Generated JWT token for user:', req.user.email);
 
-      // Redirect to frontend with token as query parameter
+      // SECURITY: hand off via a short-lived single-use code instead of putting
+      // the JWT in the redirect URL (avoids token leakage via history/logs).
       const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
-      const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
-      // console.log('Redirecting to:', redirectUrl);
+      const code = await storeOAuthHandoff({
+        token,
+        user: { id: req.user._id, email: req.user.email, name: req.user.name }
+      });
 
-      res.redirect(redirectUrl);
+      res.redirect(`${baseUrl}/auth-success?code=${code}`);
     } catch (error) {
       // console.error('âŒ Google OAuth callback error:', error);
       const errorUrl = process.env.NODE_ENV === 'production'
@@ -151,7 +191,7 @@ router.get('/facebook/callback',
       ? 'https://chefhub-poou.vercel.app/login'
       : 'http://localhost:5173/login'
   }),
-  (req, res) => {
+  async (req, res) => {
     try {
       // console.log('Facebook OAuth callback triggered');
       // console.log('Authenticated user:', req.user ? req.user.email : 'No user');
@@ -170,16 +210,18 @@ router.get('/facebook/callback',
         name: req.user.name,
         email: req.user.email
       }, process.env.JWT_SECRET, { expiresIn: "1d" });
-      // console.log('Generated JWT token for user:', req.user.email);
 
-      // Redirect to frontend with token as query parameter
+      // SECURITY: hand off via a short-lived single-use code instead of putting
+      // the JWT in the redirect URL (avoids token leakage via history/logs).
       const baseUrl = process.env.NODE_ENV === 'production'
         ? 'https://chefhub-poou.vercel.app'
         : 'http://localhost:5173';
-      const redirectUrl = `${baseUrl}/auth-success?token=${token}&userId=${req.user._id}&email=${encodeURIComponent(req.user.email)}&name=${encodeURIComponent(req.user.name)}`;
-      // console.log('Redirecting to:', redirectUrl);
+      const code = await storeOAuthHandoff({
+        token,
+        user: { id: req.user._id, email: req.user.email, name: req.user.name }
+      });
 
-      res.redirect(redirectUrl);
+      res.redirect(`${baseUrl}/auth-success?code=${code}`);
     } catch (error) {
       // console.error('Facebook OAuth callback error:', error);
       const errorUrl = process.env.NODE_ENV === 'production'
