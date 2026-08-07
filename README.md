@@ -7,6 +7,8 @@
 
 **Chefhub** is a full-stack web application that bridges the gap between culinary professionals and food enthusiasts. It features a robust booking system, real-time communication, and an AI-powered chef assistant to democratize access to professional culinary advice.
 
+> 📊 **Explore the System Architecture:** Check out the [ARCHITECTURE.md](./ARCHITECTURE.md) file for detailed Mermaid.js diagrams covering the system design, booking flow, and AI integration.
+
 ---
 
 ##  Key Features
