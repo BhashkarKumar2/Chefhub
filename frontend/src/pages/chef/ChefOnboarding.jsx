@@ -73,12 +73,40 @@ const ChefOnboarding = () => {
 
   const [locationError, setLocationError] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
+  const [bioLoading, setBioLoading] = useState(false);
 
-  // Auto-populate email from logged-in user
+  // Auto-populate name & email from logged-in user's account
   useEffect(() => {
-    if (user?.email) {
-      setFormData(prev => ({ ...prev, email: user.email }));
-    }
+    if (!user) return;
+    setFormData(prev => ({
+      ...prev,
+      email: user.email || prev.email,
+      // Only prefill name if the chef hasn't typed anything yet
+      fullName: prev.fullName || user.name || ''
+    }));
+  }, [user]);
+
+  // Prefill phone from the account profile (not carried in the auth token)
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get(`/user/profile/${user.id}`);
+        if (cancelled || !data?.phone) return;
+        // Account phone may be stored with a country code (+91 / 91);
+        // the onboarding form wants a bare 10-digit Indian number.
+        const digits = String(data.phone).replace(/\D/g, '');
+        const local = digits.length > 10 ? digits.slice(-10) : digits;
+        if (/^[6-9]\d{9}$/.test(local)) {
+          setFormData(prev => (prev.phone ? prev : { ...prev, phone: local }));
+        }
+      } catch {
+        // Non-fatal: chef can still type the phone manually
+      }
+    })();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Auto-generate complete address when city and state change
@@ -115,6 +143,84 @@ const ChefOnboarding = () => {
       setLocationLoading(false);
     }
   };
+  // Use the browser's geolocation (with the user's permission) to fill the
+  // location fields instead of typing city/state and clicking "Set Location".
+  const handleUseMyLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setLocationError('Your browser does not support location access. Please enter city and state manually.');
+      return;
+    }
+
+    setLocationError('');
+    setGeoLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        // Coords are enough to verify the location; reverse-geocode fills the text fields.
+        setFormData(prev => ({ ...prev, locationLat: latitude, locationLon: longitude }));
+
+        try {
+          const { data } = await api.post('/geocode/reverse', { lat: latitude, lon: longitude });
+          setFormData(prev => {
+            const city = data.city || prev.city;
+            const state = data.state || prev.state;
+            return {
+              ...prev,
+              city,
+              state,
+              address: data.label || (city && state ? `${city}, ${state}` : prev.address)
+            };
+          });
+          toast.success('Location detected and verified!');
+        } catch {
+          // We still have coords, so the form can be submitted; only the text fields are missing.
+          toast.success('Location captured. Please confirm your city and state.');
+          setLocationError('Could not look up your address automatically. Please fill city and state.');
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (error) => {
+        setGeoLoading(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location permission denied. Please enter city and state manually.');
+        } else {
+          setLocationError('Could not get your location. Please enter city and state manually.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // Draft the bio with AI from the chef's specialties/experience.
+  const handleDraftBio = async () => {
+    if (formData.specialties.length === 0) {
+      toast.error('Select at least one specialty first, then draft with AI.');
+      return;
+    }
+    setBioLoading(true);
+    try {
+      const { data } = await api.post('/ai/generate-chef-bio', {
+        name: formData.fullName,
+        specialties: formData.specialties,
+        experienceYears: formData.experience,
+        serviceType: formData.serviceTypes
+      });
+      if (data?.data?.bio) {
+        setFormData(prev => ({ ...prev, bio: data.data.bio }));
+        toast.success('Bio drafted! Feel free to edit it.');
+      } else {
+        toast.error('Could not draft a bio. Please write one manually.');
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to draft bio. Please write one manually.';
+      toast.error(msg);
+    } finally {
+      setBioLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -490,7 +596,26 @@ const ChefOnboarding = () => {
                 <label className={getClass('block text-sm font-medium text-gray-700 mb-3', 'block text-sm font-medium text-gray-200 mb-3')}>
                   Location
                 </label>
-                
+
+                {/* One-tap geolocation: ask permission instead of manual entry */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={handleUseMyLocation}
+                    disabled={geoLoading}
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl font-semibold border-2 border-orange-500 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {geoLoading ? 'Detecting location...' : '📍 Use my current location'}
+                  </button>
+                  <p className={getClass('text-xs text-gray-500 mt-1', 'text-xs text-gray-400 mt-1')}>
+                    We'll ask your browser for permission and fill in the fields below automatically. You can still edit them.
+                  </p>
+                </div>
+
                 {/* City and State Row */}
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -609,17 +734,32 @@ const ChefOnboarding = () => {
                 onChange={handleCheckboxChange}
               />
               
-              <TextareaInput
-                label="Bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                placeholder="Describe your culinary experience and expertise (50-1000 characters)"
-                minLength="50"
-                maxLength="1000"
-                required
-                rows={5}
-              />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className={getClass('block text-sm font-medium text-gray-700', 'block text-sm font-medium text-gray-200')}>
+                    Bio
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleDraftBio}
+                    disabled={bioLoading || formData.specialties.length === 0}
+                    title={formData.specialties.length === 0 ? 'Select at least one specialty first' : 'Draft a bio with AI'}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {bioLoading ? 'Drafting...' : '✨ Draft with AI'}
+                  </button>
+                </div>
+                <TextareaInput
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  placeholder="Describe your culinary experience and expertise (50-1000 characters) — or let AI draft it for you"
+                  minLength="50"
+                  maxLength="1000"
+                  required
+                  rows={5}
+                />
+              </div>
             </div>
 
             {/* Professional Details Section */}

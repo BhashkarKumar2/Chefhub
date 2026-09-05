@@ -185,6 +185,42 @@ router.post('/generate-menu', verifyToken, async (req, res) => {
   }
 });
 
+// Draft a chef profile bio from onboarding inputs
+router.post('/generate-chef-bio', verifyToken, async (req, res) => {
+  try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        message: 'AI service is not configured'
+      });
+    }
+
+    const { name, specialties, experienceYears, serviceType } = req.body;
+
+    if (!specialties || (Array.isArray(specialties) && specialties.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Select at least one specialty before drafting a bio'
+      });
+    }
+
+    const bio = await geminiService.generateChefBio({
+      name,
+      specialties,
+      experienceYears,
+      serviceType
+    });
+
+    res.json({ success: true, data: { bio } });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate chef bio',
+      error: error.message
+    });
+  }
+});
+
 // Get smart pricing suggestions
 router.post('/pricing-suggestions', async (req, res) => {
   try {

@@ -52,4 +52,55 @@ router.post('/', async (req, res) => {
   }
 });
 
+// POST /api/geocode/reverse
+// Turn browser geolocation coords (lat/lon) into a human address (city/state/label)
+router.post('/reverse', async (req, res) => {
+  const { lat, lon } = req.body;
+
+  const latNum = Number(lat);
+  const lonNum = Number(lon);
+  if (
+    lat === undefined || lon === undefined ||
+    Number.isNaN(latNum) || Number.isNaN(lonNum) ||
+    latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180
+  ) {
+    return res.status(400).json({ error: 'Valid lat and lon are required' });
+  }
+
+  const ORS_API_KEY = process.env.ORS_API_KEY;
+  if (!ORS_API_KEY) {
+    return res.status(500).json({ error: 'Geocoding service not configured' });
+  }
+
+  try {
+    // Round coords so nearby lookups share a cache entry (~11m precision at 4dp)
+    const cacheKey = `geocode:reverse:v1:${latNum.toFixed(4)},${lonNum.toFixed(4)}`;
+    const cached = await cacheService.remember(cacheKey, GEOCODE_CACHE_TTL_SECONDS, async () => {
+      const reverseUrl = `https://api.openrouteservice.org/geocode/reverse?api_key=${ORS_API_KEY}&point.lat=${latNum}&point.lon=${lonNum}&size=1`;
+      const orsRes = await axios.get(reverseUrl);
+      return orsRes.data;
+    });
+    cacheService.setCacheHeader(res, cached.hit);
+
+    const feature = cached.value?.features?.[0];
+    const props = feature?.properties || {};
+    res.json({
+      city: props.locality || props.county || props.region || '',
+      state: props.region || '',
+      country: props.country || '',
+      label: props.label || '',
+      lat: latNum,
+      lon: lonNum
+    });
+  } catch (err) {
+    if (err.response) {
+      return res.status(err.response.status).json({
+        error: 'Failed to reverse geocode',
+        details: `OpenRouteService returned ${err.response.status}`
+      });
+    }
+    res.status(500).json({ error: 'Server error', details: err.message });
+  }
+});
+
 export default router;

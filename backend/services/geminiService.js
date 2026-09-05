@@ -440,6 +440,42 @@ class GeminiService {
     }
   }
 
+  // Draft a professional chef bio from onboarding inputs
+  async generateChefBio({ name, specialties, experienceYears, serviceType }) {
+    const specialtyText = Array.isArray(specialties) ? specialties.join(', ') : (specialties || '');
+    const prompt = `
+    Write a professional bio for a private chef's profile on a chef-booking platform.
+
+    Chef details:
+    - Name: ${name || 'the chef'}
+    - Cuisine specialties: ${specialtyText || 'various cuisines'}
+    - Years of experience: ${experienceYears || 'several'}
+    - Main service: ${serviceType || 'private events and home cooking'}
+
+    Requirements:
+    - Write in first person ("I ...").
+    - Warm, confident, and professional tone that would appeal to customers booking a chef.
+    - Highlight the cuisine specialties and experience naturally.
+    - Between 60 and 130 words. It MUST be at least 60 words.
+    - Plain text only. Do NOT use Markdown, asterisks, headings, bullet points, or quotation marks around the whole bio.
+    - Return only the bio text, nothing else.
+    `;
+
+    try {
+      const response = await this.generateWithFallback(prompt);
+      let bio = response.text().trim();
+      // Strip wrapping quotes or stray markdown the model sometimes adds
+      bio = bio.replace(/^["'`]+|["'`]+$/g, '').replace(/\*\*/g, '').trim();
+      // Enforce the onboarding form's 1000-char ceiling
+      if (bio.length > 1000) {
+        bio = bio.slice(0, 1000).trim();
+      }
+      return bio;
+    } catch (error) {
+      throw new Error('Failed to generate chef bio');
+    }
+  }
+
   // Helper method to parse JSON responses safely
   parseJSONResponse(text) {
     try {
