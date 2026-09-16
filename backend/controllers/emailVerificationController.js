@@ -12,6 +12,14 @@ export const escapeHtml = (value) => String(value ?? '')
 const apiInstance = new brevo.TransactionalEmailsApi();
 apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
+// Loggable summary of a failed Brevo call. Never log the error object itself:
+// it carries the request body, i.e. the OTP or password reset link.
+export const describeEmailError = (error) => ({
+  status: error?.response?.status,
+  response: error?.response?.data,
+  message: error?.message
+});
+
 // Send verification email with OTP using Brevo
 export const sendVerificationEmail = async (user, verificationOTP) => {
   try {
@@ -98,7 +106,7 @@ export const sendVerificationEmail = async (user, verificationOTP) => {
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error('[BREVO] Email sending failed:', error);
+    console.error('[BREVO] Email sending failed:', describeEmailError(error));
     throw error;
   }
 };

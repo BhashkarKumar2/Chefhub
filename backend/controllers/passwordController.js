@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import * as brevo from '@getbrevo/brevo';
 import User from '../models/User.js';
-import { escapeHtml } from './emailVerificationController.js';
+import { escapeHtml, describeEmailError } from './emailVerificationController.js';
 import { signAuthToken } from '../auth/tokenService.js';
 import { BCRYPT_ROUNDS, findUserByEmail, validatePassword } from '../auth/credentials.js';
 
@@ -100,7 +100,7 @@ export const forgotPassword = async (req, res) => {
       // Same response as for an unknown email, so this can't be used to discover accounts
       res.json({ message: 'If an account exists with this email, a password reset link will be sent.' });
     } catch (emailError) {
-      console.error('❌ Error sending email:', emailError);
+      console.error('[BREVO] Password reset email failed:', describeEmailError(emailError));
 
       // SECURITY: Never expose reset tokens in API response
       // Log the URL for debugging but don't return it to client
