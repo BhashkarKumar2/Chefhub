@@ -1,6 +1,74 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { redactForTracing, withLangfuseObservation } from './langfuseService.js';
 
+// NVIDIA API catalog (build.nvidia.com), OpenAI-compatible chat completions.
+const NVIDIA_CHAT_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+
+// Only models marked "Free Endpoint" on build.nvidia.com (checked 2026-09-17),
+// ordered by preference. Later models are fallbacks when one is overloaded or
+// retired. The primary gets time for long answers (meal plans, pricing take
+// 20-40s); fallbacks fail fast so a stuck endpoint doesn't stall the request.
+const NVIDIA_TEXT_MODELS = [
+  { id: 'nvidia/nemotron-3-super-120b-a12b', timeoutMs: 60000 },
+  { id: 'mistralai/mistral-nemotron', timeoutMs: 25000 },
+  { id: 'meta/llama-3.2-11b-vision-instruct', timeoutMs: 25000 }
+];
+const NVIDIA_VISION_MODELS = [
+  { id: 'meta/llama-3.2-11b-vision-instruct', timeoutMs: 25000 },
+  { id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning', timeoutMs: 25000 }
+];
+
+// Reasoning models may prepend their thinking; callers only want the answer
+const stripReasoning = (text) => text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+// First complete JSON array/object in `text` (brackets inside strings are
+// skipped), or undefined if there is none
+const extractFirstJson = (text) => {
+  let start = text.search(/[[{]/);
+  while (start !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') {
+        inString = true;
+      } else if (ch === '[' || ch === '{') {
+        depth++;
+      } else if (ch === ']' || ch === '}') {
+        depth--;
+        if (depth === 0) {
+          try {
+            return JSON.parse(text.slice(start, i + 1));
+          } catch {
+            break;
+          }
+        }
+      }
+    }
+    const next = text.slice(start + 1).search(/[[{]/);
+    start = next === -1 ? -1 : start + 1 + next;
+  }
+  return undefined;
+};
+
+// AI_PROVIDER picks the backend explicitly; otherwise NVIDIA is used when its key is set
+export const getAiProvider = () => {
+  const configured = (process.env.AI_PROVIDER || '').toLowerCase();
+  if (configured === 'nvidia' || configured === 'gemini') return configured;
+  return process.env.NVIDIA_API_KEY ? 'nvidia' : 'gemini';
+};
+
+export const isAiConfigured = () => (
+  getAiProvider() === 'nvidia' ? Boolean(process.env.NVIDIA_API_KEY) : Boolean(process.env.GEMINI_API_KEY)
+);
+
 class GeminiService {
   constructor() {
     // Initialize Gemini with API key
@@ -28,12 +96,114 @@ class GeminiService {
 
   // Method to try different models if one fails
   async generateWithFallback(prompt) {
+    const provider = getAiProvider();
     return withLangfuseObservation({
-      name: 'gemini.generateWithFallback',
+      name: `${provider}.generateWithFallback`,
       asType: 'generation',
       input: { prompt: redactForTracing(prompt) },
-      metadata: { provider: 'google-generative-ai' }
-    }, async (observation) => this.generateWithFallbackUntraced(prompt, observation));
+      metadata: { provider: provider === 'nvidia' ? 'nvidia-api-catalog' : 'google-generative-ai' }
+    }, async (observation) => (
+      provider === 'nvidia'
+        ? this.generateWithNvidia(prompt, observation)
+        : this.generateWithFallbackUntraced(prompt, observation)
+    ));
+  }
+
+  // One chat completion against the NVIDIA API catalog. Returns the same
+  // shape as a Gemini response ({ text(), usageMetadata }) so callers don't care.
+  async callNvidia(model, content, { maxTokens = 2048, timeoutMs = 25000 } = {}) {
+    const res = await fetch(NVIDIA_CHAT_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content }],
+        temperature: 0.7,
+        top_p: 0.8,
+        max_tokens: maxTokens,
+        stream: false,
+        // Nemotron models think before answering by default; these prompts
+        // don't need it, and skipping it is several times faster
+        ...(model.startsWith('nvidia/nemotron') ? { chat_template_kwargs: { enable_thinking: false } } : {})
+      }),
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = body.detail || body.error?.message || body.message || res.statusText;
+      const error = new Error(`NVIDIA ${model} failed (${res.status}): ${detail}`);
+      error.status = res.status;
+      throw error;
+    }
+
+    const text = stripReasoning(body.choices?.[0]?.message?.content || '');
+    if (!text) {
+      throw new Error(`NVIDIA ${model} returned an empty response`);
+    }
+
+    return {
+      text: () => text,
+      model,
+      usageMetadata: {
+        promptTokenCount: body.usage?.prompt_tokens || 0,
+        candidatesTokenCount: body.usage?.completion_tokens || 0,
+        totalTokenCount: body.usage?.total_tokens || 0
+      }
+    };
+  }
+
+  // Try each free model in order; a bad key stops immediately
+  async runNvidiaModels(models, content, observation) {
+    if (!process.env.NVIDIA_API_KEY) {
+      throw new Error('NVIDIA_API_KEY is not configured');
+    }
+
+    let lastError;
+    for (const { id: model, timeoutMs } of models) {
+      try {
+        const response = await this.callNvidia(model, content, { timeoutMs });
+        observation?.update?.({
+          model,
+          output: redactForTracing(response.text()),
+          usageDetails: this.toLangfuseUsage(response.usageMetadata)
+        });
+        return response;
+      } catch (error) {
+        lastError = error;
+        console.warn(`[NVIDIA] ${error.message}`);
+        if (error.status === 401 || error.status === 403) {
+          throw error;
+        }
+      }
+    }
+    throw lastError || new Error('All AI models are currently unavailable');
+  }
+
+  async generateWithNvidia(prompt, observation) {
+    try {
+      return await this.runNvidiaModels(NVIDIA_TEXT_MODELS, prompt, observation);
+    } catch (error) {
+      if (error.status !== 401 && error.status !== 403 && error.message !== 'NVIDIA_API_KEY is not configured') {
+        const fallback = this.unavailableChatFallback(prompt);
+        if (fallback) return fallback;
+      }
+      throw error;
+    }
+  }
+
+  // Canned reply for the cooking assistant when every model is down
+  unavailableChatFallback(prompt) {
+    if (prompt.toLowerCase().includes('chef assistant') || prompt.toLowerCase().includes('cooking')) {
+      return {
+        text: () => "I'm sorry, but the AI service is currently unavailable. However, I'd be happy to help with basic cooking advice! For specific recipes and detailed cooking instructions, please try again later when the AI service is restored."
+      };
+    }
+    return null;
   }
 
   async generateWithFallbackUntraced(prompt, observation) {
@@ -92,12 +262,8 @@ class GeminiService {
     }
 
     // If all models failed, provide a fallback response for chat
-    if (prompt.toLowerCase().includes('chef assistant') || prompt.toLowerCase().includes('cooking')) {
-      // console.log('All AI models failed, returning fallback cooking response');
-      return {
-        text: () => "I'm sorry, but the AI service is currently unavailable. However, I'd be happy to help with basic cooking advice! For specific recipes and detailed cooking instructions, please try again later when the AI service is restored."
-      };
-    }
+    const fallback = this.unavailableChatFallback(prompt);
+    if (fallback) return fallback;
 
     throw lastError || new Error('All AI models are currently unavailable');
   }
@@ -478,11 +644,17 @@ class GeminiService {
 
   // Helper method to parse JSON responses safely
   parseJSONResponse(text) {
+    // Clean up the response text
+    const cleanText = stripReasoning(text).replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     try {
-      // Clean up the response text
-      const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return JSON.parse(cleanText);
     } catch (error) {
+      // Some models wrap the JSON in chatter ("Sure, here is ...: [...]" or
+      // notes after it); use the first complete JSON value in the reply
+      const extracted = extractFirstJson(cleanText);
+      if (extracted !== undefined) {
+        return extracted;
+      }
       // console.error('JSON parsing error:', error);
       // Return a structured error response
       return {
@@ -497,13 +669,44 @@ class GeminiService {
    * Identify ingredients from a photo
    */
   async identifyIngredientsFromImage(base64Image, mimeType) {
+    const provider = getAiProvider();
     return withLangfuseObservation({
-      name: 'gemini.identifyIngredientsFromImage',
+      name: `${provider}.identifyIngredientsFromImage`,
       asType: 'generation',
       input: { mimeType, imageBytes: base64Image?.length || 0 },
       metadata: { feature: 'snap-and-cook' },
-      model: 'models/gemini-2.0-flash'
-    }, async (observation) => this.identifyIngredientsFromImageUntraced(base64Image, mimeType, observation));
+      model: provider === 'nvidia' ? NVIDIA_VISION_MODELS[0].id : 'models/gemini-2.0-flash'
+    }, async (observation) => (
+      provider === 'nvidia'
+        ? this.identifyIngredientsWithNvidia(base64Image, mimeType, observation)
+        : this.identifyIngredientsFromImageUntraced(base64Image, mimeType, observation)
+    ));
+  }
+
+  async identifyIngredientsWithNvidia(base64Image, mimeType, observation) {
+    const prompt = "Identify all the food ingredients and kitchen items you see in this photo. Return ONLY a JSON array of strings, with no other text.";
+
+    try {
+      const response = await this.runNvidiaModels(NVIDIA_VISION_MODELS, [
+        { type: 'text', text: prompt },
+        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } }
+      ], observation);
+
+      const ingredients = this.parseJSONResponse(response.text());
+      if (!Array.isArray(ingredients)) {
+        throw new Error('Vision model did not return a list of ingredients');
+      }
+      return ingredients.map(String);
+    } catch (error) {
+      const isQuotaError = error.status === 429;
+      const visionError = new Error(
+        isQuotaError
+          ? 'AI image scanning quota is temporarily exhausted. Please try again later.'
+          : 'Failed to identify ingredients'
+      );
+      visionError.statusCode = isQuotaError ? 429 : 500;
+      throw visionError;
+    }
   }
 
   async identifyIngredientsFromImageUntraced(base64Image, mimeType, observation) {

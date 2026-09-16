@@ -1,4 +1,5 @@
 import express from 'express';
+import { getAiProvider, isAiConfigured } from '../services/geminiService.js';
 import { verifyToken, requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -14,7 +15,7 @@ router.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     services: {
       database: 'connected', // This should be checked dynamically
-      ai: process.env.GEMINI_API_KEY ? 'configured' : 'not configured',
+      ai: isAiConfigured() ? `configured (${getAiProvider()})` : 'not configured',
       socket: 'active'
     }
   };

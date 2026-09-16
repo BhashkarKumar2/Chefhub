@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import geminiService from '../services/geminiService.js';
+import geminiService, { isAiConfigured } from '../services/geminiService.js';
 import bookingAgentService, { validateAgentImage } from '../services/bookingAgentService.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
@@ -188,7 +188,7 @@ router.post('/generate-menu', verifyToken, async (req, res) => {
 // Draft a chef profile bio from onboarding inputs
 router.post('/generate-chef-bio', verifyToken, async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!isAiConfigured()) {
       return res.status(503).json({
         success: false,
         message: 'AI service is not configured'
@@ -336,12 +336,12 @@ router.post('/chat', verifyToken, async (req, res) => {
       });
     }
 
-    // Check if Gemini API key is configured
-    if (!process.env.GEMINI_API_KEY) {
+    // Check if the AI provider's API key is configured
+    if (!isAiConfigured()) {
       return res.status(503).json({
         success: false,
         message: 'AI service is not configured',
-        error: 'GEMINI_API_KEY not found'
+        error: 'AI provider API key not found'
       });
     }
 

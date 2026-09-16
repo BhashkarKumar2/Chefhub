@@ -4,12 +4,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 process.env.GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'test-gemini-key';
+// Gemini-path tests below must not pick up a real NVIDIA key from the environment;
+// NVIDIA tests opt in explicitly via withNvidia()
+process.env.AI_PROVIDER = 'gemini';
 
 const __filename = fileURLToPath(import.meta.url);
 const backendDir = path.resolve(path.dirname(__filename), '../..');
 const repoDir = path.resolve(backendDir, '..');
 
 const geminiService = (await import('../../services/geminiService.js')).default;
+const { getAiProvider } = await import('../../services/geminiService.js');
 const bookingAgentModule = await import('../../services/bookingAgentService.js');
 const bookingAgentService = bookingAgentModule.default;
 const { validateAgentImage, validateBookingIntent } = bookingAgentModule;
@@ -522,6 +526,93 @@ test('booking agent creates a draft only after every explicit confirmation', asy
   assert.equal(result.status, 'draft_created');
   assert.equal(createCalled, true);
   assert.equal(result.data.booking._id, 'booking-1');
+});
+
+
+// Runs fn with NVIDIA selected and fetch replaced by `handler(model, body)`,
+// restoring env and fetch afterwards
+const withNvidia = async (handler, fn) => {
+  const saved = { fetch: globalThis.fetch, provider: process.env.AI_PROVIDER, key: process.env.NVIDIA_API_KEY };
+  const calls = [];
+  process.env.AI_PROVIDER = 'nvidia';
+  process.env.NVIDIA_API_KEY = 'nvapi-test';
+  globalThis.fetch = async (url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push({ url, body, auth: init.headers.Authorization });
+    return handler(body.model, body);
+  };
+  const warn = console.warn;
+  console.warn = () => {};
+  try {
+    await fn(calls);
+  } finally {
+    console.warn = warn;
+    globalThis.fetch = saved.fetch;
+    if (saved.provider === undefined) delete process.env.AI_PROVIDER; else process.env.AI_PROVIDER = saved.provider;
+    if (saved.key === undefined) delete process.env.NVIDIA_API_KEY; else process.env.NVIDIA_API_KEY = saved.key;
+  }
+};
+
+const jsonResponse = (status, body) => ({ ok: status >= 200 && status < 300, status, statusText: String(status), json: async () => body });
+const completion = (content) => jsonResponse(200, { choices: [{ message: { content } }], usage: { prompt_tokens: 5, completion_tokens: 7, total_tokens: 12 } });
+
+test('AI provider defaults to NVIDIA only when its key is set', () => {
+  const saved = { provider: process.env.AI_PROVIDER, key: process.env.NVIDIA_API_KEY };
+  try {
+    delete process.env.AI_PROVIDER;
+    delete process.env.NVIDIA_API_KEY;
+    assert.equal(getAiProvider(), 'gemini');
+    process.env.NVIDIA_API_KEY = 'nvapi-test';
+    assert.equal(getAiProvider(), 'nvidia');
+    process.env.AI_PROVIDER = 'gemini';
+    assert.equal(getAiProvider(), 'gemini');
+  } finally {
+    if (saved.provider === undefined) delete process.env.AI_PROVIDER; else process.env.AI_PROVIDER = saved.provider;
+    if (saved.key === undefined) delete process.env.NVIDIA_API_KEY; else process.env.NVIDIA_API_KEY = saved.key;
+  }
+});
+
+test('NVIDIA text generation falls back past overloaded models and keeps the Gemini response shape', async () => {
+  await withNvidia((model) => (
+    model === 'nvidia/nemotron-3-super-120b-a12b'
+      ? jsonResponse(503, { error: { message: 'Service temporarily overloaded' } })
+      : completion('Hello from fallback')
+  ), async (calls) => {
+    const response = await geminiService.generateWithFallback('Say hello');
+
+    assert.equal(response.text(), 'Hello from fallback');
+    assert.deepEqual(calls.map(c => c.body.model), ['nvidia/nemotron-3-super-120b-a12b', 'mistralai/mistral-nemotron']);
+    assert.equal(calls[0].auth, 'Bearer nvapi-test');
+    assert.match(calls[0].url, /integrate\.api\.nvidia\.com\/v1\/chat\/completions/);
+    assert.deepEqual(calls[0].body.chat_template_kwargs, { enable_thinking: false });
+    assert.equal(calls[1].body.chat_template_kwargs, undefined);
+  });
+});
+
+test('NVIDIA auth errors stop immediately instead of trying other models', async () => {
+  await withNvidia(() => jsonResponse(401, { detail: 'Unauthorized' }), async (calls) => {
+    await assert.rejects(() => geminiService.generateWithFallback('Say hello'), /401/);
+    assert.equal(calls.length, 1);
+  });
+});
+
+test('NVIDIA snap-and-cook sends the image inline and parses a list wrapped in prose', async () => {
+  await withNvidia(() => completion('Sure, here is the list: ["tomato", "onion"] Hope that helps!'), async (calls) => {
+    const ingredients = await geminiService.identifyIngredientsFromImage('aGVsbG8=', 'image/png');
+
+    assert.deepEqual(ingredients, ['tomato', 'onion']);
+    assert.equal(calls[0].body.model, 'meta/llama-3.2-11b-vision-instruct');
+    assert.equal(calls[0].body.messages[0].content[1].image_url.url, 'data:image/png;base64,aGVsbG8=');
+  });
+});
+
+test('parseJSONResponse extracts the first JSON value despite chatter and brackets in strings', () => {
+  assert.deepEqual(
+    geminiService.parseJSONResponse('["a [x]", "b"]\n\nWait, correction: see {notes} [1]'),
+    ['a [x]', 'b']
+  );
+  assert.deepEqual(geminiService.parseJSONResponse('<think>draft [1,</think>{"ok":true}'), { ok: true });
+  assert.equal(geminiService.parseJSONResponse('no json here').error, 'Failed to parse AI response');
 });
 
 let failed = 0;
