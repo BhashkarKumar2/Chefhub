@@ -222,7 +222,7 @@ router.post('/generate-chef-bio', verifyToken, async (req, res) => {
 });
 
 // Get smart pricing suggestions
-router.post('/pricing-suggestions', async (req, res) => {
+router.post('/pricing-suggestions', verifyToken, async (req, res) => {
   try {
     const { bookingDetails } = req.body;
 
@@ -282,7 +282,7 @@ router.post('/review-response', verifyToken, async (req, res) => {
 });
 
 // Generate cooking content and tips
-router.post('/cooking-content', async (req, res) => {
+router.post('/cooking-content', verifyToken, async (req, res) => {
   try {
     const { topic, userLevel = 'beginner' } = req.body;
 

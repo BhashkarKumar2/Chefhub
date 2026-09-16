@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 
 const chefSchema = new mongoose.Schema({
+  // Account that owns this profile. Legacy profiles created before ownership
+  // was tracked have no user and are matched by email instead.
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    index: true
+  },
   name: {
     type: String,
     required: [true, 'Chef name is required'],
@@ -193,6 +200,17 @@ const chefSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Whether `user` may manage this profile. Legacy profiles created before
+// ownership was tracked fall back to the account email, which is verified at
+// signup and cannot be changed afterwards.
+chefSchema.methods.isOwnedBy = function (user) {
+  if (!user) return false;
+  if (this.user) {
+    return this.user.toString() === user._id.toString();
+  }
+  return Boolean(user.email && this.email && this.email.toLowerCase() === user.email.toLowerCase());
+};
 
 // Indexes for better query performance
 // Note: email already has an index via unique: true

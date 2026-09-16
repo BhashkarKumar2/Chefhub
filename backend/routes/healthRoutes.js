@@ -1,4 +1,5 @@
 import express from 'express';
+import { verifyToken, requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -22,7 +23,8 @@ router.get('/health', (req, res) => {
 });
 
 // System info endpoint
-router.get('/system-info', (req, res) => {
+// Admin only: runtime details help fingerprint the server
+router.get('/system-info', verifyToken, requireAdmin, (req, res) => {
   const systemInfo = {
     platform: process.platform,
     arch: process.arch,

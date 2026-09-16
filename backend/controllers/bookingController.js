@@ -1,6 +1,7 @@
 import Booking from '../models/Booking.js';
 import Chef from '../models/Chef.js';
 import User from '../models/User.js';
+import { isAdminUser } from '../middleware/authMiddleware.js';
 
 // Helper: Check for surge pricing
 const checkSurgePricing = (dateObj) => {
@@ -238,10 +239,8 @@ export const getChefBookings = async (req, res) => {
       });
     }
 
-    // SECURITY: Only the chef themselves can view their bookings (contains customer PII)
-    // Compare the requesting user with the chef's linked user account if applicable
-    // For now, we require the requesting user ID to match the chefId or be an admin
-    if (req.user.id.toString() !== chefId.toString()) {
+    // SECURITY: Only the chef's own account (or an admin) can view their bookings (contains customer PII)
+    if (!chef.isOwnedBy(req.user) && !isAdminUser(req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. You can only view your own bookings.'
@@ -349,12 +348,30 @@ export const updateBookingStatus = async (req, res) => {
 
     // SECURITY: Only booking owner or the chef can update status
     const isBookingOwner = booking.user && booking.user.toString() === req.user.id.toString();
-    const isChef = booking.chef && booking.chef.toString() === req.user.id.toString();
+    const chef = booking.chef ? await Chef.findById(booking.chef).select('user email') : null;
+    const isChef = Boolean(chef && chef.isOwnedBy(req.user));
 
     if (!isBookingOwner && !isChef) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Only the booking owner or chef can update this booking.'
+      });
+    }
+
+    // Customers may only cancel. Confirming and completing belong to the chef
+    // (or the payment flow); letting a customer mark their own booking completed
+    // would unlock "verified" reviews without the service ever happening.
+    if (!isChef && status !== 'cancelled') {
+      return res.status(403).json({
+        success: false,
+        message: 'Only the chef can set this booking status.'
+      });
+    }
+
+    if (['cancelled', 'completed'].includes(booking.status) && booking.status !== status) {
+      return res.status(400).json({
+        success: false,
+        message: `Booking is already ${booking.status} and cannot be changed.`
       });
     }
 
@@ -436,10 +453,19 @@ export const deleteBooking = async (req, res) => {
     }
 
     // Check if user has permission to delete (either the booking owner or admin)
-    if (req.user && booking.user && booking.user.toString() !== req.user.id) {
+    const isBookingOwner = booking.user && booking.user.toString() === req.user.id.toString();
+    if (!isBookingOwner && !isAdminUser(req.user)) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this booking'
+      });
+    }
+
+    // Paid bookings are financial records - cancel/refund them instead of deleting
+    if (booking.paymentStatus === 'paid' && !isAdminUser(req.user)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Paid bookings cannot be deleted. Please cancel the booking instead.'
       });
     }
 

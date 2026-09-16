@@ -10,7 +10,7 @@ import {
   approveTestimonial,
   checkReviewEligibility
 } from '../controllers/testimonialController.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
+import { verifyToken, requireAdmin } from '../middleware/authMiddleware.js';
 
 // Public routes
 router.get('/', getTestimonials);
@@ -23,7 +23,7 @@ router.get('/:id', getTestimonialById);
 // router.put('/:id', verifyToken, updateTestimonial); // Disabled - reviews are permanent
 router.delete('/:id', verifyToken, deleteTestimonial);
 
-// Admin routes (add admin middleware later)
-router.patch('/:id/approve', verifyToken, approveTestimonial);
+// Admin routes
+router.patch('/:id/approve', verifyToken, requireAdmin, approveTestimonial);
 
 export default router;

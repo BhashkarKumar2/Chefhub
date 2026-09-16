@@ -1,28 +1,51 @@
 import express from 'express';
 import axios from 'axios';
 import cacheService from '../services/cacheService.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
+import { geocodeLimiter, contactEmailLimiter } from '../middleware/rateLimiters.js';
 
 const router = express.Router();
 const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 const DIRECTIONS_CACHE_TTL_SECONDS = 15 * 60;
+const MAX_ADDRESS_LENGTH = 200;
 
 const normalizeAddress = (address) => address.trim().toLowerCase().replace(/\s+/g, ' ');
+
+const escapeHtml = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 /**
  * Email Service Route - Using Brevo (Sendinblue) API
  * Prevents exposing email service credentials in frontend
  */
-router.post('/send-email', async (req, res) => {
+router.post('/send-email', contactEmailLimiter, async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
 
     // Validate required fields
     if (!name || !email || !message) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Name, email, and message are required' 
+      return res.status(400).json({
+        success: false,
+        error: 'Name, email, and message are required'
       });
     }
+
+    if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string' ||
+      (subject !== undefined && typeof subject !== 'string')) {
+      return res.status(400).json({ success: false, error: 'Invalid input' });
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(email) || name.length > 100 || email.length > 254 ||
+      (subject && subject.length > 200) || message.length > 5000) {
+      return res.status(400).json({ success: false, error: 'Invalid or too long input' });
+    }
+
+    // Subject becomes an email header: no line breaks
+    const safeSubject = subject ? subject.replace(/[\r\n]+/g, ' ') : '';
 
     // Check if Brevo is configured
     if (!process.env.BREVO_API_KEY) {
@@ -50,22 +73,22 @@ router.post('/send-email', async (req, res) => {
           email: email,
           name: name
         },
-        subject: subject || 'Contact Form Submission from ChefHub',
+        subject: safeSubject || 'Contact Form Submission from ChefHub',
         htmlContent: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>From:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Subject:</strong> ${subject || 'No subject'}</p>
+          <p><strong>From:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Subject:</strong> ${escapeHtml(safeSubject || 'No subject')}</p>
           <hr>
           <h3>Message:</h3>
-          <p>${message.replace(/\n/g, '<br>')}</p>
+          <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
         `,
         textContent: `
 New Contact Form Submission
 
 From: ${name}
 Email: ${email}
-Subject: ${subject || 'No subject'}
+Subject: ${safeSubject || 'No subject'}
 
 Message:
 ${message}
@@ -88,8 +111,7 @@ ${message}
     console.error('Email sending error:', error.response?.data || error.message);
     res.status(500).json({ 
       success: false, 
-      error: 'Failed to send email',
-      details: error.response?.data?.message || error.message
+      error: 'Failed to send email'
     });
   }
 });
@@ -124,15 +146,19 @@ router.get('/razorpay-config', (req, res) => {
  * OpenRouteService Geocoding Proxy
  * Proxies geocoding requests to prevent API key exposure
  */
-router.get('/geocode', async (req, res) => {
+router.get('/geocode', geocodeLimiter, async (req, res) => {
   try {
     const { address } = req.query;
 
-    if (!address) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Address parameter is required' 
+    if (!address || typeof address !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Address parameter is required'
       });
+    }
+
+    if (address.length > MAX_ADDRESS_LENGTH) {
+      return res.status(400).json({ success: false, error: 'Address is too long' });
     }
 
     if (!process.env.ORS_API_KEY) {
@@ -189,7 +215,7 @@ router.get('/geocode', async (req, res) => {
  * OpenRouteService Reverse Geocoding Proxy
  * Converts coordinates to address
  */
-router.get('/reverse-geocode', async (req, res) => {
+router.get('/reverse-geocode', verifyToken, geocodeLimiter, async (req, res) => {
   try {
     const { lat, lon } = req.query;
 
@@ -241,7 +267,7 @@ router.get('/reverse-geocode', async (req, res) => {
  * OpenRouteService Directions/Routing Proxy
  * For getting directions between two points
  */
-router.post('/directions', async (req, res) => {
+router.post('/directions', verifyToken, geocodeLimiter, async (req, res) => {
   try {
     const { coordinates } = req.body;
 

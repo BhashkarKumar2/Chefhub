@@ -1,6 +1,8 @@
 import express from 'express';
 import axios from 'axios';
 import cacheService from '../services/cacheService.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
+import { geocodeLimiter } from '../middleware/rateLimiters.js';
 const router = express.Router();
 
 const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -8,11 +10,12 @@ const GEOCODE_CACHE_TTL_SECONDS = 7 * 24 * 60 * 60;
 const normalizeAddress = (address) => address.trim().toLowerCase().replace(/\s+/g, ' ');
 
 // POST /api/geocode
-router.post('/', async (req, res) => {
+// Only used by the (logged-in) chef onboarding flow
+router.post('/', verifyToken, geocodeLimiter, async (req, res) => {
   // console.log('Received geocode request:', req.body);
   
   const { address } = req.body;
-  if (!address) {
+  if (!address || typeof address !== 'string' || address.length > 200) {
     // console.log('âŒ No address provided');
     return res.status(400).json({ error: 'Address is required' });
   }
@@ -54,7 +57,7 @@ router.post('/', async (req, res) => {
 
 // POST /api/geocode/reverse
 // Turn browser geolocation coords (lat/lon) into a human address (city/state/label)
-router.post('/reverse', async (req, res) => {
+router.post('/reverse', verifyToken, geocodeLimiter, async (req, res) => {
   const { lat, lon } = req.body;
 
   const latNum = Number(lat);

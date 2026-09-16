@@ -1,6 +1,7 @@
 import Chef from '../models/Chef.js';
 import cloudinary from '../config/cloudinary.js';
 import cacheService from '../services/cacheService.js';
+import { isAdminUser } from '../middleware/authMiddleware.js';
 
 const CHEF_CACHE_TTL_SECONDS = {
   list: 300,
@@ -12,6 +13,22 @@ const CHEF_CACHE_TTL_SECONDS = {
 const invalidateChefCaches = async () => {
   await cacheService.deleteByPrefix('chefs:');
 };
+
+// Contact details and the owning account are private: customers reach a chef
+// through a booking, not by scraping the public listing.
+const PUBLIC_CHEF_PROJECTION = '-email -phone -user';
+
+// Fields an owner may change. Ratings, review counts, isActive and ownership
+// are system-managed and must never be settable from the request body.
+const UPDATABLE_CHEF_FIELDS = [
+  'name', 'phone', 'specialty', 'address', 'city', 'state', 'bio',
+  'pricePerHour', 'experienceYears', 'certifications', 'availability',
+  'workingHours', 'workingDays', 'workingStart', 'workingEnd', 'blockedDates',
+  'travelRadiusKm', 'minimumNoticeHours', 'maxGuests', 'serviceableLocations',
+  'supportedOccasions', 'supportedEventTypes', 'locationCoords'
+];
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export const createChefProfile = async (req, res) => {
   // console.log(' === CHEF PROFILE CREATION STARTED ===');
@@ -29,6 +46,15 @@ export const createChefProfile = async (req, res) => {
         message: 'Missing required fields',
         missingFields: missingFields,
         error: `Please provide: ${missingFields.join(', ')}`
+      });
+    }
+
+    const ownedChef = await Chef.findOne({ user: req.user._id }).select('_id').lean();
+    if (ownedChef) {
+      return res.status(409).json({
+        message: 'Chef profile already exists',
+        error: 'Your account already has a chef profile.',
+        chefId: ownedChef._id
       });
     }
 
@@ -76,6 +102,7 @@ export const createChefProfile = async (req, res) => {
     }
 
     const chefData = {
+      user: req.user._id,
       name: req.body.name,
       email: req.body.email,
       phone: req.body.phone,
@@ -191,8 +218,8 @@ export const createChefProfile = async (req, res) => {
 
 export const getAllChefs = async (req, res) => {
   try {
-    const cached = await cacheService.remember('chefs:all:v1', CHEF_CACHE_TTL_SECONDS.list, async () => {
-      const chefs = await Chef.find({ isActive: true }).sort({ createdAt: -1 }).lean();
+    const cached = await cacheService.remember('chefs:all:v2', CHEF_CACHE_TTL_SECONDS.list, async () => {
+      const chefs = await Chef.find({ isActive: true }).select(PUBLIC_CHEF_PROJECTION).sort({ createdAt: -1 }).lean();
       return {
         message: 'Chefs retrieved successfully',
         chefs: chefs,
@@ -216,7 +243,7 @@ export const getAllChefs = async (req, res) => {
 // Advanced search functionality
 export const searchChefs = async (req, res) => {
   try {
-    const cacheKey = `chefs:search:v1:${cacheService.stableHash(req.query)}`;
+    const cacheKey = `chefs:search:v2:${cacheService.stableHash(req.query)}`;
     const cached = await cacheService.remember(cacheKey, CHEF_CACHE_TTL_SECONDS.search, async () => {
       const {
         q,           // Query text
@@ -234,21 +261,25 @@ export const searchChefs = async (req, res) => {
       } = req.query;
 
       // Build search query
+      const limitNum = Math.min(Math.max(parseInt(limit) || 12, 1), 50);
+      const pageNum = Math.max(parseInt(page) || 1, 1);
+
       let searchQuery = { isActive: true };
 
     // Text search (name, specialty, bio)
       if (q) {
+        const qPattern = escapeRegex(q);
         searchQuery.$or = [
-          { name: { $regex: q, $options: 'i' } },
-          { specialty: { $regex: q, $options: 'i' } },
-          { bio: { $regex: q, $options: 'i' } }
+          { name: { $regex: qPattern, $options: 'i' } },
+          { specialty: { $regex: qPattern, $options: 'i' } },
+          { bio: { $regex: qPattern, $options: 'i' } }
         ];
       }
 
     // Cuisine filter
       if (cuisine) {
         const cuisineArray = cuisine.split(',').map(c => c.trim());
-        searchQuery.specialty = { $in: cuisineArray.map(c => new RegExp(c, 'i')) };
+        searchQuery.specialty = { $in: cuisineArray.map(c => new RegExp(escapeRegex(c), 'i')) };
       }
 
     // Price range filter
@@ -272,19 +303,19 @@ export const searchChefs = async (req, res) => {
 
     // Location filters
       if (city) {
-        searchQuery.city = { $regex: city, $options: 'i' };
+        searchQuery.city = { $regex: escapeRegex(city), $options: 'i' };
       }
 
       if (state) {
-        searchQuery.state = { $regex: state, $options: 'i' };
+        searchQuery.state = { $regex: escapeRegex(state), $options: 'i' };
       }
 
     // Location filter (now uses serviceableLocations array for broader area coverage)
       if (location) {
         searchQuery.$or = [
           ...(searchQuery.$or || []),
-          { serviceableLocations: { $regex: location, $options: 'i' } },
-          { address: { $regex: location, $options: 'i' } }
+          { serviceableLocations: { $regex: escapeRegex(location), $options: 'i' } },
+          { address: { $regex: escapeRegex(location), $options: 'i' } }
         ];
       }
 
@@ -302,6 +333,7 @@ export const searchChefs = async (req, res) => {
       const candidateLimit = 50;
       const [candidates, matchTotal] = await Promise.all([
         Chef.find(searchQuery)
+          .select(PUBLIC_CHEF_PROJECTION)
           .sort({ averageRating: -1, totalReviews: -1 })
           .limit(candidateLimit)
           .lean(),
@@ -384,13 +416,13 @@ export const searchChefs = async (req, res) => {
       scoredChefs.sort((a, b) => b.smartScore - a.smartScore);
 
       // Pagination slice
-      const start = (parseInt(page) - 1) * parseInt(limit);
-      const end = start + parseInt(limit);
+      const start = (pageNum - 1) * limitNum;
+      const end = start + limitNum;
       chefs = scoredChefs.slice(start, end);
 
       } else {
       // Standard Mongo Sort
-      const skip = (parseInt(page) - 1) * parseInt(limit);
+      const skip = (pageNum - 1) * limitNum;
 
       let sortOption = { averageRating: -1, totalReviews: -1 };
       if (req.query.sortBy === 'price_low') sortOption = { pricePerHour: 1 };
@@ -399,9 +431,10 @@ export const searchChefs = async (req, res) => {
 
       const result = await Promise.all([
         Chef.find(searchQuery)
+          .select(PUBLIC_CHEF_PROJECTION)
           .sort(sortOption)
           .skip(skip)
-          .limit(parseInt(limit))
+          .limit(limitNum)
           .lean(),
         Chef.countDocuments(searchQuery)
       ]);
@@ -409,7 +442,7 @@ export const searchChefs = async (req, res) => {
       totalCount = result[1];
       }
 
-      const totalPages = Math.ceil(totalCount / parseInt(limit));
+      const totalPages = Math.ceil(totalCount / limitNum);
 
       // console.log(` Search completed: ${chefs.length} results found`);
 
@@ -418,11 +451,11 @@ export const searchChefs = async (req, res) => {
         message: 'Search completed successfully',
         chefs: chefs,
         pagination: {
-          currentPage: parseInt(page),
+          currentPage: pageNum,
           totalPages,
           totalResults: totalCount,
-          hasNextPage: parseInt(page) < totalPages,
-          hasPrevPage: parseInt(page) > 1
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
         }
       };
     });
@@ -441,8 +474,8 @@ export const searchChefs = async (req, res) => {
 
 export const getChefById = async (req, res) => {
   try {
-    const cached = await cacheService.remember(`chefs:detail:v1:${req.params.id}`, CHEF_CACHE_TTL_SECONDS.detail, async () => {
-      const chef = await Chef.findById(req.params.id).lean();
+    const cached = await cacheService.remember(`chefs:detail:v2:${req.params.id}`, CHEF_CACHE_TTL_SECONDS.detail, async () => {
+      const chef = await Chef.findById(req.params.id).select(PUBLIC_CHEF_PROJECTION).lean();
       return chef || false;
     });
     cacheService.setCacheHeader(res, cached.hit);
@@ -460,7 +493,11 @@ export const updateChefProfile = async (req, res) => {
   try {
     const chefId = req.params.id;
     // Parse serviceableLocations for update (accept array or comma-separated string)
-    let updateData = { ...req.body };
+    let updateData = Object.fromEntries(
+      UPDATABLE_CHEF_FIELDS
+        .filter(field => req.body[field] !== undefined)
+        .map(field => [field, req.body[field]])
+    );
     if (updateData.serviceableLocations && typeof updateData.serviceableLocations === 'string') {
       updateData.serviceableLocations = updateData.serviceableLocations.split(',').map(loc => loc.trim()).filter(Boolean);
     }
@@ -504,6 +541,10 @@ export const updateChefProfile = async (req, res) => {
     const currentChef = await Chef.findById(chefId);
     if (!currentChef) {
       return res.status(404).json({ message: 'Chef not found' });
+    }
+
+    if (!currentChef.isOwnedBy(req.user) && !isAdminUser(req.user)) {
+      return res.status(403).json({ message: 'Access denied. You can only update your own chef profile.' });
     }
 
     // If new image was uploaded, upload to Cloudinary and delete old image
@@ -584,6 +625,10 @@ export const deleteChef = async (req, res) => {
 
     if (!chef) {
       return res.status(404).json({ message: 'Chef not found' });
+    }
+
+    if (!chef.isOwnedBy(req.user) && !isAdminUser(req.user)) {
+      return res.status(403).json({ message: 'Access denied. You can only delete your own chef profile.' });
     }
 
     // Delete image from Cloudinary if it exists

@@ -7,7 +7,7 @@ import multer from 'multer';
 import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
 import Testimonial from '../models/Testimonial.js';
-import { verifyToken, optionalAuth } from '../middleware/authMiddleware.js';
+import { verifyToken, isAdminUser } from '../middleware/authMiddleware.js';
 import { validate, updateProfileValidationRules } from '../middleware/validationMiddleware.js';
 
 // Configure multer for memory storage
@@ -25,6 +25,14 @@ const upload = multer({
     }
   }
 });
+// Fields a user may change on their own profile. Email is deliberately absent:
+// it is verified at signup and used for admin and chef-ownership checks.
+// Verification flags, OAuth ids, password and reset tokens are system-managed.
+const UPDATABLE_PROFILE_FIELDS = ['name', 'phone', 'profileImage', 'bio', 'city', 'state', 'country', 'cuisinePreferences'];
+
+// Never returned, not even to the account owner
+const PRIVATE_USER_FIELDS = '-password -resetPasswordToken -resetPasswordExpire -emailVerificationToken -emailVerificationExpire';
+
 // DEPRECATED: Registration and Login have been moved to /api/auth
 // Use authRoutes for better security (OTP, OAuth, standardized error messages)
 
@@ -41,7 +49,11 @@ router.put('/profile/:id', verifyToken, updateProfileValidationRules(), validate
 
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = Object.fromEntries(
+      UPDATABLE_PROFILE_FIELDS
+        .filter(field => req.body[field] !== undefined)
+        .map(field => [field, req.body[field]])
+    );
 
     // SECURITY: Ownership check - users can only update their own profile
     if (req.user.id.toString() !== id.toString() && req.user._id?.toString() !== id.toString()) {
@@ -61,12 +73,17 @@ router.put('/profile/:id', verifyToken, updateProfileValidationRules(), validate
       });
     }
 
+    // A new phone number has not been verified yet
+    if (updateData.phone !== undefined && updateData.phone !== req.user.phone) {
+      updateData.isPhoneVerified = false;
+    }
+
     // Find and update user
     const updatedUser = await User.findByIdAndUpdate(
       id,
       updateData,
       { new: true, runValidators: true }
-    ).select('-password'); // Don't return password
+    ).select(PRIVATE_USER_FIELDS);
 
     if (!updatedUser) {
       // console.log('âŒ User not found');
@@ -109,11 +126,15 @@ router.put('/profile/:id', verifyToken, updateProfileValidationRules(), validate
 
 // @route   GET /api/users/profile/:id
 // @desc    Get user profile by ID
-// @access  Public (with optional auth for own profile)
-router.get('/profile/:id', optionalAuth, async (req, res) => {
+// @access  Private (own profile, or admin) - the record holds email, phone and verification state
+router.get('/profile/:id', verifyToken, async (req, res) => {
   // console.log('ðŸ” Getting user profile for ID:', req.params.id);
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    if (req.user._id.toString() !== req.params.id && !isAdminUser(req.user)) {
+      return res.status(403).json({ message: 'Access denied. You can only view your own profile.' });
+    }
+
+    const user = await User.findById(req.params.id).select(PRIVATE_USER_FIELDS);
     if (!user) {
       // console.log('âŒ User not found:', req.params.id);
       return res.status(404).json({ message: 'User not found' });

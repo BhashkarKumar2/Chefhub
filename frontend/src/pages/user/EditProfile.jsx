@@ -321,10 +321,10 @@ const EditProfile = () => {
                           type="email"
                           name="email"
                           value={formData.email}
-                          onChange={handleChange}
-                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
+                          readOnly
+                          title="Email is verified at signup and can't be changed"
+                          className={`w-full px-4 py-3 border rounded-xl focus:outline-none cursor-not-allowed opacity-70 ${isDark ? 'border-gray-600 bg-gray-700 text-amber-300' : 'border-orange-300 bg-orange-50 text-gray-900'}`}
                           placeholder="Enter your email"
-                          required
                         />
                       </div>
 

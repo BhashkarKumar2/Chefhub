@@ -9,11 +9,13 @@ import {
   deleteChef,
   getChefMetadata
 } from '../controllers/chefController.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Create chef profile with optional image upload (using Cloudinary)
-router.post('/', upload.single('profileImage'), createChefProfile);
+// Auth runs before the upload so anonymous requests never reach Cloudinary.
+router.post('/', verifyToken, upload.single('profileImage'), createChefProfile);
 
 // Advanced search with filters
 router.get('/search', searchChefs);
@@ -28,9 +30,9 @@ router.get('/', getAllChefs);
 router.get('/:id', getChefById);
 
 // Update chef profile with optional image upload
-router.put('/:id', upload.single('profileImage'), updateChefProfile);
+router.put('/:id', verifyToken, upload.single('profileImage'), updateChefProfile);
 
 // Soft delete chef (set isActive to false)
-router.delete('/:id', deleteChef);
+router.delete('/:id', verifyToken, deleteChef);
 
 export default router;

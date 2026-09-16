@@ -95,6 +95,20 @@ export const validateToken = (token) => {
 // The User model has no `role` field yet, so admins are recognised via an
 // ADMIN_EMAILS allowlist (comma-separated). Fails closed: if the allowlist is
 // unset or the user is not on it, access is denied.
+// Email is only trustworthy here because it cannot be changed after signup
+// (see PUT /api/user/profile/:id).
+export const isAdminUser = (user) => {
+  if (!user) return false;
+
+  const adminEmails = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
+
+  const userEmail = (user.email || '').toLowerCase();
+  return user.role === 'admin' || Boolean(userEmail && adminEmails.includes(userEmail));
+};
+
 export const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -103,15 +117,7 @@ export const requireAdmin = async (req, res, next) => {
       });
     }
 
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-      .split(',')
-      .map(email => email.trim().toLowerCase())
-      .filter(Boolean);
-
-    const userEmail = (req.user.email || '').toLowerCase();
-    const isAdmin = req.user.role === 'admin' || (userEmail && adminEmails.includes(userEmail));
-
-    if (!isAdmin) {
+    if (!isAdminUser(req.user)) {
       return res.status(403).json({
         message: 'Access denied. Admin privileges required.'
       });

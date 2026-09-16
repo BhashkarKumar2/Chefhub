@@ -17,6 +17,10 @@ const router = express.Router();
 // Get all bookings for the authenticated user
 router.get('/', authMiddleware, getUserBookings);
 
+// Admin routes - must be registered before /:id, which would otherwise swallow /admin/stats
+// Get booking statistics (auth + admin allowlist required)
+router.get('/admin/stats', authMiddleware, requireAdmin, getBookingStats);
+
 // Get a specific booking by ID
 router.get('/:id', authMiddleware, getBookingById);
 
@@ -31,9 +35,5 @@ router.delete('/:id', authMiddleware, deleteBooking);
 
 // Get all bookings for a specific chef (requires auth)
 router.get('/chef/:chefId', authMiddleware, getChefBookings);
-
-// Admin routes
-// Get booking statistics (auth + admin allowlist required)
-router.get('/admin/stats', authMiddleware, requireAdmin, getBookingStats);
 
 export default router;

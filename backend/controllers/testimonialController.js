@@ -4,7 +4,8 @@ import Chef from '../models/Chef.js';
 import Booking from '../models/Booking.js';
 import cacheService from '../services/cacheService.js';
 
-const CACHE_KEY_PREFIX = 'testimonials:public';
+// v2: public payloads no longer include reviewer emails
+const CACHE_KEY_PREFIX = 'testimonials:public:v2';
 const CACHE_TTL = 3600; // 1 hour
 
 // Invalidate every cached public-testimonial list via a non-blocking SCAN.
@@ -92,7 +93,9 @@ export const createTestimonial = async (req, res) => {
       testimonial,
       chef: finalChefId,
       booking: bookingId || undefined,
-      isApproved: true, // Auto-approved - no admin review needed
+      // Reviews tied to a completed booking are verified and publish immediately.
+      // Anything else waits for an admin, and does not count towards the chef's rating until then.
+      isApproved: Boolean(booking),
       isFeatured: false,
       isPublic: true
     });
@@ -103,7 +106,9 @@ export const createTestimonial = async (req, res) => {
     await invalidateTestimonialCaches();
 
     res.status(201).json({
-      message: 'Testimonial published successfully!',
+      message: newTestimonial.isApproved
+        ? 'Testimonial published successfully!'
+        : 'Thanks! Your review will appear once it has been approved.',
       testimonial: newTestimonial
     });
   } catch (error) {
@@ -136,7 +141,7 @@ export const getTestimonials = async (req, res) => {
   try {
     const { featured, limit = 50, chef } = req.query;
 
-    const filter = { isPublic: true };
+    const filter = { isPublic: true, isApproved: true };
 
     if (featured === 'true') {
       filter.isFeatured = true;
@@ -153,6 +158,7 @@ export const getTestimonials = async (req, res) => {
 
     const cached = await cacheService.remember(cacheKey, CACHE_TTL, async () => {
       return Testimonial.find(filter)
+        .select('-userEmail')
         .populate('chef', 'name specialty profileImage')
         .sort({ isFeatured: -1, createdAt: -1 })
         .limit(limitNum)
@@ -199,8 +205,9 @@ export const getTestimonialById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const testimonial = await Testimonial.findById(id)
-      .populate('user', 'name email profileImage')
+    const testimonial = await Testimonial.findOne({ _id: id, isPublic: true, isApproved: true })
+      .select('-userEmail')
+      .populate('user', 'name profileImage')
       .populate('chef', 'name specialty profileImage')
       .populate('booking', 'eventDate status')
       .lean();
