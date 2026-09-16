@@ -1,5 +1,4 @@
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { verifyAuthToken } from '../auth/tokenService.js';
 
 // Middleware to verify JWT token
 export const verifyToken = async (req, res, next) => {
@@ -22,25 +21,13 @@ export const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Get user from database
-    const user = await User.findById(decoded.id).select('-password');
-    
-    if (!user) {
-      return res.status(401).json({ 
-        message: 'Invalid token. User not found.' 
-      });
-    }
-
-    // Add user to request object
-    req.user = user;
+    // Verifies signature, expiry and that the session hasn't been revoked
+    req.user = await verifyAuthToken(token);
     next();
   } catch (error) {
     // console.error('Token verification error:', error);
     
-    if (error.name === 'JsonWebTokenError') {
+    if (error.name === 'JsonWebTokenError' || error.name === 'AuthTokenError') {
       return res.status(401).json({ 
         message: 'Invalid token.' 
       });
@@ -65,9 +52,7 @@ export const optionalAuth = async (req, res, next) => {
       const token = authHeader.substring(7);
       
       if (token) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id).select('-password');
-        req.user = user;
+        req.user = await verifyAuthToken(token);
       }
     }
     
@@ -75,19 +60,6 @@ export const optionalAuth = async (req, res, next) => {
   } catch (error) {
     // If token is invalid, continue without user
     next();
-  }
-};
-
-// Utility function to validate token without middleware
-export const validateToken = (token) => {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return { valid: true, decoded };
-  } catch (error) {
-    return { 
-      valid: false, 
-      error: error.name === 'TokenExpiredError' ? 'expired' : 'invalid' 
-    };
   }
 };
 

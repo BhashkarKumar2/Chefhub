@@ -29,25 +29,23 @@ const userSchema = new mongoose.Schema({
     select: false
   },
 
-  // OAuth integration fields
-  googleId: {
-    type: String,
-    unique: true,
-    sparse: true,
-    trim: true
+  // Sign-in protection. Tokens carry tokenVersion; bumping it (password
+  // change/reset) invalidates every session issued before.
+  tokenVersion: {
+    type: Number,
+    default: 0,
+    select: false
   },
-  facebookId: {
-    type: String,
-    unique: true,
-    sparse: true,
-    trim: true
+  failedLoginAttempts: {
+    type: Number,
+    default: 0,
+    select: false
   },
-  firebaseUid: {
-    type: String,
-    unique: true,
-    sparse: true,
-    trim: true
+  lockUntil: {
+    type: Date,
+    select: false
   },
+
   phone: {
     type: String,
     unique: true,
@@ -172,7 +170,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Additional indexes for better query performance
-// Note: email, googleId, facebookId, firebaseUid, phone already have indexes via unique: true
+// Note: email and phone already have indexes via unique: true
 userSchema.index({ favorites: 1 }); // For favorite queries
 
 export default mongoose.model('User', userSchema);

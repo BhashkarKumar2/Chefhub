@@ -19,7 +19,6 @@ const Profile = () => {
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasPassword, setHasPassword] = useState(false);
-  const [isOAuthUser, setIsOAuthUser] = useState(false);
 
   // Load user data from backend
   useEffect(() => {
@@ -79,7 +78,6 @@ const Profile = () => {
           const passwordData = passwordStatusResponse.data;
           
           setHasPassword(passwordData.hasPassword);
-          setIsOAuthUser(passwordData.isOAuthUser);
         } catch (passwordError) {
         }
 
@@ -376,13 +374,6 @@ const Profile = () => {
                     </Link>
                   </div>
                   
-                  {isOAuthUser && !hasPassword && (
-                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
-                      <p className="text-sm text-blue-700">
-                        <strong>Tip:</strong> You signed up with Google. Set a password to enable email/password login as an alternative.
-                      </p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}

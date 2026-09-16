@@ -102,18 +102,7 @@ export const setupTokenExpirationCheck = (onExpired) => {
 // Deprecated: Use api.js instead
 // export const authenticatedFetch = async (url, options = {}) => { ... }
 
-// Mobile OTP API functions
 export const authAPI = {
-  // Verify Firebase OTP token
-  verifyFirebaseOTP: async (idToken, name = '') => {
-    try {
-      const response = await api.post('/auth/verify-firebase-otp', { idToken, name });
-      return response.data;
-    } catch (error) {
-      throw { response: { data: error.response?.data } };
-    }
-  },
-
   // Regular email login
   login: async (email, password) => {
     try {

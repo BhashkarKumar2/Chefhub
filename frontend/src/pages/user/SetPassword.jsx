@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
@@ -14,13 +14,12 @@ const SetPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
-  const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const { isDark } = useThemeAwareStyle();
 
   useEffect(() => {
@@ -31,7 +30,6 @@ const SetPassword = () => {
     try {
       const response = await api.get('/auth/password-status');
       setHasPassword(response.data.hasPassword);
-      setIsOAuthUser(response.data.isOAuthUser);
       setLoading(false);
     } catch (error) {
       setError('Failed to load password status');
@@ -54,22 +52,26 @@ const SetPassword = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long');
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const endpoint = hasPassword ? '/auth/change-password' : '/auth/set-password';
-      const payload = hasPassword 
-        ? { currentPassword, newPassword: formData.password, confirmPassword: formData.confirmPassword }
-        : { password: formData.password, confirmPassword: formData.confirmPassword };
+      const { data } = await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword: formData.password,
+        confirmPassword: formData.confirmPassword
+      });
 
-      await api.post(endpoint, payload);
+      // Changing the password signs out every other session; keep this one with the fresh token
+      if (data.token && user) {
+        login(data.token, user);
+      }
 
-      setSuccess(hasPassword ? 'Password changed successfully!' : 'Password set successfully! You can now login with email and password.');
+      setSuccess('Password changed successfully! Other devices have been signed out.');
       setFormData({ password: '', confirmPassword: '' });
       setCurrentPassword('');
       
@@ -91,19 +93,43 @@ const SetPassword = () => {
     );
   }
 
+  // Accounts without a password set one through the emailed reset link,
+  // which proves they own the address
+  if (!hasPassword) {
+    return (
+      <div className={`min-h-screen p-6 mt-10 lg:ml-64 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="max-w-2xl mx-auto">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-8 text-center`}>
+            <h1 className={`text-3xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Set a Password</h1>
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+            <p className={`mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              Your account doesn't have a password yet. We'll email you a secure link to create one.
+            </p>
+            <Link
+              to="/forgot-password"
+              className="inline-block bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-6 rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all"
+            >
+              Email me a link
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen p-6 mt-10 lg:ml-64 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-2xl mx-auto">
         <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-8`}>
           <h1 className={`text-3xl font-bold mb-2 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {hasPassword ? 'Change Password' : 'Set Password'}
+            Change Password
           </h1>
           <p className={`mb-6 text-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            {hasPassword 
-              ? 'Update your account password'
-              : isOAuthUser 
-                ? 'Set a password to enable email/password login alongside Google sign-in'
-                : 'Create a password for your account'}
+            Update your account password
           </p>
 
           {error && (
@@ -119,47 +145,45 @@ const SetPassword = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {hasPassword && (
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Current Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    required
-                    className={`w-full px-4 py-2 pr-10 rounded-lg border ${
-                      isDark 
-                        ? 'bg-gray-700 border-gray-600 text-white' 
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-orange-500`}
-                    placeholder="Enter current password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
-                  >
-                    {showCurrentPassword ? (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      </svg>
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  className={`w-full px-4 py-2 pr-10 rounded-lg border ${
+                    isDark 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } focus:outline-none focus:ring-2 focus:ring-orange-500`}
+                  placeholder="Enter current password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className={`absolute right-3 top-1/2 transform -translate-y-1/2 ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
+                >
+                  {showCurrentPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
               </div>
-            )}
+            </div>
 
             <div>
               <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                {hasPassword ? 'New Password' : 'Password'}
+                New Password
               </label>
               <div className="relative">
                 <input
@@ -237,7 +261,7 @@ const SetPassword = () => {
                 disabled={submitting}
                 className="flex-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? 'Saving...' : hasPassword ? 'Change Password' : 'Set Password'}
+                {submitting ? 'Saving...' : 'Change Password'}
               </button>
               <button
                 type="button"

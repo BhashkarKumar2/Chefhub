@@ -1,165 +1,282 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import mongoose from 'mongoose';
 import User from '../models/User.js';
-import { verifyFirebaseToken, getFirebaseUserByPhone } from '../services/smsService.js';
+import PendingRegistration from '../models/PendingRegistration.js';
 import { sendVerificationEmail } from '../controllers/emailVerificationController.js';
-import redis from '../config/redis.js';
+import { signAuthToken, verifyAuthToken } from './tokenService.js';
+import {
+  BCRYPT_ROUNDS,
+  OTP_TTL_MS,
+  MAX_OTP_ATTEMPTS,
+  MAX_FAILED_LOGINS,
+  LOGIN_LOCK_MS,
+  normalizeEmail,
+  findUserByEmail,
+  generateOtp,
+  hashOtp,
+  hashesMatch,
+  validatePassword
+} from './credentials.js';
 
-// Helper functions for Redis-based pending registrations
-export const storePendingRegistration = async (email, data) => {
-  const key = `pending:registration:${email}`;
-  await redis.setex(key, 600, JSON.stringify(data)); // 10 minutes TTL
-  // console.log(`[REDIS] Stored pending registration for: ${email}`);
-};
-
-export const getPendingRegistration = async (email) => {
-  const key = `pending:registration:${email}`;
-  const data = await redis.get(key);
-  return data ? JSON.parse(data) : null;
-};
-
-export const deletePendingRegistration = async (email) => {
-  const key = `pending:registration:${email}`;
-  await redis.del(key);
-  // console.log(`[REDIS] Deleted pending registration for: ${email}`);
-};
-
-// Fallback: In-memory store if Redis is unavailable
-export const pendingRegistrations = new Map();
-
-// Clean up expired in-memory registrations every minute (fallback only)
-setInterval(() => {
-  const now = Date.now();
-  for (const [email, data] of pendingRegistrations.entries()) {
-    if (data.expiresAt < now) {
-      pendingRegistrations.delete(email);
-      // console.log(`[CLEANUP] Removed expired registration for: ${email}`);
-    }
-  }
-}, 60000);
+// Compared against when the account doesn't exist, so a login for an unknown
+// email takes as long as one for a real account (no timing-based enumeration).
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('chefhub-timing-equalizer', BCRYPT_ROUNDS);
 
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-    // Validate required fields
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email, and password are required" });
+    if (!name || !email || !password || typeof name !== 'string') {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ message: "Password must be at least 8 characters long" });
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
-    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
-      return res.status(400).json({ message: "Password must contain at least one letter and one number" });
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({ message: 'Please provide a valid email' });
     }
 
-    // Check if user already exists
-    const existing = await User.findOne({ email });
+    const existing = await findUserByEmail(email, '_id');
     if (existing) {
-      return res.status(400).json({ message: "User already exists with this email" });
+      return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Generate verification OTP (6-digit, 10-minute expiry)
-    const verificationOTP = crypto.randomInt(100000, 1000000).toString();
-    const hashedOTP = crypto.createHash('sha256').update(verificationOTP).digest('hex');
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Store registration data temporarily in Redis (or fallback to in-memory)
-    const registrationData = {
-      name,
-      email,
-      password: hashedPassword,
-      otp: hashedOTP,
-      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes for production
-    };
+    const otp = generateOtp();
+    const pending = await PendingRegistration.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      passwordHash: await bcrypt.hash(password, BCRYPT_ROUNDS),
+      otpHash: hashOtp(otp),
+      expiresAt: new Date(Date.now() + OTP_TTL_MS)
+    });
 
     try {
-      // Try Redis first
-      await storePendingRegistration(email, registrationData);
-    } catch (redisError) {
-      // Fallback to in-memory if Redis fails
-      // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
-      pendingRegistrations.set(email, registrationData);
-    }
-
-    // console.log(`[REGISTER] Pending registration created for: ${email} (OTP expires in 10 minutes)`);
-
-    try {
-      // Send verification email
-      await sendVerificationEmail({ name, email }, verificationOTP);
-
-      // console.log(`[REGISTER] ✅ Verification email sent to: ${email}`);
-      res.status(200).json({
-        message: "Verification code sent! Please check your email and enter the code within 10 minutes.",
-        emailSent: true,
-        expiresIn: "10 minutes"
-      });
+      await sendVerificationEmail({ name: pending.name, email: normalizedEmail }, otp);
     } catch (emailError) {
-      // console.error(`[REGISTER] ❌ Error sending verification email to ${email}:`, emailError);
-      // Remove pending registration if email fails
-      try {
-        await deletePendingRegistration(email);
-      } catch {
-        pendingRegistrations.delete(email);
-      }
+      await PendingRegistration.deleteOne({ _id: pending._id });
       return res.status(500).json({
         message: 'Failed to send verification email. Please check your email address.',
         emailSent: false
       });
     }
+
+    res.status(200).json({
+      message: 'Verification code sent! Please check your email and enter the code within 10 minutes.',
+      emailSent: true,
+      expiresIn: '10 minutes',
+      // The code only verifies this signup attempt
+      registrationId: pending._id
+    });
   } catch (err) {
-    // console.error(`[REGISTER] ❌ Registration error:`, err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Registration failed. Please try again.' });
+  }
+};
+
+// Complete a signup: the code must belong to this registrationId
+export const verifyRegistration = async (req, res) => {
+  try {
+    const { registrationId, otp } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(registrationId) || !/^\d{6}$/.test(String(otp || ''))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter the 6-digit code from your email.'
+      });
+    }
+
+    const pending = await PendingRegistration.findById(registrationId);
+    if (!pending) {
+      return res.status(400).json({
+        success: false,
+        message: 'No pending registration found. Please register again.',
+        expired: true
+      });
+    }
+
+    if (pending.expiresAt <= new Date()) {
+      await PendingRegistration.deleteOne({ _id: pending._id });
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please register again.',
+        expired: true
+      });
+    }
+
+    if (!hashesMatch(hashOtp(otp), pending.otpHash)) {
+      // Atomic increment so parallel guesses can't exceed the limit
+      const updated = await PendingRegistration.findOneAndUpdate(
+        { _id: pending._id },
+        { $inc: { attempts: 1 } },
+        { new: true }
+      );
+
+      if (!updated || updated.attempts >= MAX_OTP_ATTEMPTS) {
+        await PendingRegistration.deleteOne({ _id: pending._id });
+        return res.status(400).json({
+          success: false,
+          message: 'Too many incorrect codes. Please register again.',
+          expired: true
+        });
+      }
+
+      const left = MAX_OTP_ATTEMPTS - updated.attempts;
+      return res.status(400).json({
+        success: false,
+        message: `Incorrect code. ${left} attempt${left === 1 ? '' : 's'} left.`
+      });
+    }
+
+    // Consume the signup before creating the account so one code can't be used twice
+    const consumed = await PendingRegistration.findOneAndDelete({ _id: pending._id, otpHash: pending.otpHash });
+    if (!consumed) {
+      return res.status(400).json({
+        success: false,
+        message: 'No pending registration found. Please register again.',
+        expired: true
+      });
+    }
+
+    let newUser;
+    try {
+      newUser = await User.create({
+        name: consumed.name,
+        email: consumed.email,
+        password: consumed.passwordHash,
+        isEmailVerified: true
+      });
+    } catch (createError) {
+      if (createError.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email already exists. Please log in.'
+        });
+      }
+      throw createError;
+    }
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully! You can now log in.',
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error during verification'
+    });
+  }
+};
+
+// Send a fresh code for the same signup attempt. The attempt counter is not
+// reset, so resending can't be used to get more guesses.
+export const resendRegistrationCode = async (req, res) => {
+  try {
+    const { registrationId } = req.body;
+
+    const pending = mongoose.Types.ObjectId.isValid(registrationId)
+      ? await PendingRegistration.findById(registrationId)
+      : null;
+
+    if (!pending) {
+      return res.status(404).json({
+        success: false,
+        message: 'No pending registration found. Please register again.'
+      });
+    }
+
+    const otp = generateOtp();
+    pending.otpHash = hashOtp(otp);
+    pending.expiresAt = new Date(Date.now() + OTP_TTL_MS);
+    await pending.save();
+
+    await sendVerificationEmail({ name: pending.name, email: pending.email }, otp);
+
+    res.json({
+      success: true,
+      message: 'New verification code sent! Please check your email.'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resend verification email'
+    });
   }
 };
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  const invalidCredentials = () => res.status(401).json({ message: 'Invalid email or password' });
 
   try {
-    const user = await User.findOne({ email }).select('+password');
-    // Security: Prevent username enumeration (always use generic error message)
-    // Note: We still check user existence but won't reveal it to the client yet if password fails
-
-    if (!user) {
-      // Return same generic message, but maybe add a small random delay to mitigate timing attacks if needed
-      // For now, standardize the message
-      return res.status(401).json({ message: "Invalid email or password" });
+    if (typeof email !== 'string' || typeof password !== 'string' || !password) {
+      return invalidCredentials();
     }
 
-    // Check if email is verified
-    if (!user.isEmailVerified) {
-      return res.status(403).json({
-        message: "Please verify your email before logging in. Check your inbox for the verification link.",
-        emailNotVerified: true
+    const user = await findUserByEmail(email, '+password +tokenVersion +failedLoginAttempts +lockUntil');
+
+    // Unknown email, or an old social-login account that never set a password
+    if (!user || !user.password) {
+      await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
+      return invalidCredentials();
+    }
+
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      return res.status(429).json({
+        message: 'Too many failed attempts. Try again in 15 minutes or reset your password.'
       });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      const updated = await User.findOneAndUpdate(
+        { _id: user._id },
+        { $inc: { failedLoginAttempts: 1 } },
+        { new: true }
+      ).select('+failedLoginAttempts');
+
+      if (updated && updated.failedLoginAttempts >= MAX_FAILED_LOGINS) {
+        await User.updateOne(
+          { _id: user._id },
+          { $set: { failedLoginAttempts: 0, lockUntil: new Date(Date.now() + LOGIN_LOCK_MS) } }
+        );
+      }
+      return invalidCredentials();
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    // Only reveal verification status to someone who knows the password
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        message: 'Please verify your email before logging in.',
+        emailNotVerified: true
+      });
+    }
 
-    const userResponse = {
-      id: user._id,
-      email: user.email,
-      name: user.name,
-      profileImage: user.profileImage
-    };
+    const updates = { $set: { failedLoginAttempts: 0 }, $unset: { lockUntil: 1 } };
+    // Upgrade hashes created with a lower bcrypt cost
+    if (bcrypt.getRounds(user.password) < BCRYPT_ROUNDS) {
+      updates.$set.password = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    }
+    await User.updateOne({ _id: user._id }, updates);
 
-    // console.log('✅ Login successful for:', email, 'User ID:', user._id);
     res.json({
-      token,
-      user: userResponse
+      token: signAuthToken(user),
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        profileImage: user.profileImage
+      }
     });
   } catch (err) {
-    // console.error('❌ Login error:', err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Login failed. Please try again.' });
   }
 };
 
@@ -175,18 +292,7 @@ export const validateToken = async (req, res) => {
       });
     }
 
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Get user details
-    const user = await User.findById(decoded.id).select('-password');
-
-    if (!user) {
-      return res.status(401).json({
-        valid: false,
-        message: 'User not found'
-      });
-    }
+    const user = await verifyAuthToken(authHeader.substring(7));
 
     res.json({
       valid: true,
@@ -198,13 +304,12 @@ export const validateToken = async (req, res) => {
       }
     });
   } catch (error) {
-
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         valid: false,
         message: 'Token expired'
       });
-    } else if (error.name === 'JsonWebTokenError') {
+    } else if (error.name === 'JsonWebTokenError' || error.name === 'AuthTokenError') {
       return res.status(401).json({
         valid: false,
         message: 'Invalid token'
@@ -221,81 +326,9 @@ export const validateToken = async (req, res) => {
 // Get current user profile (protected route)
 export const getCurrentUser = async (req, res) => {
   try {
-    // User is already attached to req by middleware
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id);
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Verify Firebase ID token and login/register user
-export const verifyFirebaseOTP = async (req, res) => {
-  try {
-    const { idToken, name } = req.body;
-
-    if (!idToken) {
-      return res.status(400).json({ message: 'Firebase ID token is required' });
-    }
-
-    // Verify Firebase token
-    const tokenResult = await verifyFirebaseToken(idToken);
-
-    if (!tokenResult.success) {
-      return res.status(400).json({ message: tokenResult.error });
-    }
-
-    const firebaseUser = tokenResult.user;
-
-    if (!firebaseUser.phoneNumber) {
-      return res.status(400).json({ message: 'Phone number not found in Firebase token' });
-    }
-
-    // Check if user exists with this phone number
-    let user = await User.findOne({ phone: firebaseUser.phoneNumber });
-
-    if (!user) {
-      // Create new user if doesn't exist
-      const userName = name || firebaseUser.name || `User_${Date.now()}`;
-
-      user = new User({
-        name: userName,
-        phone: firebaseUser.phoneNumber,
-        email: firebaseUser.email || null,
-        isPhoneVerified: true,
-        firebaseUid: firebaseUser.uid
-      });
-
-      await user.save();
-      // console.log('✅ New user created:', user.phone);
-    } else {
-      // Update phone verification status and Firebase UID
-      user.isPhoneVerified = true;
-      user.firebaseUid = firebaseUser.uid;
-      if (firebaseUser.email && !user.email) {
-        user.email = firebaseUser.email;
-      }
-      await user.save();
-      // console.log('✅ Existing user updated:', user.phone);
-    }
-
-    // Generate JWT token for our application
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        phone: user.phone,
-        email: user.email,
-        profileImage: user.profileImage,
-        isPhoneVerified: user.isPhoneVerified
-      },
-      message: 'Login successful'
-    });
-  } catch (error) {
-    // console.error('Firebase OTP verification error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

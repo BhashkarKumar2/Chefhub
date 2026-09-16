@@ -4,10 +4,7 @@ import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import session from 'express-session';
-import connectRedis from 'connect-redis';
 import rateLimit from 'express-rate-limit';
-import passport from './auth/Passport.js'; // Import passport config
 import authRoutes from './auth/authRoutes.js';
 import chefRoutes from './routes/chefRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
@@ -26,8 +23,6 @@ import hpp from 'hpp';
 import { initScheduledJobs } from './services/cronService.js';
 import { initLangfuse, shutdownLangfuse } from './services/langfuseService.js';
 
-const RedisStore = connectRedis(session);
-
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -40,9 +35,6 @@ app.set('trust proxy', 1);
 // Security: Validate required environment variables
 if (!process.env.JWT_SECRET) {
   throw new Error('FATAL: JWT_SECRET is not set in environment variables');
-}
-if (!process.env.SESSION_SECRET) {
-  throw new Error('FATAL: SESSION_SECRET is not set in environment variables');
 }
 
 // Security: CORS configuration with environment-based origins
@@ -108,30 +100,10 @@ const authLimiter = process.env.NODE_ENV === 'production'
     max: 5, // Limit each IP to 5 login attempts per windowMs
     message: 'Too many login attempts, please try again after 15 minutes.',
     skipSuccessfulRequests: true,
-    skip: (req) => ['/google', '/google/callback', '/facebook', '/facebook/callback'].includes(req.path),
   })
   : (req, res, next) => next();
 
 app.use(generalLimiter);
-
-if (redis.isEnabled) {
-  app.use(session({
-    store: new RedisStore({
-      client: redis,
-      prefix: 'chefhub:sess:',
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production', // true in production (requires HTTPS)
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    },
-    name: 'sessionId', // Don't use default 'connect.sid' name
-  }));
-}
 
 //optimizers
 
@@ -159,11 +131,6 @@ app.use(helmet({
 // Security: Prevent HTTP Parameter Pollution
 app.use(hpp());
 
-// Passport Middleware
-app.use(passport.initialize());
-if (redis.isEnabled) {
-  app.use(passport.session());
-}
 
 // Routes
 

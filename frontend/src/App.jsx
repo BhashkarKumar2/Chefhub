@@ -43,10 +43,8 @@ const ChefBookings = lazy(() => import('./pages/chef/ChefBookings'));
 const ChefEarnings = lazy(() => import('./pages/chef/ChefEarnings'));
 const AddTestimonial = lazy(() => import('./pages/user/AddTestimonial'));
 const MyTestimonials = lazy(() => import('./pages/user/MyTestimonials'));
-const MobileLogin = lazy(() => import('./pages/auth/MobileLogin'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
-const AuthSuccess = lazy(() => import('./pages/auth/AuthSuccess'));
 const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'));
 const VerifyOTP = lazy(() => import('./pages/auth/VerifyOTP'));
 
@@ -102,7 +100,6 @@ const App = () => {
                         {/* Public routes - accessible without authentication */}
                         <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
-                        <Route path="/mobile-login" element={<MobileLogin />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password/:token" element={<ResetPassword />} />
                         <Route path="/register" element={<Signup />} />
@@ -199,7 +196,6 @@ const App = () => {
                           </ProtectedRoute>
                         } />
                         {/* Auth-related routes */}
-                        <Route path="/auth-success" element={<AuthSuccess />} />
                         <Route path="/verify-email/:token" element={<VerifyEmail />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
                       </Routes>

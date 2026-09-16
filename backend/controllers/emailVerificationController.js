@@ -1,7 +1,12 @@
-import crypto from 'crypto';
 import * as brevo from '@getbrevo/brevo';
-import User from '../models/User.js';
-import { getPendingRegistration, deletePendingRegistration, storePendingRegistration, pendingRegistrations } from '../auth/authController.js';
+
+// Names are user-supplied; never let them inject markup (e.g. phishing links) into our emails
+export const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 // Initialize Brevo API client
 const apiInstance = new brevo.TransactionalEmailsApi();
@@ -43,7 +48,7 @@ export const sendVerificationEmail = async (user, verificationOTP) => {
             <!-- Content -->
             <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">
-                Welcome to ChefHub, ${user.name}! 👋
+                Welcome to ChefHub, ${escapeHtml(user.name)}! 👋
               </h2>
               
               <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
@@ -98,104 +103,6 @@ export const sendVerificationEmail = async (user, verificationOTP) => {
   }
 };
 
-// Verify email OTP and create user
-export const verifyEmail = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    // console.log(`[VERIFY] Received verification request for ${email} with OTP: ${otp}`);
-
-    if (!email || !otp) {
-      // console.log(`[VERIFY] ❌ Missing email or OTP`);
-      return res.status(400).json({
-        success: false,
-        message: 'Email and OTP are required'
-      });
-    }
-
-    // Get pending registration data from Redis (or fallback to in-memory)
-    let pendingData;
-    try {
-      pendingData = await getPendingRegistration(email);
-    } catch (redisError) {
-      // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
-      pendingData = pendingRegistrations.get(email);
-    }
-
-    if (!pendingData) {
-      // console.log(`[VERIFY] ❌ No pending registration found for ${email}`);
-      return res.status(400).json({
-        success: false,
-        message: 'No pending registration found. Please register again.'
-      });
-    }
-
-    // Check if OTP expired
-    if (pendingData.expiresAt < Date.now()) {
-      try {
-        await deletePendingRegistration(email);
-      } catch {
-        pendingRegistrations.delete(email);
-      }
-      // console.log(`[VERIFY] ⏰ OTP expired for ${email}`);
-      return res.status(400).json({
-        success: false,
-        message: 'OTP has expired. Please register again.',
-        expired: true
-      });
-    }
-
-    // Hash the entered OTP and compare
-    const hashedOTP = crypto.createHash('sha256').update(otp.toString()).digest('hex');
-
-    if (hashedOTP !== pendingData.otp) {
-      // console.log(`[VERIFY] ❌ Incorrect OTP entered for ${email}`);
-      return res.status(400).json({
-        success: false,
-        message: 'Incorrect OTP. Please check your email and try again.'
-      });
-    }
-
-    // OTP is correct - Now create the user in database
-    // console.log(`[VERIFY] ✅ OTP verified for ${email}, creating user in database...`);
-
-    const newUser = new User({
-      name: pendingData.name,
-      email: pendingData.email,
-      password: pendingData.password,
-      isEmailVerified: true // User is verified since OTP matched
-    });
-
-    await newUser.save();
-
-    // Remove from pending registrations (Redis or in-memory)
-    try {
-      await deletePendingRegistration(email);
-    } catch {
-      pendingRegistrations.delete(email);
-    }
-
-    // console.log(`[VERIFY] ✅ User created successfully for ${email}`);
-
-    res.json({
-      success: true,
-      message: 'Email verified successfully! You can now log in.',
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email
-      }
-    });
-
-  } catch (error) {
-    // console.error('❌ Email verification error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error during verification'
-    });
-  }
-};
-
 // Send review reminder email after booking completion
 export const sendReviewReminderEmail = async (userEmail, userName, chefName, bookingId) => {
   try {
@@ -233,11 +140,11 @@ export const sendReviewReminderEmail = async (userEmail, userName, chefName, boo
             <!-- Content -->
             <div style="background: #ffffff; padding: 40px 30px; border: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">
-                How was your experience, ${userName}? ⭐
+                How was your experience, ${escapeHtml(userName)}? ⭐
               </h2>
               
               <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6;">
-                Thank you for choosing <strong>${chefName}</strong> through ChefHub! We hope you had an amazing culinary experience.
+                Thank you for choosing <strong>${escapeHtml(chefName)}</strong> through ChefHub! We hope you had an amazing culinary experience.
               </p>
               
               <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6;">
@@ -284,70 +191,5 @@ export const sendReviewReminderEmail = async (userEmail, userName, chefName, boo
   } catch (error) {
     // console.error('Error sending review reminder email:', error);
     throw error;
-  }
-};
-
-// Resend verification email
-export const resendVerificationEmail = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    // console.log(`[RESEND] Resend OTP requested for ${email}`);
-
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email address is required'
-      });
-    }
-
-    // Check if there's a pending registration (Redis or in-memory)
-    let pendingData;
-    try {
-      pendingData = await getPendingRegistration(email);
-    } catch (redisError) {
-      // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
-      pendingData = pendingRegistrations.get(email);
-    }
-
-    if (!pendingData) {
-      // console.log(`[RESEND] ❌ No pending registration for ${email}`);
-      return res.status(404).json({
-        success: false,
-        message: 'No pending registration found. Please register again.'
-      });
-    }
-
-    // Generate new OTP (6-digit, 10-minute expiry)
-    const verificationOTP = crypto.randomInt(100000, 1000000).toString();
-    const hashedOTP = crypto.createHash('sha256').update(verificationOTP).digest('hex');
-
-    // Update pending registration with new OTP (Redis or in-memory)
-    pendingData.otp = hashedOTP;
-    pendingData.expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-    try {
-      await storePendingRegistration(email, pendingData);
-    } catch (redisError) {
-      // console.warn(`[REDIS] Failed, using in-memory fallback:`, redisError.message);
-      pendingRegistrations.set(email, pendingData);
-    }
-
-    // Send new verification email
-    await sendVerificationEmail({ name: pendingData.name, email }, verificationOTP);
-
-    // console.log(`[RESEND] ✅ New OTP sent to ${email}`);
-
-    res.json({
-      success: true,
-      message: 'New verification code sent! Please check your email.'
-    });
-
-  } catch (error) {
-    // console.error('❌ Error resending verification email:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to resend verification email'
-    });
   }
 };

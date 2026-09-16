@@ -146,24 +146,31 @@ test('agentic API routes are registered with authentication and memory hooks', (
   assert.equal((aiRoutes.match(/export default router/g) || []).length, 1);
 });
 
-test('OAuth routes are stateless and do not depend on Redis sessions', () => {
+test('sign-in is email + password only, with no third-party identity providers', () => {
   const authRoutes = fs.readFileSync(path.join(backendDir, 'auth/authRoutes.js'), 'utf8');
+  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
+  const pkg = JSON.parse(fs.readFileSync(path.join(backendDir, 'package.json'), 'utf8'));
 
-  assert.match(authRoutes, /passport\.authenticate\('google', \{ scope: \['profile', 'email'\], session: false \}\)/);
-  assert.match(authRoutes, /passport\.authenticate\('google', \{\s*session: false,/);
-  assert.match(authRoutes, /passport\.authenticate\('facebook', \{ scope: \['public_profile', 'email'\], session: false \}\)/);
-  assert.match(authRoutes, /passport\.authenticate\('facebook', \{\s*session: false,/);
+  assert.doesNotMatch(authRoutes, /passport|google|facebook|firebase/i);
+  assert.doesNotMatch(server, /passport|express-session|connect-redis/);
+  assert.equal(fs.existsSync(path.join(backendDir, 'auth/Passport.js')), false);
+  for (const dep of ['passport', 'passport-google-oauth20', 'passport-facebook', 'firebase', 'firebase-admin', 'express-session', 'connect-redis']) {
+    assert.equal(pkg.dependencies[dep], undefined, `${dep} should not be a dependency`);
+  }
 });
 
-test('auth limiter skips OAuth redirect and callback routes', () => {
-  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
+test('pending signups live in MongoDB and codes are bound to one signup attempt', () => {
+  const authController = fs.readFileSync(path.join(backendDir, 'auth/authController.js'), 'utf8');
 
-  assert.match(server, /skip: \(req\) => \['\/google', '\/google\/callback', '\/facebook', '\/facebook\/callback'\]\.includes\(req\.path\)/);
+  assert.doesNotMatch(authController, /redis/i);
+  assert.match(authController, /PendingRegistration\.create\(/);
+  assert.match(authController, /PendingRegistration\.findById\(registrationId\)/);
+  assert.match(authController, /MAX_OTP_ATTEMPTS/);
+  assert.match(authController, /MAX_FAILED_LOGINS/);
 });
 
 test('Redis is optional and does not default to localhost without Redis env', () => {
   const redisConfig = fs.readFileSync(path.join(backendDir, 'config/redis.js'), 'utf8');
-  const server = fs.readFileSync(path.join(backendDir, 'server.js'), 'utf8');
 
   assert.match(redisConfig, /const hasRedisConfig = Boolean/);
   assert.match(redisConfig, /process\.env\.REDIS_URL/);
@@ -171,9 +178,6 @@ test('Redis is optional and does not default to localhost without Redis env', ()
   assert.match(redisConfig, /const store = new Map\(\)/);
   assert.match(redisConfig, /expiresAt/);
   assert.match(redisConfig, /patternToRegex/);
-  assert.match(server, /if \(redis\.isEnabled\) \{/);
-  assert.match(server, /app\.use\(session\(\{/);
-  assert.match(server, /app\.use\(passport\.session\(\)\)/);
 });
 
 test('backend read caching is wired for chefs and geocoding', () => {
@@ -187,9 +191,9 @@ test('backend read caching is wired for chefs and geocoding', () => {
   assert.match(cacheService, /export const deleteByPrefix/);
   assert.match(cacheService, /X-Cache/);
 
-  assert.match(chefController, /cacheService\.remember\('chefs:all:v1'/);
-  assert.match(chefController, /chefs:search:v1/);
-  assert.match(chefController, /chefs:detail:v1/);
+  assert.match(chefController, /cacheService\.remember\('chefs:all:v2'/);
+  assert.match(chefController, /chefs:search:v2/);
+  assert.match(chefController, /chefs:detail:v2/);
   assert.match(chefController, /cacheService\.remember\('chefs:metadata:v1'/);
   assert.match(chefController, /cacheService\.deleteByPrefix\('chefs:'\)/);
   assert.match(chefController, /cacheService\.setCacheHeader/);

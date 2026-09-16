@@ -2,6 +2,9 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import * as brevo from '@getbrevo/brevo';
 import User from '../models/User.js';
+import { escapeHtml } from './emailVerificationController.js';
+import { signAuthToken } from '../auth/tokenService.js';
+import { BCRYPT_ROUNDS, findUserByEmail, validatePassword } from '../auth/credentials.js';
 
 // Initialize Brevo API client
 const apiInstance = new brevo.TransactionalEmailsApi();
@@ -16,7 +19,7 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: 'Email is required' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user) {
       // Don't reveal if user exists or not for security
       return res.json({ message: 'If an account exists with this email, a password reset link will be sent.' });
@@ -62,7 +65,7 @@ export const forgotPassword = async (req, res) => {
               
               <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb;">
                 <h2 style="color: #1f2937; margin: 0 0 20px 0;">Password Reset Request</h2>
-                <p>Hi ${user.name},</p>
+                <p>Hi ${escapeHtml(user.name)},</p>
                 <p>We received a request to reset your password for your ChefHub account. Click the button below to reset your password:</p>
                 
                 <div style="text-align: center; margin: 30px 0;">
@@ -94,10 +97,8 @@ export const forgotPassword = async (req, res) => {
       const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
       // console.log('✅ Password reset email sent to:', user.email);
 
-      res.json({
-        message: 'Password reset link has been sent to your email',
-        success: true
-      });
+      // Same response as for an unknown email, so this can't be used to discover accounts
+      res.json({ message: 'If an account exists with this email, a password reset link will be sent.' });
     } catch (emailError) {
       console.error('❌ Error sending email:', emailError);
 
@@ -141,110 +142,52 @@ export const verifyResetToken = async (req, res) => {
   }
 };
 
-// Reset password with token
+// Reset password. Also proves the user owns the email, so it marks it
+// verified and signs out every existing session.
 export const resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ message: 'Password is required' });
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-    }
+    const hashedToken = crypto.createHash('sha256').update(String(token)).digest('hex');
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
-      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
-    }
-
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpire: { $gt: Date.now() }
-    });
+    // Match and consume the token in one atomic update so it can't be used twice
+    const user = await User.findOneAndUpdate(
+      { resetPasswordToken: hashedToken, resetPasswordExpire: { $gt: Date.now() } },
+      {
+        $set: { password: passwordHash, isEmailVerified: true, failedLoginAttempts: 0 },
+        $unset: { resetPasswordToken: 1, resetPasswordExpire: 1, lockUntil: 1 },
+        $inc: { tokenVersion: 1 }
+      }
+    );
 
     if (!user) {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
-
-    // Set new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
 
     res.json({
       message: 'Password has been reset successfully',
       success: true
     });
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error('Reset password error:', error.message);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Set password for OAuth users who don't have one
-export const setPassword = async (req, res) => {
-  try {
-    const { password, confirmPassword } = req.body;
-    const userId = req.user._id || req.user.id; // From auth middleware
-
-    // Validate password
-    if (!password || !confirmPassword) {
-      return res.status(400).json({ message: 'Password and confirm password are required' });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match' });
-    }
-
-    if (password.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
-    }
-
-    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(password)) {
-      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
-    }
-
-    // Find user
-    const user = await User.findById(userId).select('+password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Check if user already has a password
-    if (user.password) {
-      return res.status(400).json({
-        message: 'Password already exists. Use change password instead.'
-      });
-    }
-
-    // Hash and set password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
-    await user.save();
-
-    res.json({
-      message: 'Password set successfully. You can now login with email and password.',
-      success: true
-    });
-  } catch (error) {
-    // console.error('Set password error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// Change existing password
+// Change password (requires the current one). Signs out all other sessions
+// and returns a fresh token for this one.
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     const userId = req.user._id || req.user.id;
 
-    // Validate input
     if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
         message: 'Current password, new password, and confirm password are required'
@@ -255,65 +198,54 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'New passwords do not match' });
     }
 
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
     }
 
-    if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(newPassword)) {
-      return res.status(400).json({ message: 'Password must contain at least one letter and one number' });
-    }
-
-    // Find user
-    const user = await User.findById(userId).select('+password');
+    const user = await User.findById(userId).select('+password +tokenVersion');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Check if user has a password
     if (!user.password) {
       return res.status(400).json({
-        message: 'No password set. Use set password instead.'
+        message: 'No password set. Use "Forgot password" to create one.'
       });
     }
 
-    // Verify current password
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(String(currentPassword), user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Current password is incorrect' });
     }
 
-    // Hash and update password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
+    user.password = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
 
     res.json({
       message: 'Password changed successfully',
-      success: true
+      success: true,
+      token: signAuthToken(user)
     });
   } catch (error) {
-    // console.error('Change password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Check if user has a password set
+// Check whether the account has a password (accounts from the old social
+// logins may not, and set one through "Forgot password")
 export const checkPasswordStatus = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId).select('password googleId facebookId');
+    const user = await User.findById(userId).select('+password');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json({
-      hasPassword: !!user.password,
-      isOAuthUser: !!(user.googleId || user.facebookId),
-      canSetPassword: !user.password && !!(user.googleId || user.facebookId)
-    });
+    res.json({ hasPassword: !!user.password });
   } catch (error) {
-    // console.error('Check password status error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

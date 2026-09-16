@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import jwt from 'jsonwebtoken';
+import { verifyAuthToken } from '../auth/tokenService.js';
 
 class SocketService {
   constructor() {
@@ -26,12 +26,12 @@ class SocketService {
     });
 
     // Authentication middleware for socket connections
-    this.io.use((socket, next) => {
+    this.io.use(async (socket, next) => {
       const token = socket.handshake.auth.token;
       if (token) {
         try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          socket.userId = decoded.id;
+          const user = await verifyAuthToken(token);
+          socket.userId = user._id.toString();
           next();
         } catch (error) {
           // console.error('Socket authentication error:', error);

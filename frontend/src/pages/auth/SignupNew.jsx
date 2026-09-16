@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { buildApiEndpoint, API_BASE_URL } from '../../utils/apiConfig';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 import logo from '../../assets/logo.png';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
@@ -20,6 +20,7 @@ const SignupNew = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [registrationId, setRegistrationId] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -76,6 +77,7 @@ const SignupNew = () => {
       // Handle verification flow
       setSuccess(true);
       setEmailSent(data.emailSent || false);
+      setRegistrationId(data.registrationId || null);
     } catch (error) {
       setError(error.message);
       setLoading(false); // Reset loading on error
@@ -83,9 +85,6 @@ const SignupNew = () => {
     // Don't reset loading on success - keeps button disabled
   };
 
-  const handleGoogleSignup = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
-  };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -244,7 +243,7 @@ const SignupNew = () => {
                   </div>
                 )}
                 <button
-                  onClick={() => navigate('/verify-otp', { state: { email: formData.email } })}
+                  onClick={() => navigate('/verify-otp', { state: { email: formData.email, registrationId } })}
                   className="w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all duration-200 bg-orange-600 hover:bg-orange-700 text-white"
                 >
                   Enter Verification Code
@@ -271,15 +270,6 @@ const SignupNew = () => {
               )}
             </button>
           </form>
-
-          {/* Social login */}
-          <div className={`text-center my-3 text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>or continue with</div>
-          <div className="flex justify-center mb-3">
-            <button onClick={handleGoogleSignup} className={`flex items-center gap-2 px-4 py-2 border rounded-lg hover:shadow-md transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-orange-300 bg-orange-50 hover:bg-orange-100'}`} title="Sign up with Google">
-              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-5 h-5" />
-              <span className={`font-medium text-sm ${isDark ? 'text-gray-200' : 'text-orange-800'}`}>Continue with Google</span>
-            </button>
-          </div>
 
           <p className={`text-center text-xs font-medium mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             Already have an account? <Link to="/login" className={`font-semibold transition-colors duration-200 ${isDark ? 'text-orange-400 hover:text-orange-300' : 'text-orange-800 hover:text-orange-900'}`}>Sign In</Link>

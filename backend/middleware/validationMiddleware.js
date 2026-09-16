@@ -20,7 +20,8 @@ export const validate = (req, res, next) => {
 export const registerValidationRules = () => {
     return [
         body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-        body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+        // Emails are normalized in the auth controllers (stored form + legacy lookups)
+        body('email').isEmail().withMessage('Please provide a valid email'),
         body('password')
             .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
             .matches(/^(?=.*[A-Za-z])(?=.*\d).+$/).withMessage('Password must contain at least one letter and one number'),
@@ -29,7 +30,7 @@ export const registerValidationRules = () => {
 
 export const loginValidationRules = () => {
     return [
-        body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+        body('email').isEmail().withMessage('Please provide a valid email'),
         body('password').notEmpty().withMessage('Password is required'),
     ];
 };
@@ -37,7 +38,7 @@ export const loginValidationRules = () => {
 // Password management rules
 export const forgotPasswordValidationRules = () => {
     return [
-        body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+        body('email').isEmail().withMessage('Please provide a valid email'),
     ];
 };
 

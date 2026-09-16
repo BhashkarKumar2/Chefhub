@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import { buildApiEndpoint, API_BASE_URL } from '../../utils/apiConfig';
+import { buildApiEndpoint } from '../../utils/apiConfig';
 import logo from '../../assets/logo.png';
 import { useThemeAwareStyle } from '../../utils/themeUtils';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [resendingEmail, setResendingEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -23,24 +22,6 @@ const Login = () => {
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
     if (error) setError('');
-  };
-
-  const handleResendVerification = async () => {
-    setResendingEmail(true);
-    try {
-      const response = await axios.post(buildApiEndpoint('auth/resend-verification'), {
-        email: credentials.email
-      });
-      
-      setError({
-        message: response.data.message || 'Verification email sent successfully!',
-        isSuccess: true
-      });
-    } catch (error) {
-      setError(error.response?.data?.message || 'Failed to resend verification email');
-    } finally {
-      setResendingEmail(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -70,7 +51,7 @@ const Login = () => {
       if (errorData?.emailNotVerified) {
         setError({
           message: errorData.message,
-          canResend: true
+          needsVerification: true
         });
       } else {
         setError(errorData?.message || 'Login failed. Please try again.');
@@ -78,10 +59,6 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/api/auth/google`;
   };
 
   return (
@@ -127,32 +104,17 @@ const Login = () => {
               <div className={`p-3 rounded-lg mb-4 text-sm ${
                 error.isSuccess 
                   ? 'bg-green-50 border border-green-200 text-green-700'
-                  : error.canResend
+                  : error.needsVerification
                     ? 'bg-yellow-50 border border-yellow-200 text-yellow-800'
                     : 'bg-red-50 border border-red-200 text-red-700'
               }`}>
                 <p className="mb-2">
                   {typeof error === 'string' ? error : error.message}
                 </p>
-                {error.canResend && credentials.email && (
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={resendingEmail}
-                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
-                  >
-                    {resendingEmail ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Sending...
-                      </>
-                    ) : (
-                      '📧 Resend Verification Email'
-                    )}
-                  </button>
+                {error.needsVerification && (
+                  <Link to="/forgot-password" className="font-semibold underline">
+                    Verify your email by resetting your password
+                  </Link>
                 )}
               </div>
             )}
@@ -235,14 +197,9 @@ const Login = () => {
                 )}
               </button>
             </form>
-            {/* Social login */}
-            <div className={`text-center my-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>or continue with</div>
-            <div className="flex justify-center mb-4">
-              <button onClick={handleGoogleLogin} className={`flex items-center gap-2 px-4 py-2 border rounded-lg hover:shadow-md transition-all duration-200 ${isDark ? 'border-gray-600 bg-gray-700 hover:bg-gray-600' : 'border-orange-300 bg-orange-100 hover:bg-orange-200'}`} title="Sign in with Google">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" className="w-5 h-5" />
-                <span className={`font-medium ${isDark ? 'text-gray-200' : 'text-orange-800'}`}>Continue with Google</span>
-              </button>
-            </div>
+            <p className={`text-center text-xs mt-4 mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              No password on your account yet? Use <Link to="/forgot-password" className="font-semibold underline">Forgot password</Link> to set one.
+            </p>
             <p className={`text-center text-sm font-medium mt-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Don't have an account? <Link to="/signup" className={`font-semibold transition-colors duration-200 ${isDark ? 'text-orange-400 hover:text-orange-300' : 'text-orange-800 hover:text-orange-900'}`}>Sign up</Link>
             </p>

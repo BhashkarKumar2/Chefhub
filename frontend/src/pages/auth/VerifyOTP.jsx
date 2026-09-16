@@ -8,6 +8,8 @@ const VerifyOTP = () => {
   const navigate = useNavigate();
   const { isDark } = useThemeAwareStyle();
   const email = location.state?.email;
+  // The code only verifies the signup attempt that requested it
+  const registrationId = location.state?.registrationId;
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -16,10 +18,10 @@ const VerifyOTP = () => {
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    if (!email) {
+    if (!email || !registrationId) {
       navigate('/register');
     }
-  }, [email, navigate]);
+  }, [email, registrationId, navigate]);
 
   const handleChange = (index, value) => {
     if (value.length > 1) {
@@ -72,7 +74,7 @@ const VerifyOTP = () => {
 
     try {
       const response = await api.post('/auth/verify-email', {
-        email,
+        registrationId,
         otp: otpValue
       });
 
@@ -94,7 +96,7 @@ const VerifyOTP = () => {
     setError('');
 
     try {
-      await api.post('/auth/resend-verification', { email });
+      await api.post('/auth/resend-verification', { registrationId });
       setError({ message: 'New verification code sent! Check your email.', isSuccess: true });
       setOtp(['', '', '', '', '', '']);
     } catch (err) {

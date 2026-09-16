@@ -27,14 +27,14 @@ const upload = multer({
 });
 // Fields a user may change on their own profile. Email is deliberately absent:
 // it is verified at signup and used for admin and chef-ownership checks.
-// Verification flags, OAuth ids, password and reset tokens are system-managed.
+// Verification flags, password, lockout and reset tokens are system-managed.
 const UPDATABLE_PROFILE_FIELDS = ['name', 'phone', 'profileImage', 'bio', 'city', 'state', 'country', 'cuisinePreferences'];
 
 // Never returned, not even to the account owner
 const PRIVATE_USER_FIELDS = '-password -resetPasswordToken -resetPasswordExpire -emailVerificationToken -emailVerificationExpire';
 
 // DEPRECATED: Registration and Login have been moved to /api/auth
-// Use authRoutes for better security (OTP, OAuth, standardized error messages)
+// Use authRoutes for better security (email OTP, lockout, standardized error messages)
 
 // router.post('/register', ...) - Removed
 // router.post('/login', ...) - Removed
